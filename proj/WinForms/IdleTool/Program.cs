@@ -2,6 +2,7 @@ namespace IdleTool
 {
     using System;
     using System.Diagnostics;
+    using System.Drawing;
     using System.Drawing.Imaging;
     //using System.Reflection.Metadata;
     using System.Runtime.InteropServices;
@@ -77,6 +78,8 @@ namespace IdleTool
             //}
             Capture_GameApp(handle, appprocess.ProcessName);
 
+            LoadImage_byFileDialog();
+
             return handle;
         }
 
@@ -109,6 +112,29 @@ namespace IdleTool
             {
                 Console.WriteLine("창 정보를 가져오는 데 실패했습니다.");
             }
+        }
+
+        static void LoadImage_byFileDialog()
+        {//https://tyen.tistory.com/74
+            string image_file = string.Empty;
+
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.InitialDirectory = @"C:\";
+
+            if(DialogResult.OK == dialog.ShowDialog())
+            {
+                image_file = dialog.FileName;
+            }
+            else if(DialogResult.Cancel == dialog.ShowDialog())
+            {
+                return;
+            }
+
+            //PictureBox.Image = Bitmap.FromFile(image_file);
+            var bitmap = Bitmap.FromFile(image_file);
+
+            string fileName = "test.png";
+            bitmap.Save(fileName, ImageFormat.Png);
         }
     }
 }
