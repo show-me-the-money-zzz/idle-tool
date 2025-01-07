@@ -6,6 +6,23 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    
+    <!--<BaseOutputPath>..\output</BaseOutputPath>-->
+    <OutputPath>$(SolutionDir)\output\</OutputPath>    
+
+    <!--https://learn.microsoft.com/ko-kr/visualstudio/ide/how-to-change-the-build-output-directory?view=vs-2022&tabs=csharp-->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <!--<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>-->
   </PropertyGroup>
+
+  <!--<Target Name="RenameDebugFile" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Debug'">
+    --><!-- Debug 파일 이름 변경 --><!--
+    <Move SourceFiles="$(OutputPath)$(AssemblyName).exe" DestinationFiles="$(OutputPath)$(AssemblyName)_d.exe" />
+  </Target>
+
+  <Target Name="CopyReleaseFile" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
+    --><!-- Release 파일 이름 유지 --><!--
+    <Copy SourceFiles="$(OutputPath)$(AssemblyName).exe" DestinationFolder="$(OutputPath)" />
+  </Target>-->
 
 </Project>

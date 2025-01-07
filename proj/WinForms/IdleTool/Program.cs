@@ -37,7 +37,7 @@ namespace IdleTool
             Application.Run(new Form1());
         }
 
-        const string GameAppName = "STOVE";//LORDNINE.. ex) STOVE
+        const string GameAppName = "LORDNINE";//LORDNINE.. ex) STOVE
         static IntPtr Detect_GameApp()
         {
             Process[] processes = Process.GetProcessesByName(GameAppName);
@@ -78,7 +78,7 @@ namespace IdleTool
             //}
             Capture_GameApp(handle, appprocess.ProcessName);
 
-            LoadImage_byFileDialog();
+            //LoadImage_byFileDialog();
 
             return handle;
         }
