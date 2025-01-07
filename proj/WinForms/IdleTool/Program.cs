@@ -5,9 +5,10 @@ namespace IdleTool
     using System.Drawing;
     using System.Drawing.Imaging;
     //using System.Reflection.Metadata;
-    using System.Runtime.InteropServices;
 
+#if DEBUG
     using System.Runtime.InteropServices;
+#endif
 
     internal static class Program
     {
@@ -141,11 +142,21 @@ namespace IdleTool
             //}
 
             //PictureBox.Image = Bitmap.FromFile(image_file);
-            image_file = "./public/inventory-icon.PNG";
-            var bitmap = Bitmap.FromFile(image_file);
+            var image1 = Load_LocalImage("icon-inventory.png");
+            SaveImage_png(image1, "inventory");
 
-            string fileName = "test.png";
-            bitmap.Save(fileName, ImageFormat.Png);
+            var image2 = Load_LocalImage("icon-worldmap.png");
+            SaveImage_png(image2, "worldmap");
+        }
+
+        const string PublicPath = "./public";
+        static Image? Load_LocalImage(string __path) => Bitmap.FromFile($"{PublicPath}/{__path}");
+
+        static void SaveImage_png(System.Drawing.Image? __image, string __filename)
+        {
+            if (null == __image) return;
+
+            __image.Save($"{__filename}.png", ImageFormat.Png);
         }
     }
 }
