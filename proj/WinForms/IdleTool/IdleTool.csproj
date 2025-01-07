@@ -15,6 +15,11 @@
     <!--<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>-->
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Emgu.CV" Version="4.9.0.5494" />
+    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.9.0.5494" />
+  </ItemGroup>
+
   <!--<Target Name="RenameDebugFile" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Debug'">
     --><!-- Debug 파일 이름 변경 --><!--
     <Move SourceFiles="$(OutputPath)$(AssemblyName).exe" DestinationFiles="$(OutputPath)$(AssemblyName)_d.exe" />

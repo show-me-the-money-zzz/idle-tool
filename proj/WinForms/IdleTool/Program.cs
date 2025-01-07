@@ -150,7 +150,8 @@ namespace IdleTool
         }
 
         const string PublicPath = "./public";
-        static Image? Load_LocalImage(string __path) => Bitmap.FromFile($"{PublicPath}/{__path}");
+        static string LocalPath(string __path) => $"{PublicPath}/{__path}";
+        static Image? Load_LocalImage(string __path) => Bitmap.FromFile(LocalPath(__path));
 
         static void SaveImage_png(System.Drawing.Image? __image, string __filename)
         {
