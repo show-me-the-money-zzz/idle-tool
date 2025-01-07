@@ -78,7 +78,7 @@ namespace IdleTool
             //}
             Capture_GameApp(handle, appprocess.ProcessName);
 
-            //LoadImage_byFileDialog();
+            LoadImage_byFileDialog();
 
             return handle;
         }
@@ -118,19 +118,20 @@ namespace IdleTool
         {//https://tyen.tistory.com/74
             string image_file = string.Empty;
 
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.InitialDirectory = @"C:\";
+            //OpenFileDialog dialog = new OpenFileDialog();
+            //dialog.InitialDirectory = @"C:\";
 
-            if(DialogResult.OK == dialog.ShowDialog())
-            {
-                image_file = dialog.FileName;
-            }
-            else if(DialogResult.Cancel == dialog.ShowDialog())
-            {
-                return;
-            }
+            //if(DialogResult.OK == dialog.ShowDialog())
+            //{
+            //    image_file = dialog.FileName;
+            //}
+            //else if(DialogResult.Cancel == dialog.ShowDialog())
+            //{
+            //    return;
+            //}
 
             //PictureBox.Image = Bitmap.FromFile(image_file);
+            image_file = "./public/inventory-icon.PNG";
             var bitmap = Bitmap.FromFile(image_file);
 
             string fileName = "test.png";
