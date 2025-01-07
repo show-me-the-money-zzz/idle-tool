@@ -7,6 +7,8 @@ namespace IdleTool
     //using System.Reflection.Metadata;
     using System.Runtime.InteropServices;
 
+    using System.Runtime.InteropServices;
+
     internal static class Program
     {
         [DllImport("user32.dll", SetLastError = true)]
@@ -20,6 +22,10 @@ namespace IdleTool
             public int Bottom;
         }
 
+#if DEBUG
+        [DllImport("kernel32.dll", SetLastError = true)] static extern bool AllocConsole();
+#endif
+
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
@@ -30,6 +36,10 @@ namespace IdleTool
             // see https://aka.ms/applicationconfiguration.
 
             //Console.WriteLine("Hello Winform ~~");
+
+#if DEBUG
+            AllocConsole();
+#endif
 
             if (IntPtr.Zero == Detect_GameApp()) return;
 
