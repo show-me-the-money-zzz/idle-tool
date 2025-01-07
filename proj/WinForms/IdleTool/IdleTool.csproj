@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     
     <!--<BaseOutputPath>..\output</BaseOutputPath>-->
-    <OutputPath>$(SolutionDir)\output\</OutputPath>    
+    <OutputPath>$(SolutionDir)\_output\</OutputPath>    
 
     <!--https://learn.microsoft.com/ko-kr/visualstudio/ide/how-to-change-the-build-output-directory?view=vs-2022&tabs=csharp-->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
