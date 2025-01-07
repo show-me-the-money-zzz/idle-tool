@@ -22,7 +22,7 @@ namespace IdleTool
             public int Bottom;
         }
 
-#if DEBUG
+#if DEBUG//https://maloveforme.tistory.com/286
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool AllocConsole();
 #endif
 
