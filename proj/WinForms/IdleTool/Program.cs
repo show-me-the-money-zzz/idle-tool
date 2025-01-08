@@ -55,12 +55,14 @@ namespace IdleTool
                 return;
             }
 #if DEBUG
-            DEV.Tester0.Capture(app_controller);
+            //DEV.Tester0.Capture(app_controller);
 
             //DEV.Tester0.Open_FileDialog();
 
             ////PictureBox.Image = Bitmap.FromFile(image_file);
             //DEV.Tester0.Process_Local_Image();
+
+            DEV.Tester0.Detect_IconImage_byLocal(app_controller);
 #endif
 
             ApplicationConfiguration.Initialize();
