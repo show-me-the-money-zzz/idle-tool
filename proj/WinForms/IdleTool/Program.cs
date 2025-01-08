@@ -71,6 +71,16 @@ namespace IdleTool
             //    filedialog_initial_dir = @"D:\";
             //    Util.Finder.Open_FileDialog(filedialog_initial_dir);
             //}
+
+            //{//DEV TEST.. Load Local Image
+            //    //PictureBox.Image = Bitmap.FromFile(image_file);
+
+            //    var image1 = Util.Finder.Load_LocalImage("icon-inventory.png");
+            //    Util.Finder.Save_LocalImage_PNG(image1, "inventory");
+
+            //    var image2 = Util.Finder.Load_LocalImage("icon-worldmap.png");
+            //    Util.Finder.Save_Image_PNG(image2, "worldmap");
+            //}
 #endif
 
             ApplicationConfiguration.Initialize();
@@ -122,25 +132,25 @@ namespace IdleTool
         //    return handle;
         //}
 
-        static void LoadImage_byFileDialog()
-        {
-            //PictureBox.Image = Bitmap.FromFile(image_file);
-            var image1 = Load_LocalImage("icon-inventory.png");
-            SaveImage_png(image1, "inventory");
+        //static void LoadImage_byFileDialog()
+        //{
+        //    //PictureBox.Image = Bitmap.FromFile(image_file);
+        //    var image1 = Load_LocalImage("icon-inventory.png");
+        //    SaveImage_png(image1, "inventory");
 
-            var image2 = Load_LocalImage("icon-worldmap.png");
-            SaveImage_png(image2, "worldmap");
-        }
+        //    var image2 = Load_LocalImage("icon-worldmap.png");
+        //    SaveImage_png(image2, "worldmap");
+        //}
 
-        const string PublicPath = "./public";
-        static string LocalPath(string __path) => $"{PublicPath}/{__path}";
-        static Image? Load_LocalImage(string __path) => Bitmap.FromFile(LocalPath(__path));
+        //const string PublicPath = "./public";
+        //static string LocalPath(string __path) => $"{PublicPath}/{__path}";
+        //static Image? Load_LocalImage(string __path) => Bitmap.FromFile(LocalPath(__path));
 
-        static void SaveImage_png(System.Drawing.Image? __image, string __filename)
-        {
-            if (null == __image) return;
+        //static void SaveImage_png(System.Drawing.Image? __image, string __filename)
+        //{
+        //    if (null == __image) return;
 
-            __image.Save($"{__filename}.png", ImageFormat.Png);
-        }
+        //    __image.Save($"{__filename}.png", ImageFormat.Png);
+        //}
     }
 }
