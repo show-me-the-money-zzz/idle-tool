@@ -55,6 +55,12 @@ namespace IdleTool
             }
 #if DEBUG
             Util.CaptureTool.NewMake(app_rect, "app-1st-test");
+
+            //{//DEV TEST.. Open_FileDialog
+            //    string filedialog_initial_dir = string.Empty;
+            //    filedialog_initial_dir = @"D:\";
+            //    Util.Finder.Open_FileDialog(filedialog_initial_dir);
+            //}
 #endif
 
             ApplicationConfiguration.Initialize();
@@ -107,21 +113,7 @@ namespace IdleTool
         //}
 
         static void LoadImage_byFileDialog()
-        {//https://tyen.tistory.com/74
-            string image_file = string.Empty;
-
-            //OpenFileDialog dialog = new OpenFileDialog();
-            //dialog.InitialDirectory = @"C:\";
-
-            //if(DialogResult.OK == dialog.ShowDialog())
-            //{
-            //    image_file = dialog.FileName;
-            //}
-            //else if(DialogResult.Cancel == dialog.ShowDialog())
-            //{
-            //    return;
-            //}
-
+        {
             //PictureBox.Image = Bitmap.FromFile(image_file);
             var image1 = Load_LocalImage("icon-inventory.png");
             SaveImage_png(image1, "inventory");
