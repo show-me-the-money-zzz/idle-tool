@@ -13,6 +13,8 @@
             , int xDest, int yDest, int wDest, int hDest,
             IntPtr hdcSrc, int xSrc, int ySrc, int rop);
 
+        private const int SRCCOPY = 0x00CC0020;
+
         public static Bitmap NewMake(Controller.App __app)
         {
             var rect = __app.Capture_Rect();
@@ -40,7 +42,7 @@
             using (Graphics gfx = Graphics.FromImage(bmp))
             {
                 IntPtr hdcBitmap = gfx.GetHdc();
-                BitBlt(hdcBitmap, 0, 0, rect.Width, rect.Height, hDC, 0, 0, 0x00CC0020);
+                BitBlt(hdcBitmap, 0, 0, rect.Width, rect.Height, hDC, 0, 0, SRCCOPY);
 
                 gfx.ReleaseHdc(hdcBitmap);
             }
