@@ -38,16 +38,18 @@ namespace IdleTool.DEV
 
         public static void Detect_IconImage_byLocal(App __app)
         {
+            string local_imaage = "icon-worldmap";
+
             var bmp_app = Util.CaptureTool.NewMake(__app);
-            var bmp_icon_worldmap = (Bitmap)Util.Finder.Load_LocalImage("icon-inventory.png");
+            var bmp_icon = (Bitmap)Util.Finder.Load_LocalImage(local_imaage + ".png");
             //#data\\Image To Bitmap 변환.md 참고
 
             var mat_app = Util.GFX.Bitmap_To_Mat_Direct(bmp_app);
-            var mat_icon_worldmap = Util.GFX.Bitmap_To_Mat_Direct(bmp_icon_worldmap);
+            var mat_icon = Util.GFX.Bitmap_To_Mat_Direct(bmp_icon);
 
             // 결과 매트릭스 생성
             Mat result = new Mat();
-            CvInvoke.MatchTemplate(mat_app, mat_icon_worldmap, result, TemplateMatchingType.CcorrNormed);
+            CvInvoke.MatchTemplate(mat_app, mat_icon, result, TemplateMatchingType.CcorrNormed);
 
             // 결과에서 가장 유사한 위치 찾기
             double minVal = 0, maxVal = 0;
@@ -55,18 +57,34 @@ namespace IdleTool.DEV
             Point maxLoc = new Point();
             CvInvoke.MinMaxLoc(result, ref minVal, ref maxVal, ref minLoc, ref maxLoc);
 
-            // 템플릿 위치 표시
-            Console.WriteLine($"템플릿 위치: X={maxLoc.X}, Y={maxLoc.Y}");
-            Console.WriteLine($"유사도: {maxVal}");
+#if DEBUG
+            {//Console.WriteLine.. 템플릿 위치 표시
+                Console.WriteLine($"템플릿 위치(MaxLoc): X={maxLoc.X}, Y={maxLoc.Y} (MinLoc= {minLoc.X}, {minLoc.Y})");
+                //Console.WriteLine($"템플릿 영역: {maxLoc.X}, {maxLoc.Y} ~ {maxLoc.X + mat_icon.Width}, {maxLoc.Y + mat_icon.Height}");
+                Console.WriteLine($"유사도: {maxVal}");
+            }
+#endif
 
             // 일치하는 위치에 사각형 그리기
-            Rectangle matchRect = new Rectangle(maxLoc, new Size(mat_icon_worldmap.Width, mat_icon_worldmap.Height));
+            Rectangle matchRect = new Rectangle(maxLoc, new Size(mat_icon.Width, mat_icon.Height));
             CvInvoke.Rectangle(mat_app, matchRect, new MCvScalar(0, 255, 0), 3);
 
             // 결과 이미지를 저장 (선택)
-            string outputPath = @".\matched_result.png";
-            mat_app.Save(outputPath);
-            Console.WriteLine($"결과 이미지가 저장되었습니다: {outputPath}");
+            Point clickPoint = maxLoc;//클릭 위치
+            {
+                clickPoint.X += (int)(mat_icon.Width * 0.5f);
+                clickPoint.Y += (int)(mat_icon.Height * 0.5f);
+            }
+
+            {//captured local save
+                //string outputPath = $@".\matched_{local_imaage} ({maxLoc.X}, {maxLoc.Y} ~ {maxLoc.X + mat_icon.Width}, {maxLoc.Y + mat_icon.Height}).png";
+                string outputPath = $@".\matched_{local_imaage} ({clickPoint.X}, {clickPoint.Y}).png";
+                mat_app.Save(outputPath);
+
+#if DEBUG
+                Console.WriteLine($"결과 이미지가 저장되었습니다: {outputPath}");
+#endif
+            }
         }
     }
 }
