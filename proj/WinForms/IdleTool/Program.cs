@@ -44,16 +44,18 @@ namespace IdleTool
 
             //if (IntPtr.Zero == Detect_GameApp()) return;
 
-            var appcontroller = new Controller.App();
-            if (!appcontroller.Detect()) return;
-            {//DEV TEST
-                var rect = appcontroller.Capture_Rect();
-                if(!rect.IsValid)
-                {
-                    Console.WriteLine("창 정보를 가져오는 데 실패했습니다.");
-                    return;
-                }
+            var app_controller = new Controller.App();
+            if (!app_controller.Detect()) return;
+
+            var app_rect = app_controller.Capture_Rect();
+            if(!app_rect.IsValid)
+            {
+                Console.WriteLine("창 정보를 가져오는 데 실패했습니다.");
+                return;
             }
+#if DEBUG
+            Util.CaptureTool.NewMake(app_rect, "app-1st-test");
+#endif
 
             ApplicationConfiguration.Initialize();
             Application.Run(new Form1());

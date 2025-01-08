@@ -55,29 +55,10 @@
             Console.WriteLine($"창 위치: ({rect.Left}, {rect.Top})");
             Console.WriteLine($"창 크기: {rect.Width}x{rect.Height}");
 
-            if (rect.IsValid) Capture(rect);
+            //if (rect.IsValid) Util.CaptureTool.NewMake(rect, "app-1st-test");
 #endif
 
             return rect;
-        }
-
-        public void Capture(Common.Types.RECT __rect)
-        {
-            using (Bitmap bitmap = new Bitmap(__rect.Width, __rect.Height))
-            {
-                using (Graphics g = Graphics.FromImage(bitmap))
-                {
-                    g.CopyFromScreen(__rect.Left, __rect.Top, 0, 0, new Size(__rect.Width, __rect.Height), CopyPixelOperation.SourceCopy);
-                }
-
-#if DEBUG
-                {// 캡처 이미지 저장
-                    string fileName = $"__capture__{ProcessName}.png";
-                    bitmap.Save(fileName, ImageFormat.Png);
-                    Console.WriteLine($"캡처가 완료되었습니다: {fileName}");
-                }
-#endif
-            }
         }
     }
 }
