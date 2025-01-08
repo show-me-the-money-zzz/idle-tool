@@ -54,7 +54,17 @@ namespace IdleTool
                 return;
             }
 #if DEBUG
-            Util.CaptureTool.NewMake(app_rect, "app-1st-test");
+            {//DEV TEST.. Capture
+                Bitmap capture_bitmap = null;
+                string capture_filename = "__capture00__";
+
+                capture_bitmap = Util.CaptureTool.NewMake(app_controller);
+                //{//DC.. 캡쳐된 이미지가 갱신이 안됨
+                //    capture_bitmap = Util.CaptureTool.NewMake_DC(app_controller);
+                //    capture_filename = "__captureDC__";
+                //}
+                Util.CaptureTool.Save_Bitmap_PNG(capture_bitmap, capture_filename + ".app-1st-test");
+            }
 
             //{//DEV TEST.. Open_FileDialog
             //    string filedialog_initial_dir = string.Empty;
