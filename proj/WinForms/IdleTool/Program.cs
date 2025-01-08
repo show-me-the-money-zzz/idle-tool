@@ -1,5 +1,6 @@
 namespace IdleTool
 {
+    using IdleTool.DEV;
     using System;
     //using System.Diagnostics;
     using System.Drawing;
@@ -54,33 +55,12 @@ namespace IdleTool
                 return;
             }
 #if DEBUG
-            {//DEV TEST.. Capture
-                Bitmap capture_bitmap = null;
-                string capture_filename = "__capture00__";
+            DEV.Tester0.Capture(app_controller);
 
-                capture_bitmap = Util.CaptureTool.NewMake(app_controller);
-                //{//DC.. 캡쳐된 이미지가 갱신이 안됨
-                //    capture_bitmap = Util.CaptureTool.NewMake_DC(app_controller);
-                //    capture_filename = "__captureDC__";
-                //}
-                Util.CaptureTool.Save_Bitmap_PNG(capture_bitmap, capture_filename + ".app-1st-test");
-            }
+            //DEV.Tester0.Open_FileDialog();
 
-            //{//DEV TEST.. Open_FileDialog
-            //    string filedialog_initial_dir = string.Empty;
-            //    filedialog_initial_dir = @"D:\";
-            //    Util.Finder.Open_FileDialog(filedialog_initial_dir);
-            //}
-
-            //{//DEV TEST.. Load Local Image
-            //    //PictureBox.Image = Bitmap.FromFile(image_file);
-
-            //    var image1 = Util.Finder.Load_LocalImage("icon-inventory.png");
-            //    Util.Finder.Save_LocalImage_PNG(image1, "inventory");
-
-            //    var image2 = Util.Finder.Load_LocalImage("icon-worldmap.png");
-            //    Util.Finder.Save_Image_PNG(image2, "worldmap");
-            //}
+            ////PictureBox.Image = Bitmap.FromFile(image_file);
+            //DEV.Tester0.Process_Local_Image();
 #endif
 
             ApplicationConfiguration.Initialize();
