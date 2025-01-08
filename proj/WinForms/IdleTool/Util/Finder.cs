@@ -1,5 +1,6 @@
 ﻿namespace IdleTool.Util
 {
+    using Emgu.CV;
     using System.Drawing.Imaging;
 
     public class Finder
@@ -37,7 +38,12 @@
         {
             if (null == __image) return false;
 
-            __image.Save($"{__path}.png", ImageFormat.Png);
+            string fullpath = $"{__path}.png";
+            __image.Save(fullpath, ImageFormat.Png);
+
+#if DEBUG
+            Console.WriteLine($"캡처 이미지를 저장하였습니다(.png): {fullpath}");
+#endif
 
             return true;
         }
@@ -49,7 +55,7 @@
             __bitmap.Save(fileName, ImageFormat.Png);
 
 #if DEBUG
-            Console.WriteLine($"캡처 이미지를 저장하였습니다: {fileName}");
+            Console.WriteLine($"캡처 이미지(Bitmap)를 저장하였습니다(.png): {fileName}");
 #endif
         }
     }
