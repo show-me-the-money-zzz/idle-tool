@@ -52,12 +52,5 @@
 
             return bmp;
         }
-
-        public static void Save_Bitmap_PNG(Bitmap __bitmap, string __path)
-        {
-            string fileName = $"{__path}.png";
-            __bitmap.Save(fileName, ImageFormat.Png);
-            Console.WriteLine($"캡처 이미지를 저장하였습니다: {fileName}");
-        }
     }
 }

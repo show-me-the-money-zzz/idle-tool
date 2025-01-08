@@ -41,5 +41,16 @@
 
             return true;
         }
+
+        public static void Save_LocalBitmapImage_PNG(Bitmap __bitmap, string __path) => Save_BitmapImage_PNG(__bitmap, LocalPath(__path));
+        public static void Save_BitmapImage_PNG(Bitmap __bitmap, string __path)
+        {
+            string fileName = $"{__path}.png";
+            __bitmap.Save(fileName, ImageFormat.Png);
+
+#if DEBUG
+            Console.WriteLine($"캡처 이미지를 저장하였습니다: {fileName}");
+#endif
+        }
     }
 }

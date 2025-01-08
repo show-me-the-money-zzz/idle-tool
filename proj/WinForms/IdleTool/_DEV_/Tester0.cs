@@ -14,7 +14,7 @@ namespace IdleTool.DEV
             //    capture_bitmap = Util.CaptureTool.NewMake_DC(app_controller);
             //    capture_filename = "__captureDC__";
             //}
-            Util.CaptureTool.Save_Bitmap_PNG(capture_bitmap, capture_filename + ".app-1st-test");
+            Util.Finder.Save_BitmapImage_PNG(capture_bitmap, capture_filename + ".app-1st-test");
         }
 
         public static void Open_FileDialog()
