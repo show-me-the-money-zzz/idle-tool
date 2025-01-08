@@ -46,9 +46,14 @@ namespace IdleTool
 
             var appcontroller = new Controller.App();
             if (!appcontroller.Detect()) return;
-#if DEBUG
-            { appcontroller.Capture(); }//DEV TEST
-#endif
+            {//DEV TEST
+                var rect = appcontroller.Capture_Rect();
+                if(!rect.IsValid)
+                {
+                    Console.WriteLine("창 정보를 가져오는 데 실패했습니다.");
+                    return;
+                }
+            }
 
             ApplicationConfiguration.Initialize();
             Application.Run(new Form1());

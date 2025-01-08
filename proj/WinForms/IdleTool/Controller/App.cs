@@ -43,51 +43,40 @@
             }
             Console.WriteLine($"App Info) PID: {PID}, Name: {ProcessName}");
 
-            //if (Util.Importer.Get_AppRect(Handle, out Common.Types.RECT rect))
-            //{
-            //    int width = rect.Right - rect.Left;
-            //    int height = rect.Bottom - rect.Top;
-
-            //    Console.WriteLine($"App Info) 위치: ({rect.Left}, {rect.Top})");
-            //    Console.WriteLine($"App Info) 크기: {width}x{height}");
-            //}
-            //else
-            //{
-            //    Console.WriteLine("창 정보를 가져오는 데 실패했습니다.");
-            //}
-
             return true;
         }
 
-        public void Capture()
+        public Common.Types.RECT Capture_Rect()//Get_Rect
         {
-            // 창의 위치 및 크기 가져오기
-            if (Util.Importer.Get_AppRect(HANDLE, out Common.Types.RECT rect))
+            Common.Types.RECT rect = Util.Importer.Get_AppRect(HANDLE);
+            //var size = rect.Get_Size();
+
+#if DEBUG
+            Console.WriteLine($"창 위치: ({rect.Left}, {rect.Top})");
+            Console.WriteLine($"창 크기: {rect.Width}x{rect.Height}");
+
+            if (rect.IsValid) Capture(rect);
+#endif
+
+            return rect;
+        }
+
+        public void Capture(Common.Types.RECT __rect)
+        {
+            using (Bitmap bitmap = new Bitmap(__rect.Width, __rect.Height))
             {
-                int width = rect.Right - rect.Left;
-                int height = rect.Bottom - rect.Top;
-
-                Console.WriteLine($"창 위치: ({rect.Left}, {rect.Top})");
-                Console.WriteLine($"창 크기: {width}x{height}");
-
-                // 창 캡처
-                using (Bitmap bitmap = new Bitmap(width, height))
+                using (Graphics g = Graphics.FromImage(bitmap))
                 {
-                    using (Graphics g = Graphics.FromImage(bitmap))
-                    {
-                        g.CopyFromScreen(rect.Left, rect.Top, 0, 0, new Size(width, height), CopyPixelOperation.SourceCopy);
-                    }
-
-                    {// 캡처 이미지 저장
-                        string fileName = $"__capture__{ProcessName}.png";
-                        bitmap.Save(fileName, ImageFormat.Png);
-                        Console.WriteLine($"캡처가 완료되었습니다: {fileName}");
-                    }
+                    g.CopyFromScreen(__rect.Left, __rect.Top, 0, 0, new Size(__rect.Width, __rect.Height), CopyPixelOperation.SourceCopy);
                 }
-            }
-            else
-            {
-                Console.WriteLine("창 정보를 가져오는 데 실패했습니다.");
+
+#if DEBUG
+                {// 캡처 이미지 저장
+                    string fileName = $"__capture__{ProcessName}.png";
+                    bitmap.Save(fileName, ImageFormat.Png);
+                    Console.WriteLine($"캡처가 완료되었습니다: {fileName}");
+                }
+#endif
             }
         }
     }
