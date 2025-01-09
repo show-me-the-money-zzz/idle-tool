@@ -47,7 +47,7 @@ namespace IdleTool
             //    return;
 
             ApplicationConfiguration.Initialize();
-            Application.Run(new Form1());
+            Application.Run(new MainForm());
         }
 
         static bool Initialize()
