@@ -7,9 +7,7 @@ namespace IdleTool
     using System.Drawing.Imaging;
     //using System.Reflection.Metadata;
 
-#if DEBUG
-    using System.Runtime.InteropServices;
-#endif
+    using System.Runtime.InteropServices;//DllImport
 
     internal static class Program
     {
