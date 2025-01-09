@@ -36,9 +36,15 @@ namespace IdleTool.DEV
             Util.Finder.Save_Image_PNG(image2, "worldmap");
         }
 
-        public static void Detect_IconImage_byLocal(App __app)
+        public struct Result_DetectIconImage
         {
-            string local_imaage = "icon-worldmap";
+            public Point pos;
+            public Size size;
+            public double similarity;
+        }
+        public static Result_DetectIconImage Detect_IconImage_byLocal(App __app, string __test_file)
+        {
+            string local_imaage = __test_file;
 
             var bmp_app = Util.CaptureTool.NewMake(__app);
             var bmp_icon = (Bitmap)Util.Finder.Load_LocalImage(local_imaage + ".png");
@@ -85,6 +91,14 @@ namespace IdleTool.DEV
                 Console.WriteLine($"결과 이미지가 저장되었습니다: {outputPath}");
 #endif
             }
+
+            Result_DetectIconImage ret = new Result_DetectIconImage();
+            {
+                ret.pos = maxLoc;
+                ret.size = new Size(mat_icon.Width, mat_icon.Height);
+                ret.similarity = maxVal;
+            }
+            return ret;
         }
     }
 }

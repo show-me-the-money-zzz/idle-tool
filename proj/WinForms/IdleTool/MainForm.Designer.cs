@@ -28,19 +28,20 @@
         /// </summary>
         private void InitializeComponent()
         {
-            button1 = new Button();
+            test_button1 = new Button();
             TXT_Logger = new TextBox();
+            test_button2 = new Button();
             SuspendLayout();
             // 
-            // button1
+            // test_button1
             // 
-            button1.Location = new Point(12, 12);
-            button1.Name = "button1";
-            button1.Size = new Size(75, 23);
-            button1.TabIndex = 0;
-            button1.Text = "button1";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += OnClick_Test1;
+            test_button1.Location = new Point(12, 12);
+            test_button1.Name = "test_button1";
+            test_button1.Size = new Size(105, 23);
+            test_button1.TabIndex = 0;
+            test_button1.Text = "지도 찾기";
+            test_button1.UseVisualStyleBackColor = true;
+            test_button1.Click += OnClick_Test1;
             // 
             // TXT_Logger
             // 
@@ -50,24 +51,35 @@
             TXT_Logger.Size = new Size(776, 124);
             TXT_Logger.TabIndex = 1;
             // 
+            // test_button2
+            // 
+            test_button2.Location = new Point(12, 41);
+            test_button2.Name = "test_button2";
+            test_button2.Size = new Size(105, 23);
+            test_button2.TabIndex = 2;
+            test_button2.Text = "인벤토리 찾기";
+            test_button2.UseVisualStyleBackColor = true;
+            test_button2.Click += OnClick_Test2;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(test_button2);
             Controls.Add(TXT_Logger);
-            Controls.Add(button1);
+            Controls.Add(test_button1);
             Name = "MainForm";
             Text = "쇼미더머니 - LORDNINE";
-            Click += OnClick_Test1;
-            this.KeyDown += this.Processs_KeyDown;
+            KeyDown += Processs_KeyDown;
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
 
-        private Button button1;
+        private Button test_button1;
         private TextBox TXT_Logger;
+        private Button test_button2;
     }
 }

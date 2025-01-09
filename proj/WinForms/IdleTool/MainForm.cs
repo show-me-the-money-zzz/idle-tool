@@ -14,7 +14,7 @@ namespace IdleTool
             //https://free-sounds.tistory.com/39
 
             _appController = __app;
-            { Test_App(); }//DEV TEST
+            //{ Test_App(); }//DEV TEST
         }
 
         void Test_App()
@@ -34,7 +34,17 @@ namespace IdleTool
             _count += 1;
             TXT_Logger.Text = $"클릭 {_count}\r\n테스트";
 
-            DEV.Tester0.Detect_IconImage_byLocal(_appController);
+            Log_DetectResult(DEV.Tester0.Detect_IconImage_byLocal(_appController, "icon-worldmap"));
+        }
+        private void OnClick_Test2(object sender, EventArgs e)
+        {
+            Log_DetectResult(DEV.Tester0.Detect_IconImage_byLocal(_appController, "icon-inventory"));
+        }
+        void Log_DetectResult(DEV.Tester0.Result_DetectIconImage __result)
+        {
+            TXT_Logger.Text = $"위치: x= {__result.pos.X}, y= {__result.pos.Y}" +
+                $"\r\n사이즈: {__result.size.Width} X {__result.size.Height}" +
+                $"\r\n유사도: {__result.similarity}";
         }
 
         void Processs_KeyDown(object sender, KeyEventArgs e)
@@ -43,7 +53,7 @@ namespace IdleTool
             {
 #if DEBUG
                 Application.Exit();
-                MessageBox.Show("Escape 클릭");
+                //MessageBox.Show("Escape 클릭");
 #endif
             }
         }
