@@ -2,3 +2,9 @@
 /proj/WinForms/IdleTool/bin
 /proj/WinForms/IdleTool/obj
 /bin - 바로 가기.lnk
+/*.pdb
+win-arm64
+win-x64
+win-x86
+IdleTool.deps.json
+IdleTool.exe

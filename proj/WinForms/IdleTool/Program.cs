@@ -26,6 +26,8 @@ namespace IdleTool
         [DllImport("kernel32.dll", SetLastError = true)] static extern bool AllocConsole();
 #endif
 
+        static Controller.App _appController = null;
+
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
@@ -41,16 +43,25 @@ namespace IdleTool
             AllocConsole();
 #endif
 
+            //if (!Initialize())
+            //    return;
+
+            ApplicationConfiguration.Initialize();
+            Application.Run(new Form1());
+        }
+
+        static bool Initialize()
+        {
             //if (IntPtr.Zero == Detect_GameApp()) return;
 
-            var app_controller = new Controller.App();
-            if (!app_controller.Detect()) return;
+            _appController = new Controller.App();
+            if (!_appController.Detect()) return false;
 
-            var app_rect = app_controller.Capture_Rect();
-            if(!app_rect.IsValid)
+            var app_rect = _appController.Capture_Rect();
+            if (!app_rect.IsValid)
             {
                 Console.WriteLine("창 정보를 가져오는 데 실패했습니다.");
-                return;
+                return false;
             }
 #if DEBUG
             //DEV.Tester0.Capture(app_controller);
@@ -60,11 +71,10 @@ namespace IdleTool
             ////PictureBox.Image = Bitmap.FromFile(image_file);
             //DEV.Tester0.Process_Local_Image();
 
-            DEV.Tester0.Detect_IconImage_byLocal(app_controller);
+            DEV.Tester0.Detect_IconImage_byLocal(_appController);
 #endif
 
-            ApplicationConfiguration.Initialize();
-            Application.Run(new Form1());
+            return true;
         }
     }
 }
