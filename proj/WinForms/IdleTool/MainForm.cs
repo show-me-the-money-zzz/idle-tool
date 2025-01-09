@@ -7,7 +7,9 @@ namespace IdleTool
         public MainForm()
         {
             InitializeComponent();
-            KeyPreview = true;
+
+            KeyPreview = true;//키 입력 안 먹을 때
+            //https://free-sounds.tistory.com/39
         }
 
         private void OnClick_Test1(object sender, EventArgs e)
