@@ -30,7 +30,7 @@ namespace IdleTool
                 //statusLabel_HP.Text = $"HP ({150:#,###}/{7650:#,###})";
                 statusLabel_HP.Text = $"HP {7650:#,###}";
                 statusLabel_MP.Text = $"MP {1500:#,###}";
-                statusLabel_Potion.Text = $"HP {1118:#,###}";
+                statusLabel_Potion.Text = $"물약 {1118:#,###}";
             }
         }
 
@@ -63,14 +63,22 @@ namespace IdleTool
 
             Rectangle textRegion = new Rectangle(538, 1043, 86, 22);//potion
             textRegion = new Rectangle(590, 1050, 56, 20);//ZZUNY+중간
-            {//HP
-                textRegion = new Rectangle(62, 54, 210, 25);//ZZUNY+중간
+            //{//HP
+            //    textRegion = new Rectangle(62, 54, 210, 25);//ZZUNY+중간
 
-                {//MP
-                    textRegion = new Rectangle(62, 78, 210, 25);//ZZUNY+중간
+            //    {//MP
+            //        textRegion = new Rectangle(62, 78, 210, 25);//ZZUNY+중간
+            //    }
+            //}
+
+            var potion = Util.OCR.Read_Text(_appController, textRegion, __isNumber: true, __filename: "potion");
+            {
+                int outvalue = 0;
+                if (int.TryParse(potion, out outvalue))
+                {
+                    statusLabel_Potion.Text = $"물약 {outvalue:#,###}";
                 }
             }
-            Util.OCR.Read_Text(_appController, textRegion, __isNumber: true, __filename: "potion");
         }
         private void OnClick_Test4(object sender, EventArgs e)
         {

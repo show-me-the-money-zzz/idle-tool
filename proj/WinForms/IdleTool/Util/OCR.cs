@@ -36,6 +36,8 @@ namespace IdleTool.Util
 
         public static string Read_Text(App __app, Rectangle __region, bool __isNumber = true, string __filename = "")
         {
+            string ret = "";
+
             var bmp_app = Util.CaptureTool.NewMake(__app);
 
             // 특정 영역 잘라내기
@@ -62,12 +64,16 @@ namespace IdleTool.Util
 
                         var page = engine.Process(PixConverter.ToPix(croppedBitmap));
 
-                        Console.WriteLine($"OCR({__filename}): {page.GetText().Trim()}");
+                        ret = page.GetText().Trim();
+                        Console.WriteLine($"OCR({__filename}): {ret}");
                     }
                 }
             }
 
-            return "";
+            if (__isNumber)
+                ret = ret.Replace(",", "");
+
+            return ret;
         }
 
         /// <summary>
