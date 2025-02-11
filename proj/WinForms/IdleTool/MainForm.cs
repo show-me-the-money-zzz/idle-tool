@@ -40,6 +40,11 @@ namespace IdleTool
         {
             Log_DetectResult(DEV.Tester0.Detect_IconImage_byLocal(_appController, "icon-inventory"));
         }
+        private void OnClick_Test3(object sender, EventArgs e)
+        {
+            DEV.FormText.Find_TextEdit();
+        }
+
         void Log_DetectResult(DEV.Tester0.Result_DetectIconImage __result)
         {
             TXT_Logger.Text = $"위치: x= {__result.pos.X}, y= {__result.pos.Y}" +
