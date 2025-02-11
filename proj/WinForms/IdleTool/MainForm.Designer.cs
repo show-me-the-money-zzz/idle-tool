@@ -1,4 +1,6 @@
-﻿namespace IdleTool
+﻿using IdleTool.Controller;
+
+namespace IdleTool
 {
     partial class MainForm
     {
@@ -33,6 +35,12 @@
             test_button2 = new Button();
             test_button3 = new Button();
             test_button4 = new Button();
+            statusStrip = new StatusStrip();
+            statusLabel_HP = new ToolStripStatusLabel();
+            statusLabel_MP = new ToolStripStatusLabel();
+            statusLabel_Potion = new ToolStripStatusLabel();
+            statusLabel_State = new ToolStripStatusLabel();
+            statusStrip.SuspendLayout();
             SuspendLayout();
             // 
             // test_button1
@@ -50,7 +58,7 @@
             TXT_Logger.Location = new Point(12, 314);
             TXT_Logger.Multiline = true;
             TXT_Logger.Name = "TXT_Logger";
-            TXT_Logger.Size = new Size(776, 124);
+            TXT_Logger.Size = new Size(560, 124);
             TXT_Logger.TabIndex = 1;
             // 
             // test_button2
@@ -83,19 +91,70 @@
             test_button4.UseVisualStyleBackColor = true;
             test_button4.Click += OnClick_Test4;
             // 
+            // statusStrip
+            // 
+            statusStrip.Items.AddRange(new ToolStripItem[] { statusLabel_HP, statusLabel_MP, statusLabel_Potion, statusLabel_State });
+            statusStrip.Location = new Point(0, 439);
+            statusStrip.Name = "statusStrip";
+            statusStrip.Size = new Size(584, 22);
+            statusStrip.TabIndex = 5;
+            statusStrip.Text = "statusStrip1";
+            // 
+            // statusLabel_HP
+            // 
+            statusLabel_HP.AutoSize = false;
+            statusLabel_HP.BorderSides = ToolStripStatusLabelBorderSides.Right;
+            statusLabel_HP.ForeColor = SystemColors.ControlText;
+            statusLabel_HP.ImageAlign = ContentAlignment.MiddleLeft;
+            statusLabel_HP.Name = "statusLabel_HP";
+            statusLabel_HP.Size = new Size(120, 17);
+            statusLabel_HP.Text = "체력";
+            // 
+            // statusLabel_MP
+            // 
+            statusLabel_MP.AutoSize = false;
+            statusLabel_MP.BorderSides = ToolStripStatusLabelBorderSides.Right;
+            statusLabel_MP.ImageAlign = ContentAlignment.MiddleLeft;
+            statusLabel_MP.Name = "statusLabel_MP";
+            statusLabel_MP.Size = new Size(120, 17);
+            statusLabel_MP.Text = "마력";
+            // 
+            // statusLabel_Potion
+            // 
+            statusLabel_Potion.AutoSize = false;
+            statusLabel_Potion.BorderSides = ToolStripStatusLabelBorderSides.Right;
+            statusLabel_Potion.ImageAlign = ContentAlignment.MiddleLeft;
+            statusLabel_Potion.Name = "statusLabel_Potion";
+            statusLabel_Potion.Size = new Size(120, 17);
+            statusLabel_Potion.Text = "물약";
+            // 
+            // statusLabel_State
+            // 
+            statusLabel_State.AutoSize = false;
+            statusLabel_State.Name = "statusLabel_State";
+            statusLabel_State.Size = new Size(209, 17);
+            statusLabel_State.Spring = true;
+            statusLabel_State.Text = "상태";
+            statusLabel_State.TextAlign = ContentAlignment.MiddleRight;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(584, 461);
+            Controls.Add(statusStrip);
             Controls.Add(test_button4);
             Controls.Add(test_button3);
             Controls.Add(test_button2);
             Controls.Add(TXT_Logger);
             Controls.Add(test_button1);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
             Name = "MainForm";
-            Text = "쇼미더머니 - LORDNINE";
+            Text = "쇼미더머니 - 로드나인";
             KeyDown += Processs_KeyDown;
+            statusStrip.ResumeLayout(false);
+            statusStrip.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -107,5 +166,10 @@
         private Button test_button2;
         private Button test_button3;
         private Button test_button4;
+        private StatusStrip statusStrip;
+        private ToolStripStatusLabel statusLabel_State;
+        private ToolStripStatusLabel statusLabel_HP;
+        private ToolStripStatusLabel statusLabel_MP;
+        private ToolStripStatusLabel statusLabel_Potion;
     }
 }

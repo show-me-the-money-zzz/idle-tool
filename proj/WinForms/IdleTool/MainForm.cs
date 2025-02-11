@@ -1,3 +1,6 @@
+using Emgu.CV.CvEnum;
+using System.Windows.Forms;
+
 namespace IdleTool
 {
     public partial class MainForm : Form
@@ -15,6 +18,20 @@ namespace IdleTool
 
             _appController = __app;
             //{ Test_App(); }//DEV TEST
+
+            {
+                //foreach (ToolStripItem item in statusStrip.Items)
+                //    Console.WriteLine($"아이템: {item.Text}, 타입: {item.GetType()}");
+                //statusStrip.SizingGrip = true;
+                //statusStrip.Refresh();
+
+                statusLabel_State.Text = "게임 찾기 성공!!";
+
+                //statusLabel_HP.Text = $"HP ({150:#,###}/{7650:#,###})";
+                statusLabel_HP.Text = $"HP {7650:#,###}";
+                statusLabel_MP.Text = $"MP {1500:#,###}";
+                statusLabel_Potion.Text = $"HP {1118:#,###}";
+            }
         }
 
         void Test_App()
@@ -45,11 +62,20 @@ namespace IdleTool
             //DEV.FormText.Find_TextEdit();
 
             Rectangle textRegion = new Rectangle(538, 1043, 86, 22);//potion
+            textRegion = new Rectangle(590, 1050, 56, 20);//ZZUNY+중간
+            {//HP
+                textRegion = new Rectangle(62, 54, 210, 25);//ZZUNY+중간
+
+                {//MP
+                    textRegion = new Rectangle(62, 78, 210, 25);//ZZUNY+중간
+                }
+            }
             Util.OCR.Read_Text(_appController, textRegion, __isNumber: true, __filename: "potion");
         }
         private void OnClick_Test4(object sender, EventArgs e)
         {
             Rectangle textRegion = new Rectangle(220, 200, 110, 40);//현재 위치 텍스트
+            textRegion = new Rectangle(200, 186, 100, 30);
             Util.OCR.Read_Text(_appController, textRegion, __isNumber: false, __filename: "maplocation");
         }
 
@@ -62,7 +88,7 @@ namespace IdleTool
 
         void Processs_KeyDown(object sender, KeyEventArgs e)
         {
-            if(Keys.Escape == e.KeyData)
+            if (Keys.Escape == e.KeyData)
             {
 #if DEBUG
                 Application.Exit();
