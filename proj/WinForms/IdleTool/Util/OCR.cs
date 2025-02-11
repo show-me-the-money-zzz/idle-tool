@@ -52,7 +52,7 @@ namespace IdleTool.Util
                     using (var engine = new TesseractEngine(@"./tessdata", "eng+kor+kor_vert", EngineMode.Default))
                     {
                         if(__isNumber)
-                            engine.SetVariable("tessedit_char_whitelist", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+                            engine.SetVariable("tessedit_char_whitelist", "0123456789,.");
 
                         var page = engine.Process(PixConverter.ToPix(croppedBitmap));
 
