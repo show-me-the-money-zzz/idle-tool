@@ -84,7 +84,16 @@ namespace IdleTool.DEV
 
             {//captured local save
                 //string outputPath = $@".\matched_{local_imaage} ({maxLoc.X}, {maxLoc.Y} ~ {maxLoc.X + mat_icon.Width}, {maxLoc.Y + mat_icon.Height}).png";
-                string outputPath = $@".\matched_{local_imaage} ({clickPoint.X}, {clickPoint.Y}).png";
+                string outputPath = $@".\matched_{local_imaage} ({clickPoint.X}, {clickPoint.Y})";
+                {
+                    outputPath += " ";
+
+                    //outputPath += $"{maxVal}";
+                    //outputPath += $"({maxVal:0.#0})";
+                    outputPath += $"({Math.Truncate(maxVal * 100) / 100})";
+
+                    outputPath += ".png";
+                }                
                 mat_app.Save(outputPath);
 
 #if DEBUG
