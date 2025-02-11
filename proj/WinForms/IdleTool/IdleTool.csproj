@@ -18,6 +18,8 @@
   <ItemGroup>
     <PackageReference Include="Emgu.CV" Version="4.9.0.5494" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.9.0.5494" />
+    <PackageReference Include="Tesseract" Version="5.2.0" />
+    <PackageReference Include="Tesseract.Drawing" Version="5.2.0" />
   </ItemGroup>
 
   <!--<Target Name="RenameDebugFile" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Debug'">

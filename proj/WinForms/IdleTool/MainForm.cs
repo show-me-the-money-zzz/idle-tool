@@ -42,7 +42,15 @@ namespace IdleTool
         }
         private void OnClick_Test3(object sender, EventArgs e)
         {
-            DEV.FormText.Find_TextEdit();
+            //DEV.FormText.Find_TextEdit();
+
+            Rectangle textRegion = new Rectangle(538, 1043, 86, 22);//potion
+            Util.OCR.Read_Text(_appController, textRegion, __isNumber: true, __filename: "potion");
+        }
+        private void OnClick_Test4(object sender, EventArgs e)
+        {
+            Rectangle textRegion = new Rectangle(220, 200, 110, 40);//현재 위치 텍스트
+            Util.OCR.Read_Text(_appController, textRegion, __isNumber: false, __filename: "maplocation");
         }
 
         void Log_DetectResult(DEV.Tester0.Result_DetectIconImage __result)

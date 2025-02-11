@@ -32,6 +32,7 @@
             TXT_Logger = new TextBox();
             test_button2 = new Button();
             test_button3 = new Button();
+            test_button4 = new Button();
             SuspendLayout();
             // 
             // test_button1
@@ -68,15 +69,26 @@
             test_button3.Name = "test_button3";
             test_button3.Size = new Size(105, 23);
             test_button3.TabIndex = 3;
-            test_button3.Text = "텍스트 찾기";
+            test_button3.Text = "포션 개수";
             test_button3.UseVisualStyleBackColor = true;
             test_button3.Click += OnClick_Test3;
+            // 
+            // test_button4
+            // 
+            test_button4.Location = new Point(123, 285);
+            test_button4.Name = "test_button4";
+            test_button4.Size = new Size(105, 23);
+            test_button4.TabIndex = 4;
+            test_button4.Text = "한글 찾기";
+            test_button4.UseVisualStyleBackColor = true;
+            test_button4.Click += OnClick_Test4;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(test_button4);
             Controls.Add(test_button3);
             Controls.Add(test_button2);
             Controls.Add(TXT_Logger);
@@ -94,5 +106,6 @@
         private TextBox TXT_Logger;
         private Button test_button2;
         private Button test_button3;
+        private Button test_button4;
     }
 }
