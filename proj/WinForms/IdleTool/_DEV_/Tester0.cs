@@ -90,7 +90,9 @@ namespace IdleTool.DEV
 
                     //outputPath += $"{maxVal}";
                     //outputPath += $"({maxVal:0.#0})";
-                    outputPath += $"({Math.Truncate(maxVal * 100) / 100})";
+
+                    const double DigitValue = 1000;
+                    outputPath += $"({Math.Truncate(maxVal * DigitValue) / DigitValue})";
 
                     outputPath += ".png";
                 }                
