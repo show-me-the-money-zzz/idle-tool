@@ -34,16 +34,14 @@ namespace IdleTool.Util
         //    return "";
         //}
 
-        public static string Read_Text(App __app, Rectangle __region, bool __isNumber = true, string __filename = "")
+        public static string Read_Text_byCaptured(Bitmap __bitmap, Rectangle __region, bool __isNumber = true, string __filename = "")
         {
             string ret = "";
 
-            var bmp_app = Util.CaptureTool.NewMake(__app);
-
             // 특정 영역 잘라내기
-            using (Bitmap croppedBitmap = CropBitmap(bmp_app, __region))
+            using (Bitmap croppedBitmap = CropBitmap(__bitmap, __region))
             {
-                if(!string.IsNullOrEmpty(__filename))
+                if (!string.IsNullOrEmpty(__filename))
                 {
                     var mat_app = Util.GFX.Bitmap_To_Mat_Direct(croppedBitmap);
                     mat_app.Save($"./OCRRead-{__filename} ({__region.X}, {__region.Y}) ({__region.Width} x {__region.Height}).png");
@@ -60,7 +58,7 @@ namespace IdleTool.Util
                     //}
                     using (var engine = new TesseractEngine(@"./tessdata", Langs, EngineMode.Default))
                     {
-                        if(__isNumber)
+                        if (__isNumber)
                             engine.SetVariable("tessedit_char_whitelist", "0123456789,./");
 
                         var page = engine.Process(PixConverter.ToPix(croppedBitmap));
@@ -72,9 +70,6 @@ namespace IdleTool.Util
                     }
                 }
             }
-
-            if (__isNumber)
-                ret = ret.Replace(",", "");
 
             return ret;
         }

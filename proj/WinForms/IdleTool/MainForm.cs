@@ -72,7 +72,9 @@ namespace IdleTool
 
             Rectangle textRegion = new Rectangle(220, 200, 110, 40);//현재 위치 텍스트
             textRegion = new Rectangle(200, 186, 100, 30);
-            Util.OCR.Read_Text(_appController, textRegion, __isNumber: false, __filename: "maplocation");
+
+            var bmp_app = Util.CaptureTool.NewMake(_appController);
+            Util.OCR.Read_Text_byCaptured(bmp_app, textRegion, __isNumber: false, __filename: "maplocation");
         }
         private void OnClick_Test4(object sender, EventArgs e)
         {
