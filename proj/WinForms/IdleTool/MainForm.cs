@@ -16,7 +16,6 @@ namespace IdleTool
             Setup_Title(__app);
             //{ Test_App(); }//DEV TEST
 
-            _statbar.Setup(__app, statusLabel_Potion);
             {
                 //foreach (ToolStripItem item in statusStrip.Items)
                 //    Console.WriteLine($"아이템: {item.Text}, 타입: {item.GetType()}");
@@ -24,11 +23,11 @@ namespace IdleTool
                 //statusStrip.Refresh();
 
                 statusLabel_State.Text = "게임 찾기 성공!!";
-
-                //statusLabel_HP.Text = $"HP ({150:#,###}/{7650:#,###})";
-                //statusLabel_HP.Text = $"HP {7650:#,###}";
-                //statusLabel_MP.Text = $"MP {1500:#,###}";
             }
+            _statbar.Setup(__app
+                , statusLabel_HP, statusLabel_MP
+                , statusLabel_Potion
+                );
         }
 
         void Setup_Title(Controller.App __app)
@@ -70,12 +69,13 @@ namespace IdleTool
         private void OnClick_Test3(object sender, EventArgs e)
         {
             //DEV.FormText.Find_TextEdit();
-        }
-        private void OnClick_Test4(object sender, EventArgs e)
-        {
+
             Rectangle textRegion = new Rectangle(220, 200, 110, 40);//현재 위치 텍스트
             textRegion = new Rectangle(200, 186, 100, 30);
             Util.OCR.Read_Text(_appController, textRegion, __isNumber: false, __filename: "maplocation");
+        }
+        private void OnClick_Test4(object sender, EventArgs e)
+        {
         }
 
         void Log_DetectResult(DEV.Tester0.Result_DetectIconImage __result)

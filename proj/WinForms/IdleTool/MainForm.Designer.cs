@@ -77,17 +77,18 @@ namespace IdleTool
             test_button3.Name = "test_button3";
             test_button3.Size = new Size(105, 23);
             test_button3.TabIndex = 3;
-            test_button3.Text = "포션 개수";
+            test_button3.Text = "한글 읽기";
             test_button3.UseVisualStyleBackColor = true;
             test_button3.Click += OnClick_Test3;
             // 
             // test_button4
             // 
+            test_button4.Enabled = false;
             test_button4.Location = new Point(123, 285);
             test_button4.Name = "test_button4";
             test_button4.Size = new Size(105, 23);
             test_button4.TabIndex = 4;
-            test_button4.Text = "한글 찾기";
+            test_button4.Text = "테스트";
             test_button4.UseVisualStyleBackColor = true;
             test_button4.Click += OnClick_Test4;
             // 
@@ -108,7 +109,6 @@ namespace IdleTool
             statusLabel_HP.ImageAlign = ContentAlignment.MiddleLeft;
             statusLabel_HP.Name = "statusLabel_HP";
             statusLabel_HP.Size = new Size(120, 17);
-            statusLabel_HP.Text = "체력";
             // 
             // statusLabel_MP
             // 
@@ -117,7 +117,6 @@ namespace IdleTool
             statusLabel_MP.ImageAlign = ContentAlignment.MiddleLeft;
             statusLabel_MP.Name = "statusLabel_MP";
             statusLabel_MP.Size = new Size(120, 17);
-            statusLabel_MP.Text = "마력";
             // 
             // statusLabel_Potion
             // 
@@ -126,7 +125,6 @@ namespace IdleTool
             statusLabel_Potion.ImageAlign = ContentAlignment.MiddleLeft;
             statusLabel_Potion.Name = "statusLabel_Potion";
             statusLabel_Potion.Size = new Size(120, 17);
-            statusLabel_Potion.Text = "";
             // 
             // statusLabel_State
             // 
