@@ -1,13 +1,9 @@
 namespace IdleTool
 {
-    using Cysharp.Threading.Tasks;
-    using Cysharp.Threading.Tasks.Linq;
-
     public partial class MainForm : Form
     {
         Controller.App _appController = null;
-
-        AsyncReactiveProperty<int> POTION { get; } = new AsyncReactiveProperty<int>(0);
+        Controller.StatBar _statbar = new Controller.StatBar();
 
         public MainForm(Controller.App __app)
         {
@@ -20,6 +16,7 @@ namespace IdleTool
             Setup_Title(__app);
             //{ Test_App(); }//DEV TEST
 
+            _statbar.Setup(__app, statusLabel_Potion);
             {
                 //foreach (ToolStripItem item in statusStrip.Items)
                 //    Console.WriteLine($"아이템: {item.Text}, 타입: {item.GetType()}");
@@ -29,17 +26,8 @@ namespace IdleTool
                 statusLabel_State.Text = "게임 찾기 성공!!";
 
                 //statusLabel_HP.Text = $"HP ({150:#,###}/{7650:#,###})";
-                statusLabel_HP.Text = $"HP {7650:#,###}";
-                statusLabel_MP.Text = $"MP {1500:#,###}";
-                statusLabel_Potion.Text = $"물약 {1118:#,###}";
-            }
-
-            {
-                Update_Potion().Forget();
-
-                POTION.Subscribe(v => {
-                    statusLabel_Potion.Text = $"물약 {v:#,###}";
-                });
+                //statusLabel_HP.Text = $"HP {7650:#,###}";
+                //statusLabel_MP.Text = $"MP {1500:#,###}";
             }
         }
 
@@ -54,33 +42,6 @@ namespace IdleTool
             }
 
             this.Text = title;
-        }
-
-        async UniTask Update_Potion()
-        {
-            Rectangle textRegion = new Rectangle(550, 1045, 60, 20);//potion
-            //textRegion = new Rectangle(590, 1050, 56, 20);//ZZUNY+중간
-
-            while (true)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1.0d));
-                //Console.WriteLine($"Tick: {DateTime.Now}");
-
-                var potion = Util.OCR.Read_Text(_appController, textRegion, __isNumber: true
-                    //, __filename: "potion"
-                    );
-                {
-                    int outvalue = 0;
-                    if (int.TryParse(potion, out outvalue))
-                    {
-                        POTION.Value = outvalue;
-                    }
-                    else
-                    {
-                        statusLabel_Potion.Text = "물약 (실패)";
-                    }
-                }
-            }
         }
 
         void Test_App()

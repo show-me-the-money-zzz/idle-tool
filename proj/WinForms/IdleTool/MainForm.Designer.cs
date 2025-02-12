@@ -126,7 +126,7 @@ namespace IdleTool
             statusLabel_Potion.ImageAlign = ContentAlignment.MiddleLeft;
             statusLabel_Potion.Name = "statusLabel_Potion";
             statusLabel_Potion.Size = new Size(120, 17);
-            statusLabel_Potion.Text = "물약";
+            statusLabel_Potion.Text = "";
             // 
             // statusLabel_State
             // 
