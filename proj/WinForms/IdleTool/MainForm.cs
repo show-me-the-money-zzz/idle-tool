@@ -1,13 +1,13 @@
-using Emgu.CV.CvEnum;
-using System.Windows.Forms;
-
 namespace IdleTool
 {
+    using Cysharp.Threading.Tasks;
+    using Cysharp.Threading.Tasks.Linq;
+
     public partial class MainForm : Form
     {
         Controller.App _appController = null;
 
-        int _count = 0;
+        AsyncReactiveProperty<int> POTION { get; } = new AsyncReactiveProperty<int>(0);
 
         public MainForm(Controller.App __app)
         {
@@ -32,6 +32,39 @@ namespace IdleTool
                 statusLabel_MP.Text = $"MP {1500:#,###}";
                 statusLabel_Potion.Text = $"물약 {1118:#,###}";
             }
+
+            {
+                Update_Potion().Forget();
+
+                POTION.Subscribe(v => {
+                    statusLabel_Potion.Text = $"물약 {v:#,###}";
+                });
+            }
+        }
+
+        async UniTask Update_Potion()
+        {
+            Rectangle textRegion = new Rectangle(550, 1045, 60, 20);//potion
+            //textRegion = new Rectangle(590, 1050, 56, 20);//ZZUNY+중간
+
+            while (true)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1.0d));
+                //Console.WriteLine($"Tick: {DateTime.Now}");
+
+                var potion = Util.OCR.Read_Text(_appController, textRegion, __isNumber: true, __filename: "potion");
+                {
+                    int outvalue = 0;
+                    if (int.TryParse(potion, out outvalue))
+                    {
+                        POTION.Value = outvalue;
+                    }
+                    else
+                    {
+                        statusLabel_Potion.Text = "물약 (실패)";
+                    }
+                }
+            }
         }
 
         void Test_App()
@@ -48,8 +81,8 @@ namespace IdleTool
 
         private void OnClick_Test1(object sender, EventArgs e)
         {
-            _count += 1;
-            TXT_Logger.Text = $"클릭 {_count}\r\n테스트";
+            //_count += 1;
+            //TXT_Logger.Text = $"클릭 {_count}\r\n테스트";
 
             Log_DetectResult(DEV.Tester0.Detect_IconImage_byLocal(_appController, "icon-worldmap"));
         }
