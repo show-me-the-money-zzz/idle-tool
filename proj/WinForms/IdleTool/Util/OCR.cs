@@ -43,6 +43,7 @@ namespace IdleTool.Util
             // 특정 영역 잘라내기
             using (Bitmap croppedBitmap = CropBitmap(bmp_app, __region))
             {
+                if(!string.IsNullOrEmpty(__filename))
                 {
                     var mat_app = Util.GFX.Bitmap_To_Mat_Direct(croppedBitmap);
                     mat_app.Save($"./OCRRead-{__filename} ({__region.X}, {__region.Y}) ({__region.Width} x {__region.Height}).png");
@@ -65,7 +66,9 @@ namespace IdleTool.Util
                         var page = engine.Process(PixConverter.ToPix(croppedBitmap));
 
                         ret = page.GetText().Trim();
-                        Console.WriteLine($"OCR({__filename}): {ret}");
+
+                        if (!string.IsNullOrEmpty(__filename))
+                            Console.WriteLine($"OCR({__filename}): {ret}");
                     }
                 }
             }

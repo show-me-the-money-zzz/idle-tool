@@ -52,7 +52,9 @@ namespace IdleTool
                 await Task.Delay(TimeSpan.FromSeconds(1.0d));
                 //Console.WriteLine($"Tick: {DateTime.Now}");
 
-                var potion = Util.OCR.Read_Text(_appController, textRegion, __isNumber: true, __filename: "potion");
+                var potion = Util.OCR.Read_Text(_appController, textRegion, __isNumber: true
+                    //, __filename: "potion"
+                    );
                 {
                     int outvalue = 0;
                     if (int.TryParse(potion, out outvalue))
@@ -93,25 +95,6 @@ namespace IdleTool
         private void OnClick_Test3(object sender, EventArgs e)
         {
             //DEV.FormText.Find_TextEdit();
-
-            Rectangle textRegion = new Rectangle(550, 1045, 60, 20);//potion
-            //textRegion = new Rectangle(590, 1050, 56, 20);//ZZUNY+중간
-            //{//HP
-            //    textRegion = new Rectangle(62, 54, 210, 25);//ZZUNY+중간
-
-            //    {//MP
-            //        textRegion = new Rectangle(62, 78, 210, 25);//ZZUNY+중간
-            //    }
-            //}
-
-            var potion = Util.OCR.Read_Text(_appController, textRegion, __isNumber: true, __filename: "potion");
-            {
-                int outvalue = 0;
-                if (int.TryParse(potion, out outvalue))
-                {
-                    statusLabel_Potion.Text = $"물약 {outvalue:#,###}";
-                }
-            }
         }
         private void OnClick_Test4(object sender, EventArgs e)
         {
