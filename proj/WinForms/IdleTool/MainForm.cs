@@ -61,8 +61,8 @@ namespace IdleTool
         {
             //DEV.FormText.Find_TextEdit();
 
-            Rectangle textRegion = new Rectangle(538, 1043, 86, 22);//potion
-            textRegion = new Rectangle(590, 1050, 56, 20);//ZZUNY+중간
+            Rectangle textRegion = new Rectangle(550, 1045, 60, 20);//potion
+            //textRegion = new Rectangle(590, 1050, 56, 20);//ZZUNY+중간
             //{//HP
             //    textRegion = new Rectangle(62, 54, 210, 25);//ZZUNY+중간
 
