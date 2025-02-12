@@ -51,18 +51,26 @@
 
         //public void Set_Potion(int __potion) => POTION.Value = __potion;
 
-        int? Parse_Number(string __var, bool __isHPMP = false)
+        void Parse_Number(AsyncReactiveProperty<int?> __rp, string __var, bool __isHPMP)
         {
+            if (string.IsNullOrEmpty(__var))
+            {
+                __rp.Value = null;
+                return;
+            }
+
             __var = __var.Replace(",", "");
 
-            if(__isHPMP)
+            if (__isHPMP)
                 __var = __var.Split("/")[0];
 
-            int ret = 0;
-            if (int.TryParse(__var, out ret))
-                return ret;
-            else
-                return null;
+            int parsevar = 0;
+
+            if (int.TryParse(__var, out parsevar))
+            {
+                __rp.Value = parsevar;
+            }
+            else __rp.Value = null;
         }
 
         async UniTask Update_Stat()
@@ -84,19 +92,19 @@
                 var potion = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_Potion, __isNumber: true
                     //, __filename: "potion"
                     );
-                POTION.Value = string.IsNullOrEmpty(potion) ? null : Parse_Number(potion, false);
+                Parse_Number(POTION, potion, false);
 
                 //HP
                 var hp = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_HP, __isNumber: true
                     //, __filename: "hp"
                     );
-                HP.Value = string.IsNullOrEmpty(hp) ? null : Parse_Number(hp, true);
+                Parse_Number(HP, hp, true);
 
                 //MP
                 var mp = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_MP, __isNumber: true
                     //, __filename: "mp"
                     );
-                MP.Value = string.IsNullOrEmpty(mp) ? null : Parse_Number(mp, true);
+                Parse_Number(MP, mp, true);
             }
         }
     }
