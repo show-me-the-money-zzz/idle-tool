@@ -11,9 +11,9 @@
         ToolStripStatusLabel _LBL_MP = null;
         ToolStripStatusLabel _LBL_Potion = null;
 
-        AsyncReactiveProperty<int> HP { get; } = new AsyncReactiveProperty<int>(0);
-        AsyncReactiveProperty<int> MP { get; } = new AsyncReactiveProperty<int>(0);
-        AsyncReactiveProperty<int> POTION { get; } = new AsyncReactiveProperty<int>(0);
+        AsyncReactiveProperty<int?> HP { get; } = new AsyncReactiveProperty<int?>(default(int));
+        AsyncReactiveProperty<int?> MP { get; } = new AsyncReactiveProperty<int?>(default(int));
+        AsyncReactiveProperty<int?> POTION { get; } = new AsyncReactiveProperty<int?>(default(int));
 
         public void Setup(App __app
             , ToolStripStatusLabel __lbl_hp, ToolStripStatusLabel __lbl_mp
@@ -34,15 +34,25 @@
         void Setup_Subscibe()
         {
             HP.Subscribe(v => {
-                _LBL_HP.Text = $"HP {v:#,###}";
+                Update_StatText(_LBL_HP, "HP", v);
             });
             MP.Subscribe(v => {
-                _LBL_MP.Text = $"MP {v:#,###}";
+                Update_StatText(_LBL_MP, "MP", v);
             });
 
             POTION.Subscribe(v => {
-                _LBL_Potion.Text = $"물약 {v:#,###}";
+                Update_StatText(_LBL_Potion, "물약", v);
             });
+        }
+
+        void Update_StatText(ToolStripStatusLabel __lable, string __kind, int? __value)
+        {
+            string text = $"{__kind} ";
+
+            if (null == __value) text += "(읽기실패)";
+            else text += $"{__value:#,###}";
+
+            __lable.Text = text;
         }
 
         //public void Set_Potion(int __potion) => POTION.Value = __potion;
@@ -80,37 +90,22 @@
                 var potion = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_Potion, __isNumber: true
                     //, __filename: "potion"
                     );
-
-                var num_potion = Parse_Number(potion, false);
-                if (null == num_potion) _LBL_Potion.Text = "물약 (실패)";
-                else
-                {
-                    POTION.Value = num_potion ?? 0;
-                }
+                if (string.IsNullOrEmpty(potion)) POTION.Value = null;
+                else POTION.Value = Parse_Number(potion, false);
 
                 //HP
                 var hp = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_HP, __isNumber: true
                     //, __filename: "hp"
                     );
-
-                var num_hp = Parse_Number(hp, true);
-                if (null == num_hp) _LBL_HP.Text = "HP (실패)";
-                else
-                {
-                    HP.Value = num_hp ?? 0;
-                }
+                if (string.IsNullOrEmpty(hp)) HP.Value = null;
+                else HP.Value = Parse_Number(hp, true);
 
                 //MP
                 var mp = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_MP, __isNumber: true
                     //, __filename: "mp"
                     );
-
-                var num_mp = Parse_Number(mp, true);
-                if (null == num_mp) _LBL_MP.Text = "MP (실패)";
-                else
-                {
-                    MP.Value = num_mp ?? 0;
-                }
+                if (string.IsNullOrEmpty(mp)) MP.Value = null;
+                else MP.Value = Parse_Number(mp, true);
             }
         }
     }
