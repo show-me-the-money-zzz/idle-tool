@@ -151,7 +151,7 @@ namespace IdleTool
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             Name = "MainForm";
-            Text = "쇼미더머니 - 로드나인";
+            Text = "쇼미더머니";
             KeyDown += Processs_KeyDown;
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();

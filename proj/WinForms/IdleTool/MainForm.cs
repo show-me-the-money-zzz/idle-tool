@@ -17,6 +17,7 @@ namespace IdleTool
             //https://free-sounds.tistory.com/39
 
             _appController = __app;
+            Setup_Title(__app);
             //{ Test_App(); }//DEV TEST
 
             {
@@ -40,6 +41,19 @@ namespace IdleTool
                     statusLabel_Potion.Text = $"물약 {v:#,###}";
                 });
             }
+        }
+
+        void Setup_Title(Controller.App __app)
+        {
+            string title = "쇼미더머니";
+            title += $" - {Common.Defines.AppName}";
+            {
+                var rect = __app.Capture_Rect();
+                title += $" |   위치: {rect.Left}, {rect.Top}";
+                title += $" |   크기: {rect.Width} x {rect.Height}";
+            }
+
+            this.Text = title;
         }
 
         async UniTask Update_Potion()

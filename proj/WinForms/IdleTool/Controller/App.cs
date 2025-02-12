@@ -18,6 +18,8 @@
         public int PID => (null == _process) ? 0 : _process.Id;
         public string ProcessName => (null == _process) ? "__NONE__" : _process.ProcessName;
 
+        public Common.Types.RECT CAPT_RECT => Util.Importer.Get_AppRect(HANDLE);
+
         public bool Detect()
         {
             Process[] processes = Process.GetProcessesByName(Common.Defines.AppName);
@@ -48,15 +50,15 @@
 
         public Common.Types.RECT Capture_Rect()//Get_Rect
         {
-            Common.Types.RECT rect = Util.Importer.Get_AppRect(HANDLE);
+            Common.Types.RECT rect = CAPT_RECT;
             //var size = rect.Get_Size();
 
-#if DEBUG
-            Console.WriteLine($"창 위치: ({rect.Left}, {rect.Top})");
-            Console.WriteLine($"창 크기: {rect.Width}x{rect.Height}");
+//#if DEBUG
+//            Console.WriteLine($"창 위치: ({rect.Left}, {rect.Top})");
+//            Console.WriteLine($"창 크기: {rect.Width}x{rect.Height}");
 
-            //if (rect.IsValid) Util.CaptureTool.NewMake(rect, "app-1st-test");
-#endif
+//            //if (rect.IsValid) Util.CaptureTool.NewMake(rect, "app-1st-test");
+//#endif
 
             return rect;
         }
