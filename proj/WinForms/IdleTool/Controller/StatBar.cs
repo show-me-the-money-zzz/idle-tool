@@ -33,16 +33,10 @@
 
         void Setup_Subscibe()
         {
-            HP.Subscribe(v => {
-                Update_StatText(_LBL_HP, "HP", v);
-            });
-            MP.Subscribe(v => {
-                Update_StatText(_LBL_MP, "MP", v);
-            });
+            HP.Subscribe(v => Update_StatText(_LBL_HP, "HP", v));
+            MP.Subscribe(v => Update_StatText(_LBL_MP, "MP", v));
 
-            POTION.Subscribe(v => {
-                Update_StatText(_LBL_Potion, "물약", v);
-            });
+            POTION.Subscribe(v => Update_StatText(_LBL_Potion, "물약", v));
         }
 
         void Update_StatText(ToolStripStatusLabel __lable, string __kind, int? __value)
@@ -90,22 +84,19 @@
                 var potion = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_Potion, __isNumber: true
                     //, __filename: "potion"
                     );
-                if (string.IsNullOrEmpty(potion)) POTION.Value = null;
-                else POTION.Value = Parse_Number(potion, false);
+                POTION.Value = string.IsNullOrEmpty(potion) ? null : Parse_Number(potion, false);
 
                 //HP
                 var hp = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_HP, __isNumber: true
                     //, __filename: "hp"
                     );
-                if (string.IsNullOrEmpty(hp)) HP.Value = null;
-                else HP.Value = Parse_Number(hp, true);
+                HP.Value = string.IsNullOrEmpty(hp) ? null : Parse_Number(hp, true);
 
                 //MP
                 var mp = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_MP, __isNumber: true
                     //, __filename: "mp"
                     );
-                if (string.IsNullOrEmpty(mp)) MP.Value = null;
-                else MP.Value = Parse_Number(mp, true);
+                MP.Value = string.IsNullOrEmpty(mp) ? null : Parse_Number(mp, true);
             }
         }
     }
