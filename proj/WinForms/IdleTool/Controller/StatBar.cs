@@ -81,9 +81,13 @@
             Rectangle textRegion_HP = new Rectangle(64, 58, 306, 26);
             Rectangle textRegion_MP = new Rectangle(64, 84, 306, 26);
 
+            double TICK = 1.0d;
+            //{ TICK = 0.05d; }
+            //{ TICK = 0.001d; }
+
             while (true)
             {
-                await Task.Delay(TimeSpan.FromSeconds(1.0d));
+                await Task.Delay(TimeSpan.FromSeconds(TICK));
                 //Console.WriteLine($"Tick: {DateTime.Now}");
 
                 var bmp_app = Util.CaptureTool.NewMake(_app);
