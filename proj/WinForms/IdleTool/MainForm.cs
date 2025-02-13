@@ -1,5 +1,8 @@
 namespace IdleTool
 {
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+
     public partial class MainForm : Form
     {
         Controller.App _appController = null;
@@ -8,7 +11,30 @@ namespace IdleTool
         public MainForm(Controller.App __app)
         {
             InitializeComponent();
+            {
+                string path = @"./data.json";
 
+                ////쓰기
+                //JObject jobj = new JObject(
+                //    new JProperty("text_area_potion", "0, 0, 0, 0"),
+                //    new JProperty("text_area_hp", "0, 0, 0, 0"),
+                //    new JProperty("text_area_mp", "0, 0, 0, 0")
+                //    );
+                //File.WriteAllText(path, jobj.ToString());
+
+                ////읽기
+                using (StreamReader file = File.OpenText(path))
+                {
+                    using (JsonTextReader reader = new JsonTextReader(file))
+                    {
+                        JObject json = (JObject)JToken.ReadFrom(reader);
+
+                        Console.WriteLine(json["text_area_potion"].ToString());
+                        Console.WriteLine(json["text_area_hp"].ToString());
+                        Console.WriteLine(json["text_area_mp"].ToString());
+                    }
+                }
+            }            
 
             KeyPreview = true;//키 입력 안 먹을 때
             //https://free-sounds.tistory.com/39
