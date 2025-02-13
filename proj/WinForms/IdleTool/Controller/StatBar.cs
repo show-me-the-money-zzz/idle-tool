@@ -83,7 +83,7 @@
 
             double TICK = 1.0d;
             //{ TICK = 0.05d; }
-            //{ TICK = 0.001d; }
+            { TICK = 0.001d; }
 
             while (true)
             {
@@ -92,19 +92,19 @@
 
                 var bmp_app = Util.CaptureTool.NewMake(_app);
 
-                //POTION
+                ////POTION
                 var potion = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_Potion, __isNumber: true
                     //, __filename: "potion"
                     );
                 Parse_Number(POTION, potion, false);
 
-                //HP
+                ////HP
                 var hp = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_HP, __isNumber: true
                     //, __filename: "hp"
                     );
                 Parse_Number(HP, hp, true);
 
-                //MP
+                ////MP
                 var mp = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_MP, __isNumber: true
                     //, __filename: "mp"
                     );
