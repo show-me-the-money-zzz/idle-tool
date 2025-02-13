@@ -1,7 +1,6 @@
 ﻿namespace IdleTool.Controller
 {
     using System.Diagnostics;
-    using System.Drawing.Imaging;
 
     public class App
     {

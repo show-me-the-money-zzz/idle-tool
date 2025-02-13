@@ -6,12 +6,14 @@
     {
         #region [DC]
         [DllImport("user32.dll")] static extern IntPtr GetWindowDC(IntPtr hWnd);
+        [DllImport("user32.dll")] static extern IntPtr GetDC(IntPtr hWnd);
         [DllImport("user32.dll")] static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
         [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hWnd);
 
         ////
-        public static IntPtr Get_DC(IntPtr __hwnd) => GetWindowDC(__hwnd);
+        public static IntPtr Get_WindowDC(IntPtr __hwnd) => GetWindowDC(__hwnd);
+        public static IntPtr Get_DC(IntPtr __hwnd) => GetDC(__hwnd);
         public static int Release_DC(IntPtr __hwnd, IntPtr __hdc) => ReleaseDC(__hwnd, __hdc);
         #endregion
 
