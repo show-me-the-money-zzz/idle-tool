@@ -76,10 +76,12 @@
         async UniTask Update_Stat()
         {
             Rectangle textRegion_Potion = new Rectangle(550, 1045, 60, 20);//potion
-            //textRegion = new Rectangle(590, 1050, 56, 20);//ZZUNY+중간
+            //{ textRegion_Potion = new Rectangle(590, 1050, 56, 20); }//ZZUNY+중간
 
             Rectangle textRegion_HP = new Rectangle(64, 58, 306, 26);
+            //{ textRegion_HP = new Rectangle(60, 56, 240, 22); }//ZZUNY+중간
             Rectangle textRegion_MP = new Rectangle(64, 84, 306, 26);
+            //{ textRegion_MP = new Rectangle(60, 80, 240, 22); }//ZZUNY+중간
 
             double TICK = 1.0d;
             //{ TICK = 0.05d; }
