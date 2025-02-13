@@ -38,9 +38,23 @@
             // 특정 영역 잘라내기
             using (Bitmap croppedBitmap = Util.GFX.CropBitmap(__bitmap, __region))
             {
+                //using (Graphics g = Graphics.FromImage(croppedBitmap))
+                //{//간단한 노이즈 제거 (Gaussian 블러 적용)
+                //    g.DrawImage(croppedBitmap, 0, 0);
+                //}
+
                 if (!string.IsNullOrEmpty(__filename))
                 {
                     var mat_app = Util.GFX.Bitmap_To_Mat_Direct(croppedBitmap);
+
+                    //// 1. 노이즈 제거 (Gaussian Blur 적용)
+                    //Mat denoisedImage = new Mat();
+                    //CvInvoke.GaussianBlur(mat_app, denoisedImage, new System.Drawing.Size(5, 5), 1.5);
+
+                    //// 2. 색 반전
+                    //Mat invertedImage = new Mat();
+                    //CvInvoke.BitwiseNot(mat_app, invertedImage);
+
                     mat_app.Save($"./OCRRead-{__filename} ({__region.X}, {__region.Y}) ({__region.Width} x {__region.Height}).png");
                 }
 
