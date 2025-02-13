@@ -8,6 +8,8 @@
         [DllImport("user32.dll")] static extern IntPtr GetWindowDC(IntPtr hWnd);
         [DllImport("user32.dll")] static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
+        [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hWnd);
+
         ////
         public static IntPtr Get_DC(IntPtr __hwnd) => GetWindowDC(__hwnd);
         public static int Release_DC(IntPtr __hwnd, IntPtr __hdc) => ReleaseDC(__hwnd, __hdc);
@@ -24,5 +26,11 @@
             return ret;
         }
         #endregion
+
+        public static void Focusing_App(Controller.App __app)
+        {
+            SetForegroundWindow(__app.HANDLE);
+            System.Threading.Thread.Sleep(100);
+        }
     }
 }

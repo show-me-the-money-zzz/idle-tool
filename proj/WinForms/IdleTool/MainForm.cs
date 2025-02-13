@@ -15,6 +15,7 @@ namespace IdleTool
             _appController = __app;
             Setup_Title(__app);
             //{ Test_App(); }//DEV TEST
+            Util.Importer.Focusing_App(__app);
 
             {
                 //foreach (ToolStripItem item in statusStrip.Items)
