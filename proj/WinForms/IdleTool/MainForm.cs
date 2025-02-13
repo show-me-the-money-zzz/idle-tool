@@ -9,6 +9,7 @@ namespace IdleTool
         {
             InitializeComponent();
 
+
             KeyPreview = true;//키 입력 안 먹을 때
             //https://free-sounds.tistory.com/39
 
@@ -76,7 +77,6 @@ namespace IdleTool
 
             var bmp_app = Util.CaptureTool.NewMake(_appController);
             var str = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion, __isNumber: false, __filename: "maplocation");
-
             Console.WriteLine($"OCR: {str}");
         }
         private void OnClick_Test4(object sender, EventArgs e)

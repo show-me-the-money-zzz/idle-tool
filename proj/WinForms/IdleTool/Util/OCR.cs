@@ -113,5 +113,24 @@
 
             return ret;
         }
+
+        //public static string Read_Text_byCaptured_IronOCR(Bitmap __bitmap, Rectangle __region)
+        //{
+        //    var ocr = new IronTesseract();
+
+        //    using (Bitmap croppedBitmap = Util.GFX.CropBitmap(__bitmap, __region))
+        //    {
+        //        using (var input = new OcrInput(croppedBitmap))
+        //        {
+        //            input.DeNoise();          // 이미지 노이즈 제거
+        //            input.Deskew();           // 이미지 정렬 (기울어진 텍스트 수정)
+        //            input.Invert();           // 색 반전 (흰 배경, 검은 글씨로 변경)
+
+        //            OcrResult result = ocr.Read(input);
+        //            Console.WriteLine(result.Text);
+        //        }
+        //    }
+        //    return "";
+        //}
     }
 }
