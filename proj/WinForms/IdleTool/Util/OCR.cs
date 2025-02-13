@@ -1,11 +1,8 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-
-namespace IdleTool.Util
+﻿namespace IdleTool.Util
 {
-    using IdleTool.Controller;
+    using Emgu.CV.OCR;
+    using Emgu.CV.Structure;
+    using Emgu.CV;
     using Tesseract;
 
     internal class OCR
@@ -39,7 +36,7 @@ namespace IdleTool.Util
             string ret = "";
 
             // 특정 영역 잘라내기
-            using (Bitmap croppedBitmap = CropBitmap(__bitmap, __region))
+            using (Bitmap croppedBitmap = Util.GFX.CropBitmap(__bitmap, __region))
             {
                 if (!string.IsNullOrEmpty(__filename))
                 {
@@ -50,54 +47,71 @@ namespace IdleTool.Util
                 // Bitmap을 Pix로 변환
                 //using (Pix img = ConvertBitmapToPix(croppedBitmap))
                 {
-                    var Langs = "eng+kor+kor_vert";
-                    //{
-                    //    Langs = "kor";
-                    //    Langs = "kor_vert";
-                    //    Langs = "kor+kor_vert";
-                    //}
-                    using (var engine = new TesseractEngine(@"./tessdata", Langs, EngineMode.Default))
-                    {
-                        if (__isNumber)
-                            engine.SetVariable("tessedit_char_whitelist", "0123456789,./");
-
-                        var page = engine.Process(PixConverter.ToPix(croppedBitmap));
-
-                        ret = page.GetText().Trim();
-
-                        if (!string.IsNullOrEmpty(__filename))
-                            Console.WriteLine($"OCR({__filename}): {ret}");
-                    }
+                    ret = Process_Tesseract(croppedBitmap, __isNumber, __filename);
+                    //ret = Process_Tesseract2(croppedBitmap, __isNumber, __filename);
                 }
             }
 
             return ret;
         }
 
-        /// <summary>
-        /// 특정 영역을 잘라서 새로운 Bitmap 생성
-        /// </summary>
-        static Bitmap CropBitmap(Bitmap source, Rectangle region)
+        const string Path_Tessdata = @"./tessdata";
+        static string Get_Langs()
         {
-            Bitmap cropped = new Bitmap(region.Width, region.Height);
-            using (Graphics g = Graphics.FromImage(cropped))
-            {
-                g.DrawImage(source, new Rectangle(0, 0, region.Width, region.Height), region, GraphicsUnit.Pixel);
-            }
-            return cropped;
+            var ret = "eng+kor+kor_vert";
+            //{
+            //    Langs = "kor";
+            //    Langs = "kor_vert";
+            //    Langs = "kor+kor_vert";
+            //}
+            return ret;
         }
+        static string Process_Tesseract(Bitmap __bitmap, bool __isNumber, string __tag)
+        {
+            string ret = "";
 
-        ///// <summary>
-        ///// PixConverter 없이 Bitmap을 Pix로 변환
-        ///// </summary>
-        //static Pix ConvertBitmapToPix(Bitmap bmp)
-        //{
-        //    using (MemoryStream ms = new MemoryStream())
-        //    {
-        //        bmp.Save(ms, ImageFormat.Png); // PNG 형식으로 저장 후 메모리에 로드
-        //        ms.Position = 0;
-        //        return Pix.LoadFromMemory(ms.ToArray());
-        //    }
-        //}
+            using (var engine = new TesseractEngine(Path_Tessdata, Get_Langs(), EngineMode.Default))
+            {
+                if (__isNumber)
+                    engine.SetVariable("tessedit_char_whitelist", "0123456789,./");
+
+                var page = engine.Process(PixConverter.ToPix(__bitmap));
+
+                ret = page.GetText().Trim();
+
+                if (!string.IsNullOrEmpty(__tag))
+                    Console.WriteLine($"OCR({__tag}): {ret}");
+            }
+
+            return ret;
+        }
+        static string Process_Tesseract2(Bitmap __bitmap, bool __isNumber, string __tag)
+        {
+            string ret = "";
+
+            //using (Tesseract ocr = new Tesseract(@"C:\Program Files\Tesseract-OCR\tessdata", "eng", OcrEngineMode.TesseractLstmCombined))
+            //{
+            //    Image<Bgr, byte> img = new Image<Bgr, byte>(image);
+            //    ocr.SetImage(img);
+            //    ocr.Recognize();
+            //    return ocr.GetUTF8Text();
+            //}
+            using (Tesseract ocr = new Tesseract(Path_Tessdata, Get_Langs(), OcrEngineMode.TesseractLstmCombined))
+            {
+                Mat mat = Util.GFX.Bitmap_To_Mat_Direct(__bitmap);
+                //Image<Bgr, byte> img = new Image<Bgr, byte>(croppedBitmap);                        
+                Image<Bgr, byte> img = mat.ToImage<Bgr, byte>();
+                ocr.SetImage(img);
+                ocr.Recognize();
+                ret = ocr.GetUTF8Text();
+
+                ret = ret.Replace("\r\n", ""); // "\r\n" 제거
+
+                if (!string.IsNullOrEmpty(__tag))
+                    Console.WriteLine($"OCR({__tag}): {ret}");
+            }
+
+            return ret;
+        }
     }
 }

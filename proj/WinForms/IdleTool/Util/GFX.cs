@@ -121,5 +121,41 @@
                 bitmap.UnlockBits(bitmapData);
             }
         }
+        //public static Mat BitmapToMat(Bitmap bitmap)
+        //{
+        //    // Bitmap 데이터를 Mat으로 변환
+        //    Mat mat = new Mat();
+        //    using (Image<Bgr, byte> temp = bitmap.ToImage<Bgr, byte>())
+        //    {
+        //        mat = temp.Mat.Clone();
+        //    }
+        //    return mat;
+        //}
+
+        /// <summary>
+        /// 특정 영역을 잘라서 새로운 Bitmap 생성
+        /// </summary>
+        public static Bitmap CropBitmap(Bitmap source, Rectangle region)
+        {
+            Bitmap cropped = new Bitmap(region.Width, region.Height);
+            using (Graphics g = Graphics.FromImage(cropped))
+            {
+                g.DrawImage(source, new Rectangle(0, 0, region.Width, region.Height), region, GraphicsUnit.Pixel);
+            }
+            return cropped;
+        }
+
+        ///// <summary>
+        ///// PixConverter 없이 Bitmap을 Pix로 변환
+        ///// </summary>
+        //static Pix ConvertBitmapToPix(Bitmap bmp)
+        //{
+        //    using (MemoryStream ms = new MemoryStream())
+        //    {
+        //        bmp.Save(ms, ImageFormat.Png); // PNG 형식으로 저장 후 메모리에 로드
+        //        ms.Position = 0;
+        //        return Pix.LoadFromMemory(ms.ToArray());
+        //    }
+        //}
     }
 }
