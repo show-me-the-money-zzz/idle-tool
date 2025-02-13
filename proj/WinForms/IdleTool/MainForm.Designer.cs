@@ -30,6 +30,7 @@ namespace IdleTool
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             test_button1 = new Button();
             TXT_Logger = new TextBox();
             test_button2 = new Button();
@@ -147,6 +148,7 @@ namespace IdleTool
             Controls.Add(TXT_Logger);
             Controls.Add(test_button1);
             FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "MainForm";
             Text = "쇼미더머니";
