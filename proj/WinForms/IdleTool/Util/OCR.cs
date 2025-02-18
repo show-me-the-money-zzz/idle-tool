@@ -58,7 +58,7 @@
                     mat_app.Save($"./OCRRead-{__filename} ({__region.X}, {__region.Y}) ({__region.Width} x {__region.Height}).png");
                 }
 
-                // Bitmap을 Pix로 변환
+                //// Bitmap을 Pix로 변환
                 //using (Pix img = ConvertBitmapToPix(croppedBitmap))
                 {
                     ret = Process_Tesseract(croppedBitmap, __isNumber, __filename);
@@ -128,6 +128,7 @@
             return ret;
         }
 
+        //using IronOcr;
         //public static string Read_Text_byCaptured_IronOCR(Bitmap __bitmap, Rectangle __region)
         //{
         //    var ocr = new IronTesseract();
@@ -144,6 +145,21 @@
         //            Console.WriteLine(result.Text);
         //        }
         //    }
+
+        //    //{
+        //    //    using (var input = new OcrInput())
+        //    //    {
+        //    //        input.LoadImage(croppedBitmap);
+        //    //        {
+        //    //            input.DeNoise();          // 이미지 노이즈 제거
+        //    //                                      //input.Deskew();           // 이미지 정렬 (기울어진 텍스트 수정)
+        //    //                                      //input.Invert();           // 색 반전 (흰 배경, 검은 글씨로 변경)
+        //    //        }
+        //    //        var result = ocr.Read(input);
+        //    //        //ret = result.Text;
+        //    //    }
+
+        //    //}
         //    return "";
         //}
     }
