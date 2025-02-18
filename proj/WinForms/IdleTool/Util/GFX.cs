@@ -132,6 +132,33 @@
         //    return mat;
         //}
 
+        public static Bitmap Mat_To_Bitmap(Mat mat)
+        {
+            // 1. Mat이 비어 있는지 확인
+            if (mat.IsEmpty)
+                throw new ArgumentException("입력된 Mat이 비어 있습니다.");
+
+            // 2. Bitmap 생성 (24비트 RGB 형식)
+            Bitmap bitmap = new Bitmap(mat.Width, mat.Height, PixelFormat.Format24bppRgb);
+            Rectangle rect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
+            BitmapData bmpData = bitmap.LockBits(rect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
+
+            // 3. Mat을 RGB로 변환 (OpenCV는 기본적으로 BGR 사용)
+            Mat rgbMat = new Mat();
+            CvInvoke.CvtColor(mat, rgbMat, ColorConversion.Bgr2Rgb);
+
+            // 4. Mat 데이터를 byte[]로 변환
+            int bytes = rgbMat.Width * rgbMat.Height * 3; // 3채널 (RGB)
+            byte[] imageData = new byte[bytes];
+            Marshal.Copy(rgbMat.DataPointer, imageData, 0, bytes);
+
+            // 5. byte[] 데이터를 Bitmap에 복사
+            Marshal.Copy(imageData, 0, bmpData.Scan0, bytes);
+            bitmap.UnlockBits(bmpData);
+
+            return bitmap;
+        }
+
         /// <summary>
         /// 특정 영역을 잘라서 새로운 Bitmap 생성
         /// </summary>
