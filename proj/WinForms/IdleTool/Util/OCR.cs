@@ -45,8 +45,8 @@
                 ////노이즈 제거.. MedianBlur가 작은 커널 크기에서는 경계를 유지하지 못하기 때문에 부적절
                 //var remove_noise = Remove_Noise(croppedBitmap, __region, __filename);
 
-                //GaussianBlur + AdaptiveThreshold
-                ////var ga = GaussianBlur_N_AdaptiveThreshold(croppedBitmap, __region, __filename);
+                ////GaussianBlur + AdaptiveThreshold
+                //var ga = GaussianBlur_N_AdaptiveThreshold(croppedBitmap, __region, __filename);
 
                 if (!string.IsNullOrEmpty(__filename))
                 {
@@ -78,9 +78,16 @@
         {
             Mat mat = Util.GFX.Bitmap_To_Mat_Direct(__srcBitmap);
 
+            //{// ! Grayscale 변환
+            //    Mat hsvImage = new Mat();
+            //    CvInvoke.CvtColor(mat, hsvImage, ColorConversion.Bgr2Gray);
+            //    //{ CvInvoke.Imwrite($"./gray-{__filename}.png", hsvImage); }//필터링된 이미지 저장
+            //}
+
             // ! BGR -> HSV 변환
             Mat hsvImage = new Mat();
             CvInvoke.CvtColor(mat, hsvImage, Emgu.CV.CvEnum.ColorConversion.Bgr2Hsv);
+            //{ CvInvoke.Imwrite($"./hsv-{__filename}.png", hsvImage); }
 
             // ! 흰색 계열 필터링 (HSV 범위 설정) (흰색 계열 마스크 생성)
             Mat mask = new Mat();
@@ -95,6 +102,7 @@
             //        new ScalarArray(new MCvScalar(140, 255, 255)), // 상한 (H, S, V)
             //        mask);
             //}
+            ////{ CvInvoke.Imwrite($"./hsv2-{__filename}.png", hsvImage); }
 
             //{// ! 팽창(Dilation) 연산 적용 (글자 두께 증가)
             //    Mat dilatedMask = new Mat();
