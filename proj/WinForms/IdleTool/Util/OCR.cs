@@ -42,14 +42,11 @@
             {
                 var filterBitmap = Filter_Color(croppedBitmap, __filename);
 
-                //{//노이즈 제거.. MedianBlur가 작은 커널 크기에서는 경계를 유지하지 못하기 때문에 부적절
-                //    var remove_noise = Remove_Noise(croppedBitmap, __filename);
+                ////노이즈 제거.. MedianBlur가 작은 커널 크기에서는 경계를 유지하지 못하기 때문에 부적절
+                //var remove_noise = Remove_Noise(croppedBitmap, __region, __filename);
 
-                //    if (!string.IsNullOrEmpty(__filename))
-                //        remove_noise.Save($"./noise-{__filename} ({__region.X}, {__region.Y}) ({__region.Width} x {__region.Height}).png");
-                //}
-
-                //var ga = GaussianBlur_N_AdaptiveThreshold(croppedBitmap, __region, __filename);
+                //GaussianBlur + AdaptiveThreshold
+                ////var ga = GaussianBlur_N_AdaptiveThreshold(croppedBitmap, __region, __filename);
 
                 if (!string.IsNullOrEmpty(__filename))
                 {
@@ -141,11 +138,11 @@
             return Util.GFX.Mat_To_Bitmap(result);
         }
 
-        static Mat Remove_Noise(Bitmap __bitmap, string __filename = "")
+        static Mat Remove_Noise(Bitmap __bitmap, Rectangle __region, string __filename = "")
         {
             Mat mat = Util.GFX.Bitmap_To_Mat_Direct(__bitmap);
             Mat hsvImage = new Mat();
-            const int Ksize = 3;
+            const int Ksize = 5;
             /*
              * 3: 약한 노이즈 제거 (경계 유지)
              * 5: 중간 정도 노이즈 제거
@@ -153,6 +150,9 @@
              * 9: 이상	강한 블러 효과 (텍스트 가독성 저하 가능)
              */
             CvInvoke.MedianBlur(mat, hsvImage, Ksize);
+
+            if (!string.IsNullOrEmpty(__filename))
+                hsvImage.Save($"./noise{Ksize}-{__filename} ({__region.X}, {__region.Y}) ({__region.Width} x {__region.Height}).png");
 
             return hsvImage;
         }
