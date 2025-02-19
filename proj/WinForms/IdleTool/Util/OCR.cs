@@ -5,6 +5,7 @@
     using Emgu.CV;
     using Tesseract;
     using Emgu.CV.CvEnum;
+    using System.Drawing;
 
     internal class OCR
     {
@@ -47,6 +48,8 @@
                 //    if (!string.IsNullOrEmpty(__filename))
                 //        remove_noise.Save($"./noise-{__filename} ({__region.X}, {__region.Y}) ({__region.Width} x {__region.Height}).png");
                 //}
+
+                //var ga = GaussianBlur_N_AdaptiveThreshold(croppedBitmap, __region, __filename);
 
                 if (!string.IsNullOrEmpty(__filename))
                 {
@@ -152,6 +155,25 @@
             CvInvoke.MedianBlur(mat, hsvImage, Ksize);
 
             return hsvImage;
+        }
+
+        static Mat GaussianBlur_N_AdaptiveThreshold(Bitmap __bitmap, Rectangle __region, string __filename = "")
+        {
+            Mat mat = Util.GFX.Bitmap_To_Mat_Direct(__bitmap);
+
+            // ! Grayscale 변환
+            CvInvoke.CvtColor(mat, mat, ColorConversion.Bgr2Gray);
+
+            // ! GaussianBlur 적용 (텍스트 경계 보존)
+            CvInvoke.GaussianBlur(mat, mat, new System.Drawing.Size(5, 5), 1.5);
+
+            // ! AdaptiveThreshold 적용 (글자 강조)
+            CvInvoke.AdaptiveThreshold(mat, mat, 255, AdaptiveThresholdType.GaussianC, ThresholdType.Binary, 11, 2);
+
+            if (!string.IsNullOrEmpty(__filename))
+                mat.Save($"./gauss+adapt-{__filename} ({__region.X}, {__region.Y}) ({__region.Width} x {__region.Height}).png");
+
+            return mat;
         }
 
         const string Path_Tessdata = @"./tessdata";
