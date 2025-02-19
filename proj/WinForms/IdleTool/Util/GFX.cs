@@ -134,6 +134,19 @@
 
         public static Bitmap Mat_To_Bitmap(Mat mat)
         {
+            /*
+                Bitmap bitmap = new Bitmap(result.Width, result.Height
+                    , System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+
+                Rectangle rect = new Rectangle(0, 0, mat.Width, mat.Height);
+                BitmapData bmpData = bitmap.LockBits(rect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
+
+                var dd = result.bitmap
+
+                mat.CopyTo(new Emgu.CV.Image<Bgr, byte>(result).Data);
+                bitmap.UnlockBits(bmpData);
+             */
+
             // 1. Mat이 비어 있는지 확인
             if (mat.IsEmpty)
                 throw new ArgumentException("입력된 Mat이 비어 있습니다.");

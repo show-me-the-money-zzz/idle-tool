@@ -31,7 +31,6 @@
         //    return "";
         //}
 
-        //static bool check = false;
         public static string Read_Text_byCaptured(Bitmap __bitmap, Rectangle __region, bool __isNumber = true, string __filename = "")
         {
             string ret = "";
@@ -39,86 +38,7 @@
             // 특정 영역 잘라내기
             using (Bitmap croppedBitmap = Util.GFX.CropBitmap(__bitmap, __region))
             {
-                //using (Graphics g = Graphics.FromImage(croppedBitmap))
-                //{//간단한 노이즈 제거 (Gaussian 블러 적용)
-                //    g.DrawImage(croppedBitmap, 0, 0);
-                //}
-
-                //if (!check)
-                {
-                    Mat mat = Util.GFX.Bitmap_To_Mat_Direct(croppedBitmap);
-
-                    // BGR -> HSV 변환
-                    Mat hsvImage = new Mat();
-                    CvInvoke.CvtColor(mat, hsvImage, Emgu.CV.CvEnum.ColorConversion.Bgr2Hsv);
-
-                    // 흰색 계열 필터링 (HSV 범위 설정) (흰색 계열 마스크 생성)
-                    Mat mask = new Mat();
-                    CvInvoke.InRange(hsvImage,
-                        new ScalarArray(new MCvScalar(0, 0, 200)),  // 하한값 (H=0, S=0, V=200)
-                        new ScalarArray(new MCvScalar(180, 50, 255)), // 상한값 (H=180, S=50, V=255)
-                        mask);
-                    //{
-                    //    ////파란색 계열 계열 필터링
-                    //    CvInvoke.InRange(hsvImage,
-                    //        new ScalarArray(new MCvScalar(100, 50, 50)), // 하한 (H, S, V)
-                    //        new ScalarArray(new MCvScalar(140, 255, 255)), // 상한 (H, S, V)
-                    //        mask);
-                    //}
-
-                    // 4. 원본 이미지에서 흰색 부분만 추출
-                    Mat result = new Mat();
-                    CvInvoke.BitwiseAnd(mat, mat, result, mask);
-                    /*
-                     * 첫 번째 인자 (image): 원본 이미지 (BGR 형식)
-                    두 번째 인자 (image): 원본 이미지와 동일한 이미지 (이항 연산이므로 필요)
-                    세 번째 인자 (result): 결과 이미지 (흰색 부분만 추출된 이미지)
-                    네 번째 인자 (mask): 흰색이 유지될 부분을 지정한 마스크 이미지 (흰색 영역: 255, 나머지: 0)
-                     */
-                    /*
-                     * 이 연산의 의미:
-                            mask에서 255(흰색)인 부분만 유지하고, 나머지는 0(검은색)으로 변환
-                            즉, image의 흰색 계열 부분만 남기고 나머지는 제거
-                     */
-
-                    //{//배경 파란색 처리
-                    //    // 5. 배경을 파란색으로 변경 (마스크 반전 후 적용)
-                    //    Mat background = new Mat(mat.Size, DepthType.Cv8U, 3);
-                    //    background.SetTo(new MCvScalar(255, 0, 0)); // 파란색 (BGR: 255, 0, 0)
-
-                    //    Mat invertedMask = new Mat();
-                    //    CvInvoke.BitwiseNot(mask, invertedMask); // 마스크 반전
-
-                    //    Mat blueBackground = new Mat();
-                    //    CvInvoke.BitwiseAnd(background, background, blueBackground, invertedMask); // 파란 배경 적용
-
-                    //    // 6. 흰색만 유지된 이미지와 파란색 배경 합성
-                    //    Mat finalResult = new Mat();
-                    //    CvInvoke.Add(result, blueBackground, finalResult);
-                    //}
-
-                    {
-                        //Bitmap bitmap = new Bitmap(result.Width, result.Height
-                        //    , System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-
-                        //Rectangle rect = new Rectangle(0, 0, mat.Width, mat.Height);
-                        //BitmapData bmpData = bitmap.LockBits(rect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
-
-                        //var dd = result.bitmap
-
-                        //mat.CopyTo(new Emgu.CV.Image<Bgr, byte>(result).Data);
-                        //bitmap.UnlockBits(bmpData);
-
-                        var bitmap = Util.GFX.Mat_To_Bitmap(result);
-                        ret = Process_Tesseract(bitmap, __isNumber, __filename);
-                        return ret;
-
-                    }
-                    //CvInvoke.Imwrite($"./test_{__filename}.png", result);// 5. 필터링된 이미지 저장
-
-                    //check = true;
-                }
-                //return "";
+                var filterBitmap = Filter_Color(croppedBitmap, __filename);
 
                 if (!string.IsNullOrEmpty(__filename))
                 {
@@ -136,17 +56,73 @@
                 }
 
                 //// Bitmap을 Pix로 변환
-                //using (Pix img = ConvertBitmapToPix(croppedBitmap))
+                //using (Pix img = ConvertBitmapToPix(filterBitmap))
                 {
-                    ret = Process_Tesseract(croppedBitmap, __isNumber, __filename);
-                    //ret = Process_Tesseract2(croppedBitmap, __isNumber, __filename);
+                    ret = Process_Tesseract(filterBitmap, __isNumber, __filename);
+                    //ret = Process_Tesseract2(filterBitmap, __isNumber, __filename);
                 }
             }
 
             return ret;
         }
 
-        
+        static Bitmap Filter_Color(Bitmap __srcBitmap, string __filename = "")
+        {
+            Mat mat = Util.GFX.Bitmap_To_Mat_Direct(__srcBitmap);
+
+            // BGR -> HSV 변환
+            Mat hsvImage = new Mat();
+            CvInvoke.CvtColor(mat, hsvImage, Emgu.CV.CvEnum.ColorConversion.Bgr2Hsv);
+
+            // 흰색 계열 필터링 (HSV 범위 설정) (흰색 계열 마스크 생성)
+            Mat mask = new Mat();
+            CvInvoke.InRange(hsvImage,
+                new ScalarArray(new MCvScalar(0, 0, 200)),  // 하한값 (H=0, S=0, V=200)
+                new ScalarArray(new MCvScalar(180, 50, 255)), // 상한값 (H=180, S=50, V=255)
+                mask);
+            //{
+            //    ////파란색 계열 필터링
+            //    CvInvoke.InRange(hsvImage,
+            //        new ScalarArray(new MCvScalar(100, 50, 50)), // 하한 (H, S, V)
+            //        new ScalarArray(new MCvScalar(140, 255, 255)), // 상한 (H, S, V)
+            //        mask);
+            //}
+
+            // 4. 원본 이미지에서 흰색 부분만 추출
+            /* 이 연산의 의미:
+             *  mask에서 255(흰색)인 부분만 유지하고, 나머지는 0(검은색)으로 변환
+             *  즉, image의 흰색 계열 부분만 남기고 나머지는 제거
+             */
+            Mat result = new Mat();
+            CvInvoke.BitwiseAnd(mat, mat, result, mask);
+            /*
+                * 첫 번째 인자 (image): 원본 이미지 (BGR 형식)
+            두 번째 인자 (image): 원본 이미지와 동일한 이미지 (이항 연산이므로 필요)
+            세 번째 인자 (result): 결과 이미지 (흰색 부분만 추출된 이미지)
+            네 번째 인자 (mask): 흰색이 유지될 부분을 지정한 마스크 이미지 (흰색 영역: 255, 나머지: 0)
+                */
+
+            //{//배경 파란색 처리
+            //    // 5. 배경을 파란색으로 변경 (마스크 반전 후 적용)
+            //    Mat background = new Mat(mat.Size, DepthType.Cv8U, 3);
+            //    background.SetTo(new MCvScalar(255, 0, 0)); // 파란색 (BGR: 255, 0, 0)
+
+            //    Mat invertedMask = new Mat();
+            //    CvInvoke.BitwiseNot(mask, invertedMask); // 마스크 반전
+
+            //    Mat blueBackground = new Mat();
+            //    CvInvoke.BitwiseAnd(background, background, blueBackground, invertedMask); // 파란 배경 적용
+
+            //    // 6. 흰색만 유지된 이미지와 파란색 배경 합성
+            //    Mat finalResult = new Mat();
+            //    CvInvoke.Add(result, blueBackground, finalResult);
+            //}
+
+            if (!string.IsNullOrEmpty(__filename))
+                CvInvoke.Imwrite($"./filterd_{__filename}.png", result);// 5. 필터링된 이미지 저장
+
+            return Util.GFX.Mat_To_Bitmap(result);
+        }
 
         const string Path_Tessdata = @"./tessdata";
         static string Get_Langs()
