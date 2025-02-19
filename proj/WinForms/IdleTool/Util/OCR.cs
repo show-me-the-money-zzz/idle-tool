@@ -4,6 +4,7 @@
     using Emgu.CV.Structure;
     using Emgu.CV;
     using Tesseract;
+    using Emgu.CV.CvEnum;
 
     internal class OCR
     {
@@ -40,6 +41,13 @@
             {
                 var filterBitmap = Filter_Color(croppedBitmap, __filename);
 
+                //{//노이즈 제거.. MedianBlur가 작은 커널 크기에서는 경계를 유지하지 못하기 때문에 부적절
+                //    var remove_noise = Remove_Noise(croppedBitmap, __filename);
+
+                //    if (!string.IsNullOrEmpty(__filename))
+                //        remove_noise.Save($"./noise-{__filename} ({__region.X}, {__region.Y}) ({__region.Width} x {__region.Height}).png");
+                //}
+
                 if (!string.IsNullOrEmpty(__filename))
                 {
                     var mat_app = Util.GFX.Bitmap_To_Mat_Direct(croppedBitmap);
@@ -70,11 +78,11 @@
         {
             Mat mat = Util.GFX.Bitmap_To_Mat_Direct(__srcBitmap);
 
-            // BGR -> HSV 변환
+            // ! BGR -> HSV 변환
             Mat hsvImage = new Mat();
             CvInvoke.CvtColor(mat, hsvImage, Emgu.CV.CvEnum.ColorConversion.Bgr2Hsv);
 
-            // 흰색 계열 필터링 (HSV 범위 설정) (흰색 계열 마스크 생성)
+            // ! 흰색 계열 필터링 (HSV 범위 설정) (흰색 계열 마스크 생성)
             Mat mask = new Mat();
             CvInvoke.InRange(hsvImage,
                 new ScalarArray(new MCvScalar(0, 0, 200)),  // 하한값 (H=0, S=0, V=200)
@@ -88,7 +96,13 @@
             //        mask);
             //}
 
-            // 4. 원본 이미지에서 흰색 부분만 추출
+            //{// ! 팽창(Dilation) 연산 적용 (글자 두께 증가)
+            //    Mat dilatedMask = new Mat();
+            //    Mat kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new System.Drawing.Size(3, 3), new System.Drawing.Point(-1, -1));
+            //    CvInvoke.Dilate(mask, dilatedMask, kernel, new System.Drawing.Point(-1, -1), 2, BorderType.Default, new MCvScalar(0));
+            //}
+
+            // ! 원본 이미지에서 흰색 부분만 추출
             /* 이 연산의 의미:
              *  mask에서 255(흰색)인 부분만 유지하고, 나머지는 0(검은색)으로 변환
              *  즉, image의 흰색 계열 부분만 남기고 나머지는 제거
@@ -103,7 +117,7 @@
                 */
 
             //{//배경 파란색 처리
-            //    // 5. 배경을 파란색으로 변경 (마스크 반전 후 적용)
+            //    // ! 배경을 파란색으로 변경 (마스크 반전 후 적용)
             //    Mat background = new Mat(mat.Size, DepthType.Cv8U, 3);
             //    background.SetTo(new MCvScalar(255, 0, 0)); // 파란색 (BGR: 255, 0, 0)
 
@@ -113,7 +127,7 @@
             //    Mat blueBackground = new Mat();
             //    CvInvoke.BitwiseAnd(background, background, blueBackground, invertedMask); // 파란 배경 적용
 
-            //    // 6. 흰색만 유지된 이미지와 파란색 배경 합성
+            //    // ! 흰색만 유지된 이미지와 파란색 배경 합성
             //    Mat finalResult = new Mat();
             //    CvInvoke.Add(result, blueBackground, finalResult);
             //}
@@ -122,6 +136,22 @@
                 CvInvoke.Imwrite($"./filterd_{__filename}.png", result);// 5. 필터링된 이미지 저장
 
             return Util.GFX.Mat_To_Bitmap(result);
+        }
+
+        static Mat Remove_Noise(Bitmap __bitmap, string __filename = "")
+        {
+            Mat mat = Util.GFX.Bitmap_To_Mat_Direct(__bitmap);
+            Mat hsvImage = new Mat();
+            const int Ksize = 3;
+            /*
+             * 3: 약한 노이즈 제거 (경계 유지)
+             * 5: 중간 정도 노이즈 제거
+             * 7: 더 강한 노이즈 제거 (텍스트 경계 약간 흐려질 수 있음)
+             * 9: 이상	강한 블러 효과 (텍스트 가독성 저하 가능)
+             */
+            CvInvoke.MedianBlur(mat, hsvImage, Ksize);
+
+            return hsvImage;
         }
 
         const string Path_Tessdata = @"./tessdata";
