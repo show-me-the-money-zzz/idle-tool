@@ -10,14 +10,18 @@
         ToolStripStatusLabel _LBL_HP = null;
         ToolStripStatusLabel _LBL_MP = null;
         ToolStripStatusLabel _LBL_Potion = null;
+        ToolStripStatusLabel _LBL_Location = null;
 
         AsyncReactiveProperty<int?> HP { get; } = new AsyncReactiveProperty<int?>(default(int));
         AsyncReactiveProperty<int?> MP { get; } = new AsyncReactiveProperty<int?>(default(int));
         AsyncReactiveProperty<int?> POTION { get; } = new AsyncReactiveProperty<int?>(default(int));
 
+        AsyncReactiveProperty<string?> LOCATION { get; } = new AsyncReactiveProperty<string?>("");
+
         public void Setup(App __app
             , ToolStripStatusLabel __lbl_hp, ToolStripStatusLabel __lbl_mp
             , ToolStripStatusLabel __lbl_potion
+            , ToolStripStatusLabel __lbl_location
             )
         {
             _app = __app;
@@ -25,6 +29,7 @@
             _LBL_HP = __lbl_hp;
             _LBL_MP = __lbl_mp;
             _LBL_Potion = __lbl_potion;
+            _LBL_Location = __lbl_location;
 
             Setup_Subscibe();
 
@@ -37,6 +42,12 @@
             MP.Subscribe(v => Update_StatText(_LBL_MP, "MP", v));
 
             POTION.Subscribe(v => Update_StatText(_LBL_Potion, "물약", v));
+
+            LOCATION.Subscribe(v => {
+                string text = "위치: ";
+                text += string.IsNullOrEmpty(v) ? "" : v;
+                _LBL_Location.Text = text;
+            });
         }
 
         void Update_StatText(ToolStripStatusLabel __lable, string __kind, int? __value)
@@ -83,6 +94,9 @@
             Rectangle textRegion_MP = new Rectangle(64, 84, 306, 26);
             //{ textRegion_MP = new Rectangle(60, 80, 240, 22); }//ZZUNY+중간
 
+            Rectangle textRegion_Location = new Rectangle(222, 206, 180, 26);
+            //{ textRegion_MP = new Rectangle(222, 206, 180, 26); }//ZZUNY+중간
+
             double TICK = 1.0d;
             //{ TICK = 0.05d; }
             { TICK = 0.001d; }
@@ -111,6 +125,11 @@
                     //, __filename: "mp"
                     );
                 Parse_Number(MP, mp, true);
+
+                ////Location
+                LOCATION.Value = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_Location, __isNumber: false
+                    //, __filename: "location"
+                    );
             }
         }
     }

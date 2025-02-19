@@ -55,6 +55,7 @@ namespace IdleTool
             _statbar.Setup(__app
                 , statusLabel_HP, statusLabel_MP
                 , statusLabel_Potion
+                , statusLabel_State
                 );
         }
 
@@ -98,7 +99,7 @@ namespace IdleTool
         {
             //DEV.FormText.Find_TextEdit();
 
-            Rectangle textRegion = new Rectangle(1400, 200, 240, 32);//현재 위치 텍스트
+            Rectangle textRegion = new Rectangle(222, 206, 180, 26);//현재 위치 텍스트
             //textRegion = new Rectangle(200, 186, 100, 30);//ZZUNI
 
             var bmp_app = Util.CaptureTool.NewMake(_appController);
