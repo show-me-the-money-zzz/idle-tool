@@ -89,12 +89,17 @@
             CvInvoke.CvtColor(mat, hsvImage, Emgu.CV.CvEnum.ColorConversion.Bgr2Hsv);
             //{ CvInvoke.Imwrite($"./hsv-{__filename}.png", hsvImage); }
 
-            // ! 흰색 계열 필터링 (HSV 범위 설정) (흰색 계열 마스크 생성)
+            //// ! 흰색 계열 필터링 (HSV 범위 설정) (흰색 계열 마스크 생성)
+            //하한값
+            var Limit_Low = new ScalarArray(new MCvScalar(0, 0, 200));//(H=0, S=0, V=200)..흰색
+            //{ Limit_Low = new ScalarArray(new MCvScalar(0, 0, 100)); }//ffffff ??
+            //상한값
+            var Limit_High = new ScalarArray(new MCvScalar(180, 50, 255));// (H=180, S=50, V=255)
+            //{ Limit_High = new ScalarArray(new MCvScalar(180, 10, 109)); }// H=180, S=10, V=109 (회색)
+            //{ Limit_High = new ScalarArray(new MCvScalar(210, 1.8, 42.7)); }//6b6c6d ??
+
             Mat mask = new Mat();
-            CvInvoke.InRange(hsvImage,
-                new ScalarArray(new MCvScalar(0, 0, 200)),  // 하한값 (H=0, S=0, V=200)
-                new ScalarArray(new MCvScalar(180, 50, 255)), // 상한값 (H=180, S=50, V=255)
-                mask);
+            CvInvoke.InRange(hsvImage, Limit_Low, Limit_High, mask);
             //{
             //    ////파란색 계열 필터링
             //    CvInvoke.InRange(hsvImage,
