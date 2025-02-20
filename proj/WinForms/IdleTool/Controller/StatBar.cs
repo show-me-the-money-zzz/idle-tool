@@ -128,6 +128,7 @@
 
                 ////Location
                 LOCATION.Value = Util.OCR.ReadText_CropRegion(bmp_app, textRegion_Location, __isNumber: false, __name: Names[3]);
+                //LOCATION.Value = Util.OCR.ReadText(Util.CaptureTool.Make_Cropped(_app, textRegion_Location), false, Names[3]);
             }
         }
     }

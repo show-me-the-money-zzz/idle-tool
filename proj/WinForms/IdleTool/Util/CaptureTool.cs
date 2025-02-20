@@ -30,6 +30,22 @@
 
             return bitmap;
         }
+        public static Bitmap Make_Cropped(Controller.App __app, Rectangle region)
+        {//앱의 특정 위치를 캡쳐
+            var rect_app = __app.Capture_Rect();
+
+            Bitmap bitmap = new Bitmap(region.Width, region.Height, PixelFormat.Format32bppArgb);
+            {
+                using (Graphics g = Graphics.FromImage(bitmap))
+                {
+                    g.CopyFromScreen(rect_app.Left + region.Left, rect_app.Top + region.Top
+                        , 0, 0
+                        , new Size(region.Width, region.Height)
+                        , CopyPixelOperation.SourceCopy);
+                }
+            }
+            return bitmap;
+        }
 
         //[DllImport("user32.dll")]
         //static extern bool PrintWindow(IntPtr hwnd, IntPtr hdcBlt, uint nFlags);
