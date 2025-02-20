@@ -60,11 +60,18 @@
                     mat_app.Save($"./readtext_{__filename}.png");
                 }
 
-                //// Bitmap을 Pix로 변환
-                //using (Pix img = ConvertBitmapToPix(filterBitmap))
+                ////// Bitmap을 Pix로 변환
+                ////using (Pix img = ConvertBitmapToPix(filterBitmap))
+                //{
+                //    //ret = Process_Tesseract(filterBitmap, __isNumber, __filename);
+                //    //ret = Process_Tesseract2(filterBitmap, __isNumber, __filename);
+                //}
+                using (OCRProcessor ocr = new OCRProcessor())
                 {
-                    ret = Process_Tesseract(filterBitmap, __isNumber, __filename);
-                    //ret = Process_Tesseract2(filterBitmap, __isNumber, __filename);
+                    ret = ocr.Process(filterBitmap, __isNumber);
+
+                    if (!string.IsNullOrEmpty(__filename))
+                        Console.WriteLine($"OCR({__filename}): {ret}");
                 }
             }
             return ret;
@@ -204,64 +211,81 @@
             return mat;
         }
 
-        const string Path_Tessdata = @"./tessdata";
-        static string Get_Langs()
-        {
-            var ret = "eng+kor+kor_vert";
-            //{
-            //    Langs = "kor";
-            //    Langs = "kor_vert";
-            //    Langs = "kor+kor_vert";
-            //}
-            return ret;
-        }
-        static string Process_Tesseract(Bitmap __bitmap, bool __isNumber, string __tag)
-        {
-            string ret = "";
+        #region [OCRProcessor 로 이관]
+        //const string Path_Tessdata = @"./tessdata";
+        //static string Get_Langs()
+        //{
+        //    var ret = "eng+kor+kor_vert";
+        //    //{
+        //    //    Langs = "kor";
+        //    //    Langs = "kor_vert";
+        //    //    Langs = "kor+kor_vert";
+        //    //}
+        //    return ret;
+        //}
 
-            using (var engine = new TesseractEngine(Path_Tessdata, Get_Langs(), EngineMode.Default))
-            {
-                if (__isNumber)
-                    engine.SetVariable("tessedit_char_whitelist", "0123456789,./");
+        //static TesseractEngine ___engine = null;
+        //static string Process_foo(Bitmap bitmap, bool isnum)
+        //{
+        //    string ret = "";
+        //    if (null == ___engine)
+        //        ___engine = new TesseractEngine(Path_Tessdata, "eng+kor+kor_vert", EngineMode.Default);
 
-                var page = engine.Process(PixConverter.ToPix(__bitmap));
+        //    if (isnum)
+        //        ___engine.SetVariable("tessedit_char_whitelist", "0123456789,./");
 
-                ret = page.GetText().Trim();
+        //    return ___engine.Process(PixConverter.ToPix(bitmap))
+        //        .GetText().Trim();
+        //}
 
-                if (!string.IsNullOrEmpty(__tag))
-                    Console.WriteLine($"OCR({__tag}): {ret}");
-            }
+        //static string Process_Tesseract(Bitmap __bitmap, bool __isNumber, string __tag)
+        //{
+        //    string ret = "";
 
-            return ret;
-        }
-        static string Process_Tesseract2(Bitmap __bitmap, bool __isNumber, string __tag)
-        {
-            string ret = "";
+        //    using (var engine = new TesseractEngine(Path_Tessdata, Get_Langs(), EngineMode.Default))
+        //    {
+        //        if (__isNumber)
+        //            engine.SetVariable("tessedit_char_whitelist", "0123456789,./");
 
-            //using (Tesseract ocr = new Tesseract(@"C:\Program Files\Tesseract-OCR\tessdata", "eng", OcrEngineMode.TesseractLstmCombined))
-            //{
-            //    Image<Bgr, byte> img = new Image<Bgr, byte>(image);
-            //    ocr.SetImage(img);
-            //    ocr.Recognize();
-            //    return ocr.GetUTF8Text();
-            //}
-            using (Tesseract ocr = new Tesseract(Path_Tessdata, Get_Langs(), OcrEngineMode.TesseractLstmCombined))
-            {
-                Mat mat = Util.GFX.Bitmap_To_Mat_Direct(__bitmap);
-                //Image<Bgr, byte> img = new Image<Bgr, byte>(croppedBitmap);                        
-                Image<Bgr, byte> img = mat.ToImage<Bgr, byte>();
-                ocr.SetImage(img);
-                ocr.Recognize();
-                ret = ocr.GetUTF8Text();
+        //        var page = engine.Process(PixConverter.ToPix(__bitmap));
 
-                ret = ret.Replace("\r\n", ""); // "\r\n" 제거
+        //        ret = page.GetText().Trim();
 
-                if (!string.IsNullOrEmpty(__tag))
-                    Console.WriteLine($"OCR({__tag}): {ret}");
-            }
+        //        if (!string.IsNullOrEmpty(__tag))
+        //            Console.WriteLine($"OCR({__tag}): {ret}");
+        //    }
 
-            return ret;
-        }
+        //    return ret;
+        //}
+        //static string Process_Tesseract2(Bitmap __bitmap, bool __isNumber, string __tag)
+        //{
+        //    string ret = "";
+
+        //    //using (Tesseract ocr = new Tesseract(@"C:\Program Files\Tesseract-OCR\tessdata", "eng", OcrEngineMode.TesseractLstmCombined))
+        //    //{
+        //    //    Image<Bgr, byte> img = new Image<Bgr, byte>(image);
+        //    //    ocr.SetImage(img);
+        //    //    ocr.Recognize();
+        //    //    return ocr.GetUTF8Text();
+        //    //}
+        //    using (Tesseract ocr = new Tesseract(Path_Tessdata, Get_Langs(), OcrEngineMode.TesseractLstmCombined))
+        //    {
+        //        Mat mat = Util.GFX.Bitmap_To_Mat_Direct(__bitmap);
+        //        //Image<Bgr, byte> img = new Image<Bgr, byte>(croppedBitmap);                        
+        //        Image<Bgr, byte> img = mat.ToImage<Bgr, byte>();
+        //        ocr.SetImage(img);
+        //        ocr.Recognize();
+        //        ret = ocr.GetUTF8Text();
+
+        //        ret = ret.Replace("\r\n", ""); // "\r\n" 제거
+
+        //        if (!string.IsNullOrEmpty(__tag))
+        //            Console.WriteLine($"OCR({__tag}): {ret}");
+        //    }
+
+        //    return ret;
+        //}
+        #endregion
 
         //using IronOcr;
         //public static string Read_Text_byCaptured_IronOCR(Bitmap __bitmap, Rectangle __region)
