@@ -95,11 +95,18 @@
             //{ textRegion_MP = new Rectangle(60, 80, 240, 22); }//ZZUNY+중간
 
             Rectangle textRegion_Location = new Rectangle(222, 206, 180, 26);
-            //{ textRegion_MP = new Rectangle(222, 206, 180, 26); }//ZZUNY+중간
+            //{ textRegion_Location = new Rectangle(200, 190, 160, 22); }//ZZUNY+중간
 
             double TICK = 1.0d;
             //{ TICK = 0.05d; }
             { TICK = 0.001d; }
+
+            /*const*/ string[] Filenames = {
+                "potion",//potion
+                "hp",//hp
+                "mp",//mp
+                "location",//location
+            };
 
             while (true)
             {
@@ -109,27 +116,19 @@
                 var bmp_app = Util.CaptureTool.NewMake(_app);
 
                 ////POTION
-                var potion = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_Potion, __isNumber: true
-                    //, __filename: "potion"
-                    );
+                var potion = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_Potion, __isNumber: true, __filename: Filenames[0]);
                 Parse_Number(POTION, potion, false);
 
                 ////HP
-                var hp = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_HP, __isNumber: true
-                    //, __filename: "hp"
-                    );
+                var hp = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_HP, __isNumber: true, __filename: Filenames[1]);
                 Parse_Number(HP, hp, true);
 
                 ////MP
-                var mp = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_MP, __isNumber: true
-                    //, __filename: "mp"
-                    );
+                var mp = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_MP, __isNumber: true, __filename: Filenames[2]);
                 Parse_Number(MP, mp, true);
 
                 ////Location
-                LOCATION.Value = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_Location, __isNumber: false
-                    //, __filename: "location"
-                    );
+                LOCATION.Value = Util.OCR.Read_Text_byCaptured(bmp_app, textRegion_Location, __isNumber: false, __filename: Filenames[3]);
             }
         }
     }
