@@ -33,14 +33,11 @@
         //    return "";
         //}
 
-        public static string Read_Text_byCaptured(Bitmap __bitmap, Rectangle __region, bool __isNumber = true, string __filename = "")
+        public static string ReadText(Bitmap __bitmap, bool __isNumber, string __filename)
         {
             string ret = "";
-
-            // 특정 영역 잘라내기
-            using (Bitmap croppedBitmap = Util.GFX.CropBitmap(__bitmap, __region))
             {
-                var filterBitmap = Filter_Color(croppedBitmap, __filename);
+                var filterBitmap = Filter_Color(__bitmap, __filename);
 
                 ////노이즈 제거.. MedianBlur가 작은 커널 크기에서는 경계를 유지하지 못하기 때문에 부적절
                 //var remove_noise = Remove_Noise(croppedBitmap, __region, __filename);
@@ -50,7 +47,7 @@
 
                 if (!string.IsNullOrEmpty(__filename))
                 {
-                    var mat_app = Util.GFX.Bitmap_To_Mat_Direct(croppedBitmap);
+                    var mat_app = Util.GFX.Bitmap_To_Mat_Direct(__bitmap);
 
                     //// 1. 노이즈 제거 (Gaussian Blur 적용)
                     //Mat denoisedImage = new Mat();
@@ -60,7 +57,7 @@
                     //Mat invertedImage = new Mat();
                     //CvInvoke.BitwiseNot(mat_app, invertedImage);
 
-                    mat_app.Save($"./OCRRead-{__filename} ({__region.X}, {__region.Y}) ({__region.Width} x {__region.Height}).png");
+                    mat_app.Save($"./readtext_{__filename}.png");
                 }
 
                 //// Bitmap을 Pix로 변환
@@ -69,6 +66,24 @@
                     ret = Process_Tesseract(filterBitmap, __isNumber, __filename);
                     //ret = Process_Tesseract2(filterBitmap, __isNumber, __filename);
                 }
+            }
+            return ret;
+        }
+
+        public static string ReadText_CropRegion(Bitmap __bitmap, Rectangle __region, bool __isNumber = true, string __name = "")
+        {
+            string ret = "";
+
+            // 특정 영역 잘라내기
+            using (Bitmap croppedBitmap = Util.GFX.CropBitmap(__bitmap, __region))
+            {
+                string filename = "";
+                if(!string.IsNullOrEmpty(__name))
+                {
+                    filename = $"{__name} ({__region.X}, {__region.Y}) ({__region.Width} x {__region.Height})";
+                }
+
+                ret = ReadText(croppedBitmap, __isNumber, filename);
             }
 
             return ret;
