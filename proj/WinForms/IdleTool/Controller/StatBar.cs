@@ -88,9 +88,9 @@
         {
             Rectangle textRegion_Potion = new Rectangle(550, 1045, 60, 20);//potion
             //{ textRegion_Potion = new Rectangle(590, 1050, 56, 20); }//ZZUNY+중간
-            Rectangle textRegion_HP = new Rectangle(64, 58, 306, 26);
+            Rectangle textRegion_HP = new Rectangle(70, 58, 306, 25);
             //{ textRegion_HP = new Rectangle(60, 56, 240, 22); }//ZZUNY+중간
-            Rectangle textRegion_MP = new Rectangle(64, 84, 306, 26);
+            Rectangle textRegion_MP = new Rectangle(70, 85, 306, 25);
             //{ textRegion_MP = new Rectangle(60, 80, 240, 22); }//ZZUNY+중간
 
             Rectangle textRegion_Location = new Rectangle(222, 206, 180, 26);
@@ -115,19 +115,19 @@
                 var bmp_app = Util.CaptureTool.NewMake(_app);
 
                 ////POTION
-                var potion = Util.OCR.ReadText_CropRegion(bmp_app, textRegion_Potion, __isNumber: true, __name: Names[0]);
+                var potion = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion_Potion, __isNumber: true, __name: Names[0]);
                 Parse_Number(POTION, potion, false);
 
                 ////HP
-                var hp = Util.OCR.ReadText_CropRegion(bmp_app, textRegion_HP, __isNumber: true, __name: Names[1]);
+                var hp = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion_HP, __isNumber: true, __name: Names[1]);
                 Parse_Number(HP, hp, true);
 
                 ////MP
-                var mp = Util.OCR.ReadText_CropRegion(bmp_app, textRegion_MP, __isNumber: true, __name: Names[2]);
+                var mp = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion_MP, __isNumber: true, __name: Names[2]);
                 Parse_Number(MP, mp, true);
 
                 ////Location
-                LOCATION.Value = Util.OCR.ReadText_CropRegion(bmp_app, textRegion_Location, __isNumber: false, __name: Names[3]);
+                LOCATION.Value = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion_Location, __isNumber: false, __name: Names[3]);
                 //LOCATION.Value = Util.OCR.ReadText(Util.CaptureTool.Make_Cropped(_app, textRegion_Location), false, Names[3]);
             }
         }

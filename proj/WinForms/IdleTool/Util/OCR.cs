@@ -1,11 +1,12 @@
 ﻿namespace IdleTool.Util
 {
-    using Emgu.CV.OCR;
+    //using Emgu.CV.OCR;
     using Emgu.CV.Structure;
     using Emgu.CV;
     using Tesseract;
     using Emgu.CV.CvEnum;
     using System.Drawing;
+    using Cysharp.Threading.Tasks;
 
     internal class OCR
     {
@@ -33,51 +34,64 @@
         //    return "";
         //}
 
-        public static string ReadText(Bitmap __bitmap, bool __isNumber, string __filename)
+        public async static UniTask<string> ReadText(Bitmap __bitmap, bool __isNumber, string __filename)
         {
-            string ret = "";
-            {
-                var filterBitmap = Filter_Color(__bitmap, __filename);
+            return await UniTask.Run(() => {
 
-                ////노이즈 제거.. MedianBlur가 작은 커널 크기에서는 경계를 유지하지 못하기 때문에 부적절
-                //var remove_noise = Remove_Noise(croppedBitmap, __region, __filename);
-
-                ////GaussianBlur + AdaptiveThreshold
-                //var ga = GaussianBlur_N_AdaptiveThreshold(croppedBitmap, __region, __filename);
-
-                if (!string.IsNullOrEmpty(__filename))
+                string ret = "";
                 {
-                    var mat_app = Util.GFX.Bitmap_To_Mat_Direct(__bitmap);
+                    var filterBitmap = Filter_Color(__bitmap, __filename);
 
-                    //// 1. 노이즈 제거 (Gaussian Blur 적용)
-                    //Mat denoisedImage = new Mat();
-                    //CvInvoke.GaussianBlur(mat_app, denoisedImage, new System.Drawing.Size(5, 5), 1.5);
+                    ////노이즈 제거.. MedianBlur가 작은 커널 크기에서는 경계를 유지하지 못하기 때문에 부적절
+                    //var remove_noise = Remove_Noise(croppedBitmap, __region, __filename);
 
-                    //// 2. 색 반전
-                    //Mat invertedImage = new Mat();
-                    //CvInvoke.BitwiseNot(mat_app, invertedImage);
-
-                    mat_app.Save($"./readtext_{__filename}.png");
-                }
-
-                ////// Bitmap을 Pix로 변환
-                ////using (Pix img = ConvertBitmapToPix(filterBitmap))
-                //{
-                //    //ret = Process_Tesseract(filterBitmap, __isNumber, __filename);
-                //    //ret = Process_Tesseract2(filterBitmap, __isNumber, __filename);
-                //}
-                using (OCRProcessor ocr = new OCRProcessor())
-                {
-                    ret = ocr.Process(filterBitmap, __isNumber);
+                    ////GaussianBlur + AdaptiveThreshold
+                    //var ga = GaussianBlur_N_AdaptiveThreshold(croppedBitmap, __region, __filename);
 
                     if (!string.IsNullOrEmpty(__filename))
-                        Console.WriteLine($"OCR({__filename}): {ret}");
+                    {
+                        var mat_app = Util.GFX.Bitmap_To_Mat_Direct(__bitmap);
+
+                        //// 1. 노이즈 제거 (Gaussian Blur 적용)
+                        //Mat denoisedImage = new Mat();
+                        //CvInvoke.GaussianBlur(mat_app, denoisedImage, new System.Drawing.Size(5, 5), 1.5);
+
+                        //// 2. 색 반전
+                        //Mat invertedImage = new Mat();
+                        //CvInvoke.BitwiseNot(mat_app, invertedImage);
+
+                        mat_app.Save($"./readtext_{__filename}.png");
+                    }
+
+                    ////// Bitmap을 Pix로 변환
+                    ////using (Pix img = ConvertBitmapToPix(filterBitmap))
+                    //{
+                    //    //ret = Process_Tesseract(filterBitmap, __isNumber, __filename);
+                    //    //ret = Process_Tesseract2(filterBitmap, __isNumber, __filename);
+                    //}
+                    //using (OCRProcessor ocr = new OCRProcessor())
+                    //{
+                    //    ret = ocr.Process(filterBitmap, __isNumber);
+
+                    //    if (!string.IsNullOrEmpty(__filename))
+                    //        Console.WriteLine($"OCR({__filename}): {ret}");
+                    //}
+
+                    using (var engine = new TesseractEngine(@"./tessdata", "eng+kor+kor_vert", EngineMode.Default))
+                    {
+                        if (__isNumber) engine.SetVariable("tessedit_char_whitelist", "0123456789,./");
+
+                        using (var pix = PixConverter.ToPix(filterBitmap))
+                        {
+                            ret = engine.Process(pix).GetText().Trim();
+                        }
+                    }
                 }
-            }
-            return ret;
+                return ret;
+            });
         }
 
-        public static string ReadText_CropRegion(Bitmap __bitmap, Rectangle __region, bool __isNumber = true, string __name = "")
+        public async static UniTask<string> ReadText_CropRegion(Bitmap __bitmap, Rectangle __region, bool __isNumber = true, string __name = "")
         {
             string ret = "";
 
@@ -90,7 +104,7 @@
                     filename = $"{__name} ({__region.X}, {__region.Y}) ({__region.Width} x {__region.Height})";
                 }
 
-                ret = ReadText(croppedBitmap, __isNumber, filename);
+                ret = await ReadText(croppedBitmap, __isNumber, filename);
             }
 
             return ret;
