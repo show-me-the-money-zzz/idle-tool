@@ -36,7 +36,7 @@
 
         public async static UniTask<string> ReadText(Bitmap __bitmap, bool __isNumber, string __filename)
         {
-            return await UniTask.Run(() => {
+            return await UniTask.Run(() => {//new TesseractEngine() 의 딜레이 문제로, 비동기 처리
 
                 string ret = "";
                 {
