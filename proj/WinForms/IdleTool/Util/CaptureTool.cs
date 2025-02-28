@@ -47,6 +47,24 @@
             return bitmap;
         }
 
+        public static void Make_Custom()
+        {
+            using (var form = new CaptureScreenForm())
+            {
+                if(DialogResult.OK == form.ShowDialog())
+                {
+                    var rectangle = form.Get_SelectedRectangle();
+                    if (0 < rectangle.Width && 0 < rectangle.Height)
+                    {
+                        var captured = Make_Screen(rectangle);
+                        captured.Save("captured.png", ImageFormat.Png);
+
+                        MessageBox.Show("캡처 완료!", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+        }
+
         public static Bitmap Make_Cropped(Controller.App __app, Rectangle region)
         {//앱의 특정 위치를 캡쳐
             var rect_app = __app.Capture_Rect();
