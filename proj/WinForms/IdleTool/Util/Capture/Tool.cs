@@ -66,7 +66,7 @@
                             )
                         {
                             // 새로운 창으로 이미지 표시 (저장하지 않음)
-                            var preview = new PreviewForm(captured, rectangle);
+                            var preview = new PreviewForm(captured, rectangle, __apprect);
                             if (DialogResult.Retry == preview.ShowDialog())
                             {
                                 Make_Custom(__apprect);

@@ -17,8 +17,7 @@
 
         void InitializeComponent(Bitmap __captured)
         {
-            // 🔹 폼 기본 설정
-            {
+            {// 🔹 폼 기본 설정
                 this.Text = "미리보기";
                 this.StartPosition = FormStartPosition.CenterScreen;
                 this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -78,13 +77,12 @@
                         Anchor = AnchorStyles.Left
                     };
 
-                    TextBox txt = new TextBox
-                    {
+                    _tbox_list_rect[j] = new TextBox {
                         Width = 72,
                         Anchor = AnchorStyles.Left
                     };
 
-                    inputFieldsPanel.Controls.Add(txt, j, i);
+                    inputFieldsPanel.Controls.Add(_tbox_list_rect[j], j, i);
                     inputFieldsPanel.Controls.Add(lbl, j, i);
                 }
             }
@@ -215,6 +213,8 @@
         FlowLayoutPanel _pane_TopButtons;
         Button _btn_Save;
         Button _btn_Cancel;
+
+        TextBox[] _tbox_list_rect = new TextBox[4];
         #endregion
     }
 }
