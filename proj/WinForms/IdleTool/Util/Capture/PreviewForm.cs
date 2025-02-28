@@ -9,6 +9,7 @@
     {
         Common.Types.RECT _apprect = new Common.Types.RECT();
         Rectangle _rectangle = new Rectangle();
+        Rectangle _this_rectangle = new Rectangle();
 
         public PreviewForm(Bitmap capturedImage, Rectangle __rectangle, Common.Types.RECT __apprect)
         {
@@ -16,15 +17,19 @@
 
             _apprect = __apprect;
             _rectangle = __rectangle;
+            _this_rectangle = __rectangle;
             UpdateTextBox_Rect();
         }
 
         void UpdateTextBox_Rect()
         {
-            _tbox_list_rect[0].Text = (_rectangle.X - _apprect.Left).ToString();
-            _tbox_list_rect[1].Text = (_rectangle.Y - _apprect.Top).ToString();
-            _tbox_list_rect[2].Text = (_rectangle.Width).ToString();
-            _tbox_list_rect[3].Text = (_rectangle.Height).ToString();
+            _tbox_list_rect[0].Text = (_this_rectangle.X - _apprect.Left).ToString();
+            _tbox_list_rect[1].Text = (_this_rectangle.Y - _apprect.Top).ToString();
+
+            //_tbox_list_rect[2].Text = (_this_rectangle.Width).ToString();
+            //_tbox_list_rect[3].Text = (_this_rectangle.Height).ToString();
+            _tbox_list_rect[2].Text = (_this_rectangle.Right - _apprect.Left).ToString();
+            _tbox_list_rect[3].Text = (_this_rectangle.Bottom - _apprect.Top).ToString();
         }
 
         #region [Event Handler]

@@ -53,7 +53,7 @@
             _pane_TopButtons.Controls.Add(_btn_Cancel);
 
             const int Line_Inputs = 1; // 행 개수
-            string[] LabelText = { "X", "Y", "너비", "높이" };
+            string[] LabelText = { "좌 (左)", "상 (上)", "우 (右)", "하 (下)" };
 
             // 🔹 입력 필드 영역을 위한 `TableLayoutPanel`
             TableLayoutPanel inputFieldsPanel = new TableLayoutPanel {
@@ -63,7 +63,7 @@
                 AutoSize = true,
                 Padding = new Padding(2),
                 Margin = new Padding(2),
-                CellBorderStyle = TableLayoutPanelCellBorderStyle.None,
+                CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset,
             };
 
             int colindex = 0;
