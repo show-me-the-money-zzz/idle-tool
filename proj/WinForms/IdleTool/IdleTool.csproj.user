@@ -4,7 +4,7 @@
     <Compile Update="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Util\CaptureScreenForm.cs">
+    <Compile Update="Util\Capture\ScreenForm.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>

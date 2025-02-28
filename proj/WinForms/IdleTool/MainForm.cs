@@ -98,7 +98,7 @@ namespace IdleTool
         private void OnClick_Test3(object sender, EventArgs e)
         {
             //Console.WriteLine("캡쳐하기");
-            Util.CaptureTool.Make_Custom();
+            Util.Capture.Tool.Make_Custom();
         }
         private void OnClick_Test4(object sender, EventArgs e)
         {

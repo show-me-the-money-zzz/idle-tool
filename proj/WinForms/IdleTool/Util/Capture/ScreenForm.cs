@@ -1,17 +1,17 @@
-﻿namespace IdleTool.Util
+﻿namespace IdleTool.Util.Capture
 {
     using System;
     using System.Drawing;
     //using System.Drawing.Imaging;
     using System.Windows.Forms;
 
-    internal class CaptureScreenForm : Form
+    internal class ScreenForm : Form
     {
         Point _point_start;
         Rectangle _rect_selection;
         bool _isSelecting = false;
 
-        public CaptureScreenForm()
+        public ScreenForm()
         {
             this.DoubleBuffered = true;
             this.FormBorderStyle = FormBorderStyle.None;

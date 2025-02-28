@@ -112,7 +112,7 @@
                 await Task.Delay(TimeSpan.FromSeconds(TICK));
                 //Console.WriteLine($"Tick: {DateTime.Now}");
 
-                var bmp_app = Util.CaptureTool.NewMake(_app);
+                var bmp_app = Util.Capture.Tool.NewMake(_app);
 
                 ////POTION
                 var potion = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion_Potion, __isNumber: true, __name: Names[0]);

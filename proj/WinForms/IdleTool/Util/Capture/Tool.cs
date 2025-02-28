@@ -1,4 +1,4 @@
-﻿namespace IdleTool.Util
+﻿namespace IdleTool.Util.Capture
 {
     using System.Drawing;
     using System.Drawing.Imaging;
@@ -7,7 +7,7 @@
     //using Emgu.CV.Reg;
     //using static Emgu.CV.OCR.Tesseract;
 
-    public static class CaptureTool
+    public static class Tool
     {
         [DllImport("gdi32.dll")] static extern bool BitBlt(IntPtr hdcDest
             , int xDest, int yDest, int wDest, int hDest,
@@ -49,7 +49,7 @@
 
         public static void Make_Custom()
         {
-            using (var form = new CaptureScreenForm())
+            using (var form = new ScreenForm())
             {
                 if(DialogResult.OK == form.ShowDialog())
                 {
