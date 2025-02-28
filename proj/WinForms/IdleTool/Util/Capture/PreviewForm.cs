@@ -7,14 +7,12 @@
 
     public partial class PreviewForm : Form
     {
-
         Rectangle _rectangle = new Rectangle();
 
         public PreviewForm(Bitmap capturedImage, Rectangle __rectangle)
         {
-            InitializeComponent();
+            InitializeComponent(capturedImage);
 
-            _picbox.Image = capturedImage;
             _rectangle = __rectangle;
         }
 
