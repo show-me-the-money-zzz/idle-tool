@@ -41,6 +41,14 @@
             this.DialogResult = DialogResult.Retry;
             this.Close();
         }
+
+        void Processs_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (Keys.Escape == e.KeyData)
+            {
+                this.Close();
+            }
+        }
         #endregion
     }
 }

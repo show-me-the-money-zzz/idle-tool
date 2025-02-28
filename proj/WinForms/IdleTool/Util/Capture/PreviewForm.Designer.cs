@@ -30,6 +30,9 @@
 
                 this.ClientSize = new Size(formWidth, formHeight);
                 this.MinimumSize = new Size(800, 400); // 버튼과 입력 필드가 보이도록 최소 크기 지정
+
+                this.KeyPreview = true;
+                this.KeyDown += Processs_KeyDown;
             }
 
             // 🔹 "저장" 버튼
