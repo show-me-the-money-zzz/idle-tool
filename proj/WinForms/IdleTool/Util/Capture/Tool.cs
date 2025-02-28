@@ -47,7 +47,7 @@
             return bitmap;
         }
 
-        public static void Make_Custom()
+        public static void Make_Custom(Common.Types.RECT __apprect)
         {
             using (var form = new ScreenForm())
             {
@@ -57,10 +57,22 @@
                     if (0 < rectangle.Width && 0 < rectangle.Height)
                     {
                         var captured = Make_Screen(rectangle);
+                        const int Preparation = 50;
 
-                        // 새로운 창으로 이미지 표시 (저장하지 않음)
-                        var preview = new PreviewForm(captured);
-                        preview.ShowDialog();
+                        if (__apprect.Left - Preparation <= rectangle.Left &&
+                            __apprect.Top - Preparation <= rectangle.Top &&
+                            __apprect.Right + Preparation >= rectangle.Right &&
+                            __apprect.Bottom + Preparation >= rectangle.Bottom
+                            )
+                        {
+                            // 새로운 창으로 이미지 표시 (저장하지 않음)
+                            var preview = new PreviewForm(captured, rectangle);
+                            preview.ShowDialog();
+                        }
+                        else
+                        {
+                            MessageBox.Show("게임 내의 영역을 캡쳐해 주세요", "에러", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
                     }
                 }
             }

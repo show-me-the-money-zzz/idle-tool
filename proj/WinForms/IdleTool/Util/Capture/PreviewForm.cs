@@ -7,16 +7,21 @@
 
     public partial class PreviewForm : Form
     {
-        public PreviewForm(Bitmap capturedImage)
+
+        Rectangle _rectangle = new Rectangle();
+
+        public PreviewForm(Bitmap capturedImage, Rectangle __rectangle)
         {
             InitializeComponent();
+
             _picbox.Image = capturedImage;
+            _rectangle = __rectangle;
         }
 
         #region [Event Handler]
         void OnClick_Save(object sender, EventArgs e)
         {
-            _picbox.Image.Save("captured.png", ImageFormat.Png);
+            _picbox.Image.Save($@".\captured ({_rectangle.X}, {_rectangle.Y}) ({_rectangle.Width} x {_rectangle.Height}).png", ImageFormat.Png);
 
             this.Close();
             MessageBox.Show("저장 완료!", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
