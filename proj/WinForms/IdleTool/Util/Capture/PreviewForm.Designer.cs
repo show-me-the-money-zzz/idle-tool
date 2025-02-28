@@ -40,8 +40,7 @@
             _btn_Cancel.Click += OnClick_Retry;
 
             // 🔹 버튼을 가로 정렬하는 패널 (상단에 배치)
-            FlowLayoutPanel _pane_TopButtons = new FlowLayoutPanel
-            {
+            FlowLayoutPanel _pane_TopButtons = new FlowLayoutPanel {
                 FlowDirection = FlowDirection.LeftToRight,
                 Dock = DockStyle.Fill,
                 AutoSize = true,
@@ -51,8 +50,7 @@
             _pane_TopButtons.Controls.Add(_btn_Cancel);
 
             // 🔹 입력 필드 영역을 위한 `TableLayoutPanel`
-            TableLayoutPanel inputFieldsPanel = new TableLayoutPanel
-            {
+            TableLayoutPanel inputFieldsPanel = new TableLayoutPanel {
                 ColumnCount = 5, // 4개의 입력 필드 + 버튼
                 RowCount = 1,   // 2줄 배치
                 Dock = DockStyle.Fill,
@@ -88,19 +86,17 @@
             }
 
             // 🔹 "추가" 버튼 (입력 필드 옆에 위치)
-            Button btn_Add = new Button
-            {
-                Text = "추가",
+            Button btn_Update = new Button {
+                Text = "적용",
                 AutoSize = true,
                 Width = 80,
                 Margin = new Padding(5)
             };
-            inputFieldsPanel.Controls.Add(btn_Add, 4, 0);
-            inputFieldsPanel.SetRowSpan(btn_Add, 2); // 버튼을 2행 높이로 설정
+            inputFieldsPanel.Controls.Add(btn_Update, 4, 0);
+            inputFieldsPanel.SetRowSpan(btn_Update, 2); // 버튼을 2행 높이로 설정
 
             // 🔹 `PictureBox` 설정 (이미지 표시, 아래 배치)
-            _picbox = new PictureBox
-            {
+            _picbox = new PictureBox {
                 Image = __captured,
                 SizeMode = PictureBoxSizeMode.Zoom, // 창 크기에 맞게 자동 조정
                 Dock = DockStyle.Fill, // 나머지 공간을 모두 차지하도록 설정
@@ -108,8 +104,7 @@
             };
 
             // 🔹 전체 레이아웃을 관리하는 `TableLayoutPanel`
-            TableLayoutPanel mainLayout = new TableLayoutPanel
-            {
+            TableLayoutPanel mainLayout = new TableLayoutPanel {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
                 RowCount = 3

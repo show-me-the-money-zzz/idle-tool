@@ -46,7 +46,7 @@ namespace IdleTool
             // 
             // test_button1
             // 
-            test_button1.Location = new Point(12, 12);
+            test_button1.Location = new Point(123, 285);
             test_button1.Name = "test_button1";
             test_button1.Size = new Size(105, 23);
             test_button1.TabIndex = 0;
@@ -64,7 +64,7 @@ namespace IdleTool
             // 
             // test_button2
             // 
-            test_button2.Location = new Point(12, 41);
+            test_button2.Location = new Point(12, 285);
             test_button2.Name = "test_button2";
             test_button2.Size = new Size(105, 23);
             test_button2.TabIndex = 2;
@@ -74,7 +74,7 @@ namespace IdleTool
             // 
             // test_button3
             // 
-            test_button3.Location = new Point(12, 285);
+            test_button3.Location = new Point(12, 12);
             test_button3.Name = "test_button3";
             test_button3.Size = new Size(105, 23);
             test_button3.TabIndex = 3;
@@ -85,7 +85,7 @@ namespace IdleTool
             // test_button4
             // 
             test_button4.Enabled = false;
-            test_button4.Location = new Point(123, 285);
+            test_button4.Location = new Point(123, 12);
             test_button4.Name = "test_button4";
             test_button4.Size = new Size(105, 23);
             test_button4.TabIndex = 4;
