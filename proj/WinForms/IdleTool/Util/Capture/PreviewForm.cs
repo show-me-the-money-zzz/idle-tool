@@ -23,8 +23,8 @@
         {
             _tbox_list_rect[0].Text = (_rectangle.X - _apprect.Left).ToString();
             _tbox_list_rect[1].Text = (_rectangle.Y - _apprect.Top).ToString();
-            _tbox_list_rect[2].Text = (_rectangle.Right - _apprect.Left).ToString();
-            _tbox_list_rect[3].Text = (_rectangle.Bottom - _apprect.Top).ToString();
+            _tbox_list_rect[2].Text = (_rectangle.Width).ToString();
+            _tbox_list_rect[3].Text = (_rectangle.Height).ToString();
         }
 
         #region [Event Handler]

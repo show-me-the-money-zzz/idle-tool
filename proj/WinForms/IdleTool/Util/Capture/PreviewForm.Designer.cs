@@ -53,7 +53,7 @@
             _pane_TopButtons.Controls.Add(_btn_Cancel);
 
             const int Line_Inputs = 1; // 행 개수
-            string[] LabelText = { "LEFT", "TOP", "RIGHT", "BOTTOM" };
+            string[] LabelText = { "X", "Y", "너비", "높이" };
 
             // 🔹 입력 필드 영역을 위한 `TableLayoutPanel`
             TableLayoutPanel inputFieldsPanel = new TableLayoutPanel {
