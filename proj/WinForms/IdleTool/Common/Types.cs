@@ -19,6 +19,8 @@
             public Size Get_Size() => new Size(Width, Height);
 
             public bool IsValid => (0 < Width && 0 < Height);
+
+            public Rectangle Get_Rectangle() => new Rectangle(Left, Top, Width, Height);
         }
     }
 }

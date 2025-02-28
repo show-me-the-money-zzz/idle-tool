@@ -20,16 +20,33 @@
             var rect = __app.Capture_Rect();
 
             //using (Bitmap bitmap = new Bitmap(__rect.Width, __rect.Height))
-            Bitmap bitmap = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb);
-            {
-                using (Graphics g = Graphics.FromImage(bitmap))
-                {
-                    g.CopyFromScreen(rect.Left, rect.Top, 0, 0, new Size(rect.Width, rect.Height), CopyPixelOperation.SourceCopy);
-                }
-            }
+            //Bitmap bitmap = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb);
+            //{
+            //    using (Graphics g = Graphics.FromImage(bitmap))
+            //    {
+            //        g.CopyFromScreen(rect.Left, rect.Top, 0, 0, new Size(rect.Width, rect.Height), CopyPixelOperation.SourceCopy);
+            //    }
+            //}
+            //return bitmap;
 
+            return Make_Screen(rect.Get_Rectangle());
+        }
+
+        static Bitmap Make_Screen(Rectangle __rect)
+        {
+            Bitmap bitmap = new Bitmap(__rect.Width, __rect.Height
+                , PixelFormat.Format32bppArgb//??
+                );
+
+            using (Graphics g = Graphics.FromImage(bitmap))
+            {
+                g.CopyFromScreen(__rect.Location, Point.Empty, __rect.Size
+                    , CopyPixelOperation.SourceCopy//??
+                    );
+            }
             return bitmap;
         }
+
         public static Bitmap Make_Cropped(Controller.App __app, Rectangle region)
         {//앱의 특정 위치를 캡쳐
             var rect_app = __app.Capture_Rect();
