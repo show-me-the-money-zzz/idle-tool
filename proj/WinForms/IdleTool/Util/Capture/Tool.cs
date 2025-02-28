@@ -61,10 +61,6 @@
                         // 새로운 창으로 이미지 표시 (저장하지 않음)
                         var preview = new PreviewForm(captured);
                         preview.ShowDialog();
-
-                        ////파일로 저장
-                        //captured.Save("captured.png", ImageFormat.Png);
-                        //MessageBox.Show("캡처 완료!", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
             }
