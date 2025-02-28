@@ -68,7 +68,10 @@
             _picbox = new PictureBox {
                 Image = __captured,
                 SizeMode = PictureBoxSizeMode.Zoom, // 폼 크기에 맞게 자동 조정
-                Dock = DockStyle.Fill // 🔹 TableLayoutPanel 내에서만 Fill 설정
+                Dock = DockStyle.Fill, // 🔹 TableLayoutPanel 내에서만 Fill 설정
+
+                //BorderStyle = BorderStyle.FixedSingle, // 🔹 기본 테두리 추가
+                BorderStyle = BorderStyle.Fixed3D, // 입체감 있는 테두리
             };
 
             // 🔹 TableLayoutPanel 설정 (버튼과 이미지 영역을 나눔)
