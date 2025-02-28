@@ -78,7 +78,7 @@ namespace IdleTool
             test_button3.Name = "test_button3";
             test_button3.Size = new Size(105, 23);
             test_button3.TabIndex = 3;
-            test_button3.Text = "한글 읽기";
+            test_button3.Text = "캡쳐하기";
             test_button3.UseVisualStyleBackColor = true;
             test_button3.Click += OnClick_Test3;
             // 
