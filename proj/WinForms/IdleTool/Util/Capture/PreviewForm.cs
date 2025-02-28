@@ -25,7 +25,11 @@
             MessageBox.Show("저장 완료!", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        void OnClick_Cancel(object sender, EventArgs e) => this.Close();
+        void OnClick_Retry(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Retry;
+            this.Close();
+        }
         #endregion
     }
 }

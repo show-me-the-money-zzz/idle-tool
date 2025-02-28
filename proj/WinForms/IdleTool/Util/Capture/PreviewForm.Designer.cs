@@ -43,12 +43,12 @@
 
             // 🔹 취소 버튼 설정
             _btn_Cancel = new Button {
-                Text = "취소",
+                Text = "다시",
                 AutoSize = true,
                 Width = 80,
                 Margin = new Padding(5)
             };
-            _btn_Cancel.Click += OnClick_Cancel;
+            _btn_Cancel.Click += OnClick_Retry;
 
             // 🔹 FlowLayoutPanel 설정 (버튼을 가로 정렬, 위에 배치)
             _pane_TopButtons = new FlowLayoutPanel {
