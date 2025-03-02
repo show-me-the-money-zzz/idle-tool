@@ -22,5 +22,9 @@
 
             public Rectangle Get_Rectangle() => new Rectangle(Left, Top, Width, Height);
         }
+
+        public class TextArea : Dictionary<string, Rectangle>
+        {
+        }
     }
 }

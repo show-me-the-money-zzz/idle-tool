@@ -1,7 +1,7 @@
 namespace IdleTool
 {
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
+    using System.Drawing;
+    using System.Windows.Forms;
 
     public partial class MainForm : Form
     {
@@ -17,29 +17,28 @@ namespace IdleTool
 #if DEBUG
                     Console.WriteLine($"[{json.Count}] {json.ToString()}");
 #endif
-                }
-
-                string path = @"./data.json";
-
-                ////쓰기
-                //JObject jobj = new JObject(
-                //    new JProperty("text_area_potion", "0, 0, 0, 0"),
-                //    new JProperty("text_area_hp", "0, 0, 0, 0"),
-                //    new JProperty("text_area_mp", "0, 0, 0, 0")
-                //    );
-                //File.WriteAllText(path, jobj.ToString());
-
-                ////읽기
-                using (StreamReader file = File.OpenText(path))
-                {
-                    using (JsonTextReader reader = new JsonTextReader(file))
+                    foreach (var item in json)
                     {
-                        JObject json = (JObject)JToken.ReadFrom(reader);
-
-                        Console.WriteLine(json["text_area_potion"].ToString());
-                        Console.WriteLine(json["text_area_hp"].ToString());
-                        Console.WriteLine(json["text_area_mp"].ToString());
+                        string key = item.Key;
+                        var val = (item.Value).ToString().Split(",");
+                        {
+                            var rectangle = new Rectangle();
+                            {
+                                rectangle.X = int.Parse(val[0]);
+                                rectangle.Y = int.Parse(val[1]);
+                                rectangle.Width = int.Parse(val[2]);
+                                rectangle.Height = int.Parse(val[3]);
+                            }
+                            Common.Datas.Instance.List_TextArea.Add(key, rectangle);
+                        }
+                    };
+#if DEBUG
+                    int index = 0;
+                    foreach (var item in Common.Datas.Instance.List_TextArea)
+                    {
+                        Console.WriteLine($"[{index++}] {item}");
                     }
+#endif
                 }
             }            
 
