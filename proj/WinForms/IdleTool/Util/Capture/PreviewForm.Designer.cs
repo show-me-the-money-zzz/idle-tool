@@ -99,6 +99,7 @@
                 Width = 60, // ❗ 버튼 폭을 줄여서 불필요한 공간 최소화
                 Margin = new Padding(2)
             };
+            btn_Update.Click += OnClick_Update_Rect;
             inputFieldsPanel.Controls.Add(btn_Update, colindex, 0);
 
             // 🔹 `PictureBox` 설정 (이미지 표시, 아래 배치)

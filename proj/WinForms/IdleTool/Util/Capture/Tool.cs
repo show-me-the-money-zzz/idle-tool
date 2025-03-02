@@ -54,29 +54,40 @@
                 if(DialogResult.OK == form.ShowDialog())
                 {
                     var rectangle = form.Get_SelectedRectangle();
-                    if (0 < rectangle.Width && 0 < rectangle.Height)
-                    {
-                        var captured = Make_Screen(rectangle);
-                        const int Preparation = 50;
+                    Show_Preview(__apprect, rectangle);
+                }
+            }
+        }
 
-                        if (__apprect.Left - Preparation <= rectangle.Left &&
-                            __apprect.Top - Preparation <= rectangle.Top &&
-                            __apprect.Right + Preparation >= rectangle.Right &&
-                            __apprect.Bottom + Preparation >= rectangle.Bottom
-                            )
-                        {
-                            // 새로운 창으로 이미지 표시 (저장하지 않음)
-                            var preview = new PreviewForm(captured, rectangle, __apprect);
-                            if (DialogResult.Retry == preview.ShowDialog())
-                            {
-                                Make_Custom(__apprect);
-                            }
-                        }
-                        else
-                        {
-                            MessageBox.Show("게임 내의 영역을 캡쳐해 주세요", "에러", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
+        static void Show_Preview(Common.Types.RECT __apprect, Rectangle __rectangle)
+        {
+            if (0 < __rectangle.Width && 0 < __rectangle.Height)
+            {
+                var captured = Make_Screen(__rectangle);
+                const int Preparation = 50;
+
+                if (__apprect.Left - Preparation <= __rectangle.Left &&
+                    __apprect.Top - Preparation <= __rectangle.Top &&
+                    __apprect.Right + Preparation >= __rectangle.Right &&
+                    __apprect.Bottom + Preparation >= __rectangle.Bottom
+                    )
+                {
+                    // 새로운 창으로 이미지 표시 (저장하지 않음)
+                    var preview = new PreviewForm(captured, __rectangle, __apprect);
+                    var result = preview.ShowDialog();
+                    if (DialogResult.Retry == result)
+                    {
+                        Make_Custom(__apprect);
                     }
+                    else if (DialogResult.TryAgain == result)
+                    {
+                        //Console.WriteLine($"TryAgain: {preview.UpdateRectangle}");
+                        Show_Preview(__apprect, preview.UpdateRectangle);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("게임 내의 영역을 캡쳐해 주세요", "에러", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }

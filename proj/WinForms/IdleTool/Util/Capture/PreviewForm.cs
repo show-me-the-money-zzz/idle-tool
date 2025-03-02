@@ -1,5 +1,6 @@
 ﻿namespace IdleTool.Util.Capture
 {
+    using System.Diagnostics;
     //using System;
     using System.Drawing;
     using System.Drawing.Imaging;
@@ -9,7 +10,9 @@
     {
         Common.Types.RECT _apprect = new Common.Types.RECT();
         Rectangle _rectangle = new Rectangle();
+        
         Rectangle _this_rectangle = new Rectangle();
+        public Rectangle UpdateRectangle => _this_rectangle;
 
         public PreviewForm(Bitmap capturedImage, Rectangle __rectangle, Common.Types.RECT __apprect)
         {
@@ -44,6 +47,24 @@
         void OnClick_Retry(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.Retry;
+            this.Close();
+        }
+
+        void OnClick_Update_Rect(object sender, EventArgs e)
+        {
+            var L = int.Parse(_tbox_list_rect[0].Text);
+            var T = int.Parse(_tbox_list_rect[1].Text);
+            var R = int.Parse(_tbox_list_rect[2].Text);
+            var B = int.Parse(_tbox_list_rect[3].Text);
+            //Console.WriteLine($"Update_Rect: L= {L}, T= {T}, R= {R}, B= {B}");
+
+            _this_rectangle.X = _apprect.Left + L;
+            _this_rectangle.Y = _apprect.Top + T;
+            _this_rectangle.Width = R - L;
+            _this_rectangle.Height = B - T;
+            //Console.WriteLine($"{_rectangle} vs {_this_rectangle}");
+
+            this.DialogResult = DialogResult.TryAgain;
             this.Close();
         }
 
