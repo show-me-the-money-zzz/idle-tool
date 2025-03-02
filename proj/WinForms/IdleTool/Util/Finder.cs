@@ -1,7 +1,9 @@
 ﻿namespace IdleTool.Util
 {
-    using Emgu.CV;
+    using System.IO;
     using System.Drawing.Imaging;
+    using Newtonsoft.Json.Linq;
+    using Newtonsoft.Json;
 
     public class Finder
     {//https://tyen.tistory.com/74
@@ -58,5 +60,25 @@
             Console.WriteLine($"캡처 이미지(Bitmap)를 저장하였습니다(.png): {fileName}");
 #endif
         }
+
+        static JObject Read_JsonData(string __filename)
+        {
+            string path = @$"{LocalPath("data")}/{__filename}.json";
+#if DEBUG
+            //Console.WriteLine($"Read_JsonData({__filename}): {path}");
+#endif
+            using (StreamReader file = File.OpenText(path))
+            {
+                using (JsonTextReader reader = new JsonTextReader(file))
+                {
+                    JObject json = (JObject)JToken.ReadFrom(reader);
+#if DEBUG
+                    //Console.WriteLine(json.ToString());
+#endif
+                    return json;
+                }
+            }
+        }
+        public static JObject Read_JsonData_Textarea() => Read_JsonData("textarea");
     }
 }

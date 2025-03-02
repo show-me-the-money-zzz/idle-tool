@@ -12,6 +12,13 @@ namespace IdleTool
         {
             InitializeComponent();
             {
+                {
+                    var json = Util.Finder.Read_JsonData_Textarea();
+#if DEBUG
+                    Console.WriteLine($"[{json.Count}] {json.ToString()}");
+#endif
+                }
+
                 string path = @"./data.json";
 
                 ////쓰기
