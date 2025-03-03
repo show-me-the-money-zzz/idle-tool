@@ -29,12 +29,12 @@ namespace IdleTool
                                 rectangle.Width = int.Parse(val[2]);
                                 rectangle.Height = int.Parse(val[3]);
                             }
-                            Common.Datas.Instance.List_TextArea.Add(key, rectangle);
+                            Common.Stores.Instance.List_TextArea.Add(key, rectangle);
                         }
                     };
 #if DEBUG
                     int index = 0;
-                    foreach (var item in Common.Datas.Instance.List_TextArea)
+                    foreach (var item in Common.Stores.Instance.List_TextArea)
                     {
                         Console.WriteLine($"[{index++}] {item}");
                     }
