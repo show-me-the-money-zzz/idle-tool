@@ -86,26 +86,9 @@
 
         async UniTask Update_Stat()
         {
-            Rectangle textRegion_Potion = new Rectangle(550, 1045, 60, 20);//potion
-            //{ textRegion_Potion = new Rectangle(590, 1050, 56, 20); }//ZZUNY+중간
-            Rectangle textRegion_HP = new Rectangle(70, 58, 306, 25);
-            //{ textRegion_HP = new Rectangle(60, 56, 240, 22); }//ZZUNY+중간
-            Rectangle textRegion_MP = new Rectangle(70, 85, 306, 25);
-            //{ textRegion_MP = new Rectangle(60, 80, 240, 22); }//ZZUNY+중간
-
-            Rectangle textRegion_Location = new Rectangle(222, 206, 180, 26);
-            //{ textRegion_Location = new Rectangle(200, 190, 160, 22); }//ZZUNY+중간
-
             double TICK = 1.0d;
             //{ TICK = 0.05d; }
             { TICK = 0.001d; }
-
-            /*const*/ string[] Names = {
-                "",//potion
-                "",//hp
-                "",//mp
-                "",//location
-            };
 
             while (true)
             {
@@ -114,21 +97,55 @@
 
                 var bmp_app = Util.Capture.Tool.NewMake(_app);
 
-                ////POTION
-                var potion = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion_Potion, __isNumber: true, __name: Names[0]);
-                Parse_Number(POTION, potion, false);
+                string keyword = "";
+                Rectangle textRegion = new Rectangle();
+
+                //POTION
+                keyword = Common.Defines.Reserved_Keywords_Text(Common.Defines.Reserved_Keywords.potion);
+                if (Common.Stores.Instance.List_TextArea.ContainsKey(keyword))
+                {
+                    textRegion = Common.Stores.Instance.List_TextArea[keyword];
+                    var potion = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion, __isNumber: true
+                        //, __name: keyword
+                        );
+                    Parse_Number(POTION, potion, false);
+                    Console.WriteLine($"potion: {potion}");
+                }
 
                 ////HP
-                var hp = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion_HP, __isNumber: true, __name: Names[1]);
-                Parse_Number(HP, hp, true);
+                keyword = Common.Defines.Reserved_Keywords_Text(Common.Defines.Reserved_Keywords.hp);
+                if (Common.Stores.Instance.List_TextArea.ContainsKey(keyword))
+                {
+                    textRegion = Common.Stores.Instance.List_TextArea[keyword];
+                    var hp = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion, __isNumber: true
+                        //, __name: keyword
+                        );
+                    Parse_Number(HP, hp, true);
+                    Console.WriteLine($"hp: {hp}");
+                }
 
                 ////MP
-                var mp = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion_MP, __isNumber: true, __name: Names[2]);
-                Parse_Number(MP, mp, true);
+                keyword = Common.Defines.Reserved_Keywords_Text(Common.Defines.Reserved_Keywords.mp);
+                if (Common.Stores.Instance.List_TextArea.ContainsKey(keyword))
+                {
+                    textRegion = Common.Stores.Instance.List_TextArea[keyword];
+                    var mp = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion, __isNumber: true
+                        //, __name: keyword
+                        );
+                    Parse_Number(MP, mp, true);
+                    //Console.WriteLine($"mp: {mp}");
+                }
 
                 ////Location
-                LOCATION.Value = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion_Location, __isNumber: false, __name: Names[3]);
-                //LOCATION.Value = Util.OCR.ReadText(Util.CaptureTool.Make_Cropped(_app, textRegion_Location), false, Names[3]);
+                keyword = Common.Defines.Reserved_Keywords_Text(Common.Defines.Reserved_Keywords.location);
+                if (Common.Stores.Instance.List_TextArea.ContainsKey(keyword))
+                {
+                    textRegion = Common.Stores.Instance.List_TextArea[keyword];
+                    LOCATION.Value = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion, __isNumber: false
+                        //, __name: keyword
+                        );
+                    //Console.WriteLine($"지역: {LOCATION.Value}");
+                }
             }
         }
     }
