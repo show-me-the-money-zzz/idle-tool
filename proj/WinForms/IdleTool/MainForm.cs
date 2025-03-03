@@ -11,36 +11,8 @@ namespace IdleTool
         public MainForm(Controller.App __app)
         {
             InitializeComponent();
-            {
-                {
-                    var json = Util.Finder.Read_JsonData_Textarea();
-#if DEBUG
-                    Console.WriteLine($"[{json.Count}] {json.ToString()}");
-#endif
-                    foreach (var item in json)
-                    {
-                        string key = item.Key;
-                        var val = (item.Value).ToString().Split(",");
-                        {
-                            var rectangle = new Rectangle();
-                            {
-                                rectangle.X = int.Parse(val[0]);
-                                rectangle.Y = int.Parse(val[1]);
-                                rectangle.Width = int.Parse(val[2]);
-                                rectangle.Height = int.Parse(val[3]);
-                            }
-                            Common.Stores.Instance.List_TextArea.Add(key, rectangle);
-                        }
-                    };
-#if DEBUG
-                    int index = 0;
-                    foreach (var item in Common.Stores.Instance.List_TextArea)
-                    {
-                        Console.WriteLine($"[{index++}] {item}");
-                    }
-#endif
-                }
-            }            
+
+            Load_Data();
 
             KeyPreview = true;//키 입력 안 먹을 때
             //https://free-sounds.tistory.com/39
@@ -63,6 +35,36 @@ namespace IdleTool
                 , statusLabel_Potion
                 , statusLabel_State
                 );
+        }
+
+        void Load_Data()
+        {
+            {//Text Area
+                var json = Util.Finder.Read_JsonData_Textarea();
+#if DEBUG
+                Console.WriteLine($"[{json.Count}] {json.ToString()}");
+#endif
+                foreach (var item in json)
+                {
+                    string key = item.Key;
+                    var val = (item.Value).ToString().Split(",");
+                    {
+                        var rectangle = new Rectangle();
+                        {
+                            rectangle.X = int.Parse(val[0]);
+                            rectangle.Y = int.Parse(val[1]);
+                            rectangle.Width = int.Parse(val[2]);
+                            rectangle.Height = int.Parse(val[3]);
+                        }
+                        Common.Stores.Instance.List_TextArea.Add(key, rectangle);
+                    }
+                };
+#if DEBUG
+                int index = 0;
+                foreach (var item in Common.Stores.Instance.List_TextArea)
+                    Console.WriteLine($"[{index++}] {item}");
+#endif
+            }
         }
 
         void Setup_Title(Controller.App __app)
