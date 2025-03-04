@@ -84,12 +84,11 @@ namespace IdleTool
             // 
             // test_button4
             // 
-            test_button4.Enabled = false;
             test_button4.Location = new Point(123, 12);
             test_button4.Name = "test_button4";
             test_button4.Size = new Size(105, 23);
             test_button4.TabIndex = 4;
-            test_button4.Text = "테스트";
+            test_button4.Text = "키 테스트";
             test_button4.UseVisualStyleBackColor = true;
             test_button4.Click += OnClick_Test4;
             // 

@@ -1,6 +1,8 @@
 namespace IdleTool
 {
+    using System.Diagnostics;
     using System.Drawing;
+    using System.Runtime.InteropServices;
     using System.Windows.Forms;
 
     public partial class MainForm : Form
@@ -20,7 +22,7 @@ namespace IdleTool
             _appController = __app;
             Setup_Title(__app);
             //{ Test_App(); }//DEV TEST
-            Util.Importer.Focusing_App(__app);
+            Util.Importer.Focusing_App(__app.HANDLE);
 
             {
                 //foreach (ToolStripItem item in statusStrip.Items)
@@ -108,8 +110,54 @@ namespace IdleTool
             //Console.WriteLine("캡쳐하기");            
             Util.Capture.Tool.Make_Custom(_appController.Capture_Rect());
         }
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+        [DllImport("user32.dll")] static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+        const uint WM_KEYDOWN = 0x0100; // 키 누름
+        const uint WM_KEYUP = 0x0101;   // 키 뗌
+        const uint WM_CHAR = 0x0102;    // 문자 입력
         private void OnClick_Test4(object sender, EventArgs e)
         {
+            //IntPtr hWnd = FindWindow(null
+            //    //, "LORDNINE"
+
+            //    //, "제목 없음 - 메모장"
+            //    , "제목 없음 - Windows 메모장"
+            //    ); // 창 이름으로 찾기
+            //if (hWnd == IntPtr.Zero)
+            //{
+            //    MessageBox.Show("LORDNINE 창을 찾을 수 없습니다.");
+            //    return;
+            //}
+
+            Process[] processes = Process.GetProcessesByName("notepad");
+            if (processes.Length == 0)
+            {
+                MessageBox.Show("메모장을 찾을 수 없습니다.");
+                return;
+            }
+
+            IntPtr hWnd = processes[0].MainWindowHandle;
+            if (hWnd == IntPtr.Zero)
+            {
+                MessageBox.Show("메모장 창을 찾을 수 없습니다.");
+                return;
+            }
+
+            Console.WriteLine($"OnClick_Test4(): FindWindow= {hWnd} vs _appController= {_appController.HANDLE}");
+
+            hWnd = _appController.HANDLE;
+
+            //PostMessage(hWnd, WM_CHAR, (IntPtr)'A', IntPtr.Zero);
+
+            //Util.Importer.KEY_DOWN(hWnd, Keys.M);
+            //Util.Importer.KEY_UP(hWnd, Keys.M);
+
+            //Util.Importer.KEY_KEY(hWnd, 'M');
+            //Util.Importer.KEY_KEY(hWnd, 'm');
+
+            Util.Importer.ActiveApp_SendKeys(hWnd, "m");
         }
 
         void Log_DetectResult(DEV.Tester0.Result_DetectIconImage __result)
