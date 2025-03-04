@@ -151,13 +151,15 @@ namespace IdleTool
 
             //PostMessage(hWnd, WM_CHAR, (IntPtr)'A', IntPtr.Zero);
 
-            //Util.Importer.KEY_DOWN(hWnd, Keys.M);
-            //Util.Importer.KEY_UP(hWnd, Keys.M);
+            //Util.InputMachine.KEY_DOWN(hWnd, Keys.M);
+            //Util.InputMachine.KEY_UP(hWnd, Keys.M);
 
-            //Util.Importer.KEY_KEY(hWnd, 'M');
-            //Util.Importer.KEY_KEY(hWnd, 'm');
+            //Util.InputMachine.KEY_KEY(hWnd, 'M');
+            //Util.InputMachine.KEY_KEY(hWnd, 'm');
 
-            Util.Importer.ActiveApp_SendKeys(hWnd, "m");
+            //Util.InputMachine.ActiveApp_SendKeys(hWnd, "m");
+
+            Util.InputMachine.Click_DOWN(hWnd, 280, 310);
         }
 
         void Log_DetectResult(DEV.Tester0.Result_DetectIconImage __result)
