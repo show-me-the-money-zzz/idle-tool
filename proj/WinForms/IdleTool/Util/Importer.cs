@@ -35,6 +35,7 @@
         }
         #endregion
 
+        public static bool Set_ForegroundWindow(IntPtr hWnd) => SetForegroundWindow(hWnd);
         public static void Focusing_App(IntPtr hWnd)
         {
             SetForegroundWindow(hWnd);

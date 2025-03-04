@@ -132,7 +132,9 @@ namespace IdleTool
             //    return;
             //}
 
-            Process[] processes = Process.GetProcessesByName("notepad");
+            string AppName = "notepad";//notepad
+            //LORDNINE
+            Process[] processes = Process.GetProcessesByName(AppName);
             if (processes.Length == 0)
             {
                 MessageBox.Show("메모장을 찾을 수 없습니다.");
@@ -159,11 +161,14 @@ namespace IdleTool
             //Util.InputMachine.KEY_KEY(hWnd, 'M');
             //Util.InputMachine.KEY_KEY(hWnd, 'm');
 
-            Util.InputMachine.ActiveApp_SendKeys(hWnd, "m");
+            //Util.InputMachine.ActiveApp_SendKeys(hWnd, "i");
 
             //Util.InputMachine.Click_DOWN(hWnd, 280, 310);
 
-            //Util.SENDINPUT.CustomKeyboard.Process(0, true);
+            Util.Importer.Set_ForegroundWindow(hWnd);
+            Thread.Sleep(100);
+
+            Util.SENDINPUT.CustomKeyboard.Process(0, true);
             //{
             //    var apprect = _appController.Capture_Rect();
             //    int x = apprect.Left + 280;
