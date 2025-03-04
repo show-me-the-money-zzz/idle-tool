@@ -1,5 +1,6 @@
 namespace IdleTool
 {
+    using IdleTool.Controller;
     using System.Diagnostics;
     using System.Drawing;
     using System.Runtime.InteropServices;
@@ -147,7 +148,8 @@ namespace IdleTool
 
             Console.WriteLine($"OnClick_Test4(): FindWindow= {hWnd} vs _appController= {_appController.HANDLE}");
 
-            hWnd = _appController.HANDLE;
+            //hWnd = _appController.HANDLE;
+            //Util.Importer.Focusing_App(hWnd);
 
             //PostMessage(hWnd, WM_CHAR, (IntPtr)'A', IntPtr.Zero);
 
@@ -157,9 +159,18 @@ namespace IdleTool
             //Util.InputMachine.KEY_KEY(hWnd, 'M');
             //Util.InputMachine.KEY_KEY(hWnd, 'm');
 
-            //Util.InputMachine.ActiveApp_SendKeys(hWnd, "m");
+            Util.InputMachine.ActiveApp_SendKeys(hWnd, "m");
 
-            Util.InputMachine.Click_DOWN(hWnd, 280, 310);
+            //Util.InputMachine.Click_DOWN(hWnd, 280, 310);
+
+            //Util.SENDINPUT.CustomKeyboard.Process(0, true);
+            //{
+            //    var apprect = _appController.Capture_Rect();
+            //    int x = apprect.Left + 280;
+            //    int y = apprect.Top + 310;
+
+            //    Util.SENDINPUT.CustomMouse.Process(x, y, true);
+            //}
         }
 
         void Log_DetectResult(DEV.Tester0.Result_DetectIconImage __result)
