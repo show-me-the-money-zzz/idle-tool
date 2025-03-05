@@ -38,6 +38,8 @@
         #region [Event Handler]
         void OnClick_Save(object sender, EventArgs e)
         {
+            //Console.WriteLine($"OnClick_Save(): {_txtbox_Name.Text}");
+
             _picbox.Image.Save($@".\captured ({_rectangle.X}, {_rectangle.Y}) ({_rectangle.Width} x {_rectangle.Height}).png", ImageFormat.Png);
 
             this.Close();
