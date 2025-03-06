@@ -98,7 +98,34 @@
             File.WriteAllText(GetPath_JsonData(__filename), __strjson);
         }        
 
-        public static JObject Read_JsonData_Textarea() => Read_JsonData(Json_Name_Textarea);
+        public static int Read_JsonData_Textarea()
+        {
+            var json = Read_JsonData(Json_Name_Textarea);
+#if DEBUG
+            Console.WriteLine($"Read_JsonData_Textarea [{json.Count}] {json.ToString()}");
+#endif
+            foreach (var item in json)
+            {
+                string key = item.Key;
+                var val = (item.Value).ToString().Split(",");
+                {
+                    var rectangle = new Rectangle();
+                    {
+                        rectangle.X = int.Parse(val[0]);
+                        rectangle.Y = int.Parse(val[1]);
+                        rectangle.Width = int.Parse(val[2]);
+                        rectangle.Height = int.Parse(val[3]);
+                    }
+                    Common.Stores.Instance.List_TextArea.Add(key, rectangle);
+                }
+            };
+#if DEBUG
+            //int index = 0;
+            //foreach (var item in Common.Stores.Instance.List_TextArea)
+            //    Console.WriteLine($"[{index++}] {item}");
+#endif
+            return Common.Stores.Instance.List_TextArea.Count;
+        }
 
         public static void Write_JsonData_Textarea()
         {
