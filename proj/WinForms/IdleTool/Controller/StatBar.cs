@@ -71,6 +71,7 @@
             }
 
             __var = __var.Replace(",", "");
+            __var = __var.Replace(".", "");//,를 .로 인식한 경우 대비
 
             if (__isHPMP)
                 __var = __var.Split("/")[0];
@@ -109,7 +110,9 @@
                         //, __name: keyword
                         );
                     Parse_Number(POTION, potion, false);
-                    Console.WriteLine($"potion: {potion}");
+#if DEBUG
+                    //Console.WriteLine($"potion: {potion}");
+#endif
                 }
 
                 ////HP
@@ -121,7 +124,9 @@
                         //, __name: keyword
                         );
                     Parse_Number(HP, hp, true);
-                    Console.WriteLine($"hp: {hp}");
+#if DEBUG
+                    //Console.WriteLine($"hp: {hp}");
+#endif
                 }
 
                 ////MP
@@ -133,7 +138,9 @@
                         //, __name: keyword
                         );
                     Parse_Number(MP, mp, true);
+#if DEBUG
                     //Console.WriteLine($"mp: {mp}");
+#endif
                 }
 
                 ////Location
@@ -144,7 +151,9 @@
                     LOCATION.Value = await Util.OCR.ReadText_CropRegion(bmp_app, textRegion, __isNumber: false
                         //, __name: keyword
                         );
+#if DEBUG
                     //Console.WriteLine($"지역: {LOCATION.Value}");
+#endif
                 }
             }
         }

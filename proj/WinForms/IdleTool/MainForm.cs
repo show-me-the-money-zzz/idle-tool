@@ -63,9 +63,9 @@ namespace IdleTool
                     }
                 };
 #if DEBUG
-                int index = 0;
-                foreach (var item in Common.Stores.Instance.List_TextArea)
-                    Console.WriteLine($"[{index++}] {item}");
+                //int index = 0;
+                //foreach (var item in Common.Stores.Instance.List_TextArea)
+                //    Console.WriteLine($"[{index++}] {item}");
 #endif
             }
         }
