@@ -1,5 +1,6 @@
 ﻿namespace IdleTool.Util.Capture
 {
+    using Newtonsoft.Json;
     using System.Diagnostics;
     //using System;
     using System.Drawing;
@@ -40,7 +41,38 @@
         {
             //Console.WriteLine($"OnClick_Save(): {_txtbox_Name.Text}");
 
-            _picbox.Image.Save($@".\captured ({_rectangle.X}, {_rectangle.Y}) ({_rectangle.Width} x {_rectangle.Height}).png", ImageFormat.Png);
+            if(string.IsNullOrEmpty(_txtbox_Key.Text))
+            {
+                MessageBox.Show("Key를 입력하세요", "에러 - KEY", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if(Common.Stores.Instance.List_TextArea.ContainsKey(_txtbox_Key.Text))
+            {
+                MessageBox.Show("Key가 중복됩니다.", "경고 - 중복 KEY", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            {
+                Rectangle rect = new Rectangle() {
+                    X = _this_rectangle.X - _apprect.Left,
+                    Y = _this_rectangle.Y - _apprect.Top,
+                    Width = _this_rectangle.Width,
+                    Height = _this_rectangle.Height,
+                };
+                //Console.WriteLine($"OnClick_Save(): [{_txtbox_Key.Text}]= {rect}");
+
+                Common.Stores.Instance.List_TextArea.Add(_txtbox_Key.Text, rect);
+
+                string strjson = JsonConvert.SerializeObject(Common.Stores.Instance.List_TextArea, Formatting.Indented);
+
+                //Console.WriteLine($"OnClick_Save(): {strjson}");
+                Util.Finder.Write_JsonData_Textarea(strjson);
+
+                //return;
+            }
+
+            //_picbox.Image.Save($@".\captured ({_rectangle.X}, {_rectangle.Y}) ({_rectangle.Width} x {_rectangle.Height}).png", ImageFormat.Png);
 
             this.Close();
             MessageBox.Show("저장 완료!", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);

@@ -108,7 +108,7 @@
 
             FlowLayoutPanel pane_SubInfo = null;
             {//이름 등 추가 정보
-                _txtbox_Name = new TextBox {
+                _txtbox_Key = new TextBox {
                     Width = 150, // ❗ 입력칸 폭을 줄여서 불필요한 공간 제거
                     Anchor = AnchorStyles.Left,
                     Margin = new Padding(2)
@@ -121,7 +121,7 @@
                     Padding = new Padding(2)
                 };
 
-                pane_SubInfo.Controls.Add(_txtbox_Name);
+                pane_SubInfo.Controls.Add(_txtbox_Key);
             }
 
             // 🔹 `PictureBox` 설정 (이미지 표시, 아래 배치)
@@ -163,7 +163,7 @@
         Button _btn_Save;
         Button _btn_Cancel;
 
-        TextBox _txtbox_Name = null;
+        TextBox _txtbox_Key = null;
 
         TextBox[] _tbox_list_rect = new TextBox[4];
         #endregion
