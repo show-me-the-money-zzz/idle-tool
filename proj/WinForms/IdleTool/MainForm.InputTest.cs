@@ -3,35 +3,27 @@
     using System.Diagnostics;
     using System.Runtime.InteropServices;
 
+#if OLD
     partial class MainForm
     {
-        #region [입력 - 선행]
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+        #region [입력 - import]
+        [DllImport("user32.dll", CharSet = CharSet.Auto)] static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
+        [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
-        [DllImport("user32.dll")]
-        private static extern void SwitchToThisWindow(IntPtr hWnd, bool turnOn);
+        [DllImport("user32.dll")] static extern void SwitchToThisWindow(IntPtr hWnd, bool turnOn);
 
-        [DllImport("user32.dll")]
-        private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+        [DllImport("user32.dll")] static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
 
-        [DllImport("kernel32.dll")]
-        private static extern uint GetCurrentThreadId();
+        [DllImport("kernel32.dll")] static extern uint GetCurrentThreadId();
 
-        [DllImport("user32.dll")]
-        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+        [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
+        [DllImport("user32.dll", SetLastError = true)] static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
-        [DllImport("kernel32.dll")]
-        private static extern int GetLastError();
+        [DllImport("kernel32.dll")] static extern int GetLastError();
         #endregion
 
         #region [입력 - 구조체]
@@ -65,7 +57,7 @@
         #endregion
 
         #region [입력 - 테스트]
-        void InputTest()
+        void InputTest6()
         {
             Console.WriteLine("🔹 메모장 찾기...");
             Process[] processes = Process.GetProcessesByName("notepad");
@@ -349,4 +341,5 @@
         }
         #endregion
     }
+#endif
 }
