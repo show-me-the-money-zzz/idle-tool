@@ -4,7 +4,7 @@
     <Compile Update="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="MainForm.NewInput.cs">
+    <Compile Update="MainForm.V3.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Util\Capture\PreviewForm.cs">

@@ -13,9 +13,6 @@ namespace IdleTool
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         [DllImport("user32.dll")]
-        private static extern void SwitchToThisWindow(IntPtr hWnd, bool turnOn);
-
-        [DllImport("user32.dll")]
         private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
         [DllImport("kernel32.dll")]
@@ -23,7 +20,7 @@ namespace IdleTool
         #endregion
 
         #region [입력 - 구조체]
-        [StructLayout(LayoutKind.Sequential, Pack = 4)] // ✅ 구조체 크기 맞춤
+        [StructLayout(LayoutKind.Sequential, Pack = 8)] // ✅ 구조체 크기 문제 해결
         struct INPUT
         {
             public int type;
@@ -37,7 +34,7 @@ namespace IdleTool
             public KEYBDINPUT ki;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 4)] // ✅ 구조체 크기 맞춤
+        [StructLayout(LayoutKind.Sequential, Pack = 8)] // ✅ 구조체 크기 문제 해결
         struct KEYBDINPUT
         {
             public ushort wVk;
@@ -57,7 +54,7 @@ namespace IdleTool
         #region [입력 - 테스트]
         void InputTest()
         {
-            Console.WriteLine("🔹 메모장 찾기...");
+            Console.WriteLine("🔹 (8회차) 메모장 찾기...");
             Process[] processes = Process.GetProcessesByName("notepad");
             if (processes.Length == 0)
             {
@@ -76,24 +73,22 @@ namespace IdleTool
             {
                 Console.WriteLine("❌ SetForegroundWindow 실패");
             }
-
-            SwitchToThisWindow(hWnd, true);
             Thread.Sleep(100);
 
-            Console.WriteLine("🔹 'H' 키 입력 시도...");
+            Console.WriteLine("🔹 'M' 키 입력 시도...");
             INPUT[] inputs = new INPUT[2];
 
-            // ✅ 구조체 초기화 (ZeroMemory 효과)
+            // ✅ 구조체 초기화
             for (int i = 0; i < inputs.Length; i++)
             {
                 inputs[i] = new INPUT();
             }
 
             inputs[0].type = INPUT_KEYBOARD;
-            inputs[0].U.ki.wVk = 0x48; // 'H'
+            inputs[0].U.ki.wVk = 0x4D; // 'M' 키 입력
 
             inputs[1].type = INPUT_KEYBOARD;
-            inputs[1].U.ki.wVk = 0x48;
+            inputs[1].U.ki.wVk = 0x4D;
             inputs[1].U.ki.dwFlags = KEYEVENTF_KEYUP;
 
             // ✅ 크기 전달 방식 수정
