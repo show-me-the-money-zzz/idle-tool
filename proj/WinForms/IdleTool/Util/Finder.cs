@@ -99,6 +99,14 @@
         }        
 
         public static JObject Read_JsonData_Textarea() => Read_JsonData(Json_Name_Textarea);
-        public static void Write_JsonData_Textarea(string __strjson) => Write_JsonData(Json_Name_Textarea, __strjson);
+
+        public static void Write_JsonData_Textarea()
+        {
+            string strjson = JsonConvert.SerializeObject(Common.Stores.Instance.List_TextArea, Formatting.Indented);
+#if DEBUG
+            //Console.WriteLine($"Write_JsonData_Textarea({strjson}):");
+#endif
+            Write_JsonData(Json_Name_Textarea, strjson);
+        }
     }
 }

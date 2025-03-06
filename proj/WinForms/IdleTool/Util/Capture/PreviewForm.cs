@@ -63,11 +63,7 @@
                 //Console.WriteLine($"OnClick_Save(): [{_txtbox_Key.Text}]= {rect}");
 
                 Common.Stores.Instance.List_TextArea.Add(_txtbox_Key.Text, rect);
-
-                string strjson = JsonConvert.SerializeObject(Common.Stores.Instance.List_TextArea, Formatting.Indented);
-
-                //Console.WriteLine($"OnClick_Save(): {strjson}");
-                Util.Finder.Write_JsonData_Textarea(strjson);
+                Util.Finder.Write_JsonData_Textarea();
 
                 //return;
             }
