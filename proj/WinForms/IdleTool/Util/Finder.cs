@@ -61,13 +61,15 @@
 #endif
         }
 
+        static string GetPath_JsonData(string __filename) => @$"{LocalPath("data")}/{__filename}.json";
+        static readonly string Json_Name_Textarea = "textarea";
+
         static JObject Read_JsonData(string __filename)
         {
-            string path = @$"{LocalPath("data")}/{__filename}.json";
 #if DEBUG
             //Console.WriteLine($"Read_JsonData({__filename}): {path}");
 #endif
-            using (StreamReader file = File.OpenText(path))
+            using (StreamReader file = File.OpenText(GetPath_JsonData(__filename)))
             {
                 using (JsonTextReader reader = new JsonTextReader(file))
                 {
@@ -79,6 +81,7 @@
                 }
             }
         }
-        public static JObject Read_JsonData_Textarea() => Read_JsonData("textarea");
+
+        public static JObject Read_JsonData_Textarea() => Read_JsonData(Json_Name_Textarea);
     }
 }
