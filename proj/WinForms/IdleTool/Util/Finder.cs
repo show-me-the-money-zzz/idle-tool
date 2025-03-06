@@ -82,6 +82,23 @@
             }
         }
 
+        /*
+         * (참고) Newtonsoft.Json을 사용 JSON 파일을 저장.md
+         */
+        static void Write_JsonData(string __filename, string __strjson)
+        {
+            //using (StreamWriter file = File.CreateText(GetPath_JsonData(__filename)))
+            //{
+            //    using (JsonTextWriter writer = new JsonTextWriter(file))
+            //    {
+            //        __json.WriteTo(writer);
+            //    }
+            //}
+
+            File.WriteAllText(GetPath_JsonData(__filename), __strjson);
+        }        
+
         public static JObject Read_JsonData_Textarea() => Read_JsonData(Json_Name_Textarea);
+        public static void Write_JsonData_Textarea(string __strjson) => Write_JsonData(Json_Name_Textarea, __strjson);
     }
 }
