@@ -11,15 +11,15 @@ namespace ProcessChecker
         [STAThread]
         static void Main()
         {
+            //{// 현재 관리자 권한이 아니라면, 관리자 권한으로 재실행
+            //    if (!IsAdministrator())
+            //    {
+            //        RestartAsAdmin();
+            //        return;
+            //    }
 
-            if (!IsAdministrator())
-            {
-                // 현재 관리자 권한이 아니라면, 관리자 권한으로 재실행
-                RestartAsAdmin();
-                return;
-            }
-
-            MessageBox.Show("관리자 권한으로 실행되었습니다!", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //    MessageBox.Show("관리자 권한으로 실행되었습니다!", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //}
 
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
