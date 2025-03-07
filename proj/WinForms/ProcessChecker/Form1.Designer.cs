@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.TBOX_PID = new System.Windows.Forms.TextBox();
             this.TBOX_PName = new System.Windows.Forms.TextBox();
             this.BTN_OK = new System.Windows.Forms.Button();
@@ -60,16 +61,6 @@
             this.BTN_OK.UseVisualStyleBackColor = true;
             this.BTN_OK.Click += OnClick_OK;
             // 
-            // BTN_COPY
-            // 
-            this.BTN_COPY.Location = new System.Drawing.Point(177, 103);
-            this.BTN_COPY.Name = "BTN_COPY";
-            this.BTN_COPY.Size = new System.Drawing.Size(75, 23);
-            this.BTN_COPY.TabIndex = 3;
-            this.BTN_COPY.Text = "복사";
-            this.BTN_COPY.UseVisualStyleBackColor = true;
-            this.BTN_COPY.Click += OnClick_Copy;
-            // 
             // BTN_PROCOK
             // 
             this.BTN_PROCOK.Location = new System.Drawing.Point(177, 41);
@@ -79,6 +70,16 @@
             this.BTN_PROCOK.Text = "PROC 확인";
             this.BTN_PROCOK.UseVisualStyleBackColor = true;
             this.BTN_PROCOK.Click += OnClick_PorcOK;
+            // 
+            // BTN_COPY
+            // 
+            this.BTN_COPY.Location = new System.Drawing.Point(177, 103);
+            this.BTN_COPY.Name = "BTN_COPY";
+            this.BTN_COPY.Size = new System.Drawing.Size(75, 23);
+            this.BTN_COPY.TabIndex = 3;
+            this.BTN_COPY.Text = "복사";
+            this.BTN_COPY.UseVisualStyleBackColor = true;
+            this.BTN_COPY.Click += OnClick_Copy;
             // 
             // Form1
             // 
@@ -90,6 +91,7 @@
             this.Controls.Add(this.BTN_OK);
             this.Controls.Add(this.TBOX_PName);
             this.Controls.Add(this.TBOX_PID);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "Process Checker";
             this.ResumeLayout(false);
@@ -101,9 +103,11 @@
 
         private System.Windows.Forms.TextBox TBOX_PID;
         private System.Windows.Forms.TextBox TBOX_PName;
+
         private System.Windows.Forms.Button BTN_OK;
-        private System.Windows.Forms.Button BTN_COPY;
         private System.Windows.Forms.Button BTN_PROCOK;
+
+        private System.Windows.Forms.Button BTN_COPY;
     }
 }
 
