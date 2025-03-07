@@ -32,6 +32,7 @@
             this.TBOX_PName = new System.Windows.Forms.TextBox();
             this.BTN_OK = new System.Windows.Forms.Button();
             this.BTN_COPY = new System.Windows.Forms.Button();
+            this.BTN_PROCOK = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // TBOX_PID
@@ -44,7 +45,7 @@
             // TBOX_PName
             // 
             this.TBOX_PName.Enabled = false;
-            this.TBOX_PName.Location = new System.Drawing.Point(12, 78);
+            this.TBOX_PName.Location = new System.Drawing.Point(12, 105);
             this.TBOX_PName.Name = "TBOX_PName";
             this.TBOX_PName.Size = new System.Drawing.Size(143, 21);
             this.TBOX_PName.TabIndex = 1;
@@ -55,13 +56,13 @@
             this.BTN_OK.Name = "BTN_OK";
             this.BTN_OK.Size = new System.Drawing.Size(75, 23);
             this.BTN_OK.TabIndex = 2;
-            this.BTN_OK.Text = "확인";
+            this.BTN_OK.Text = "PID 확인";
             this.BTN_OK.UseVisualStyleBackColor = true;
             this.BTN_OK.Click += OnClick_OK;
             // 
             // BTN_COPY
             // 
-            this.BTN_COPY.Location = new System.Drawing.Point(177, 76);
+            this.BTN_COPY.Location = new System.Drawing.Point(177, 103);
             this.BTN_COPY.Name = "BTN_COPY";
             this.BTN_COPY.Size = new System.Drawing.Size(75, 23);
             this.BTN_COPY.TabIndex = 3;
@@ -69,11 +70,22 @@
             this.BTN_COPY.UseVisualStyleBackColor = true;
             this.BTN_COPY.Click += OnClick_Copy;
             // 
+            // BTN_PROCOK
+            // 
+            this.BTN_PROCOK.Location = new System.Drawing.Point(177, 41);
+            this.BTN_PROCOK.Name = "BTN_PROCOK";
+            this.BTN_PROCOK.Size = new System.Drawing.Size(75, 23);
+            this.BTN_PROCOK.TabIndex = 4;
+            this.BTN_PROCOK.Text = "PROC 확인";
+            this.BTN_PROCOK.UseVisualStyleBackColor = true;
+            this.BTN_PROCOK.Click += OnClick_PorcOK;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(264, 111);
+            this.ClientSize = new System.Drawing.Size(264, 138);
+            this.Controls.Add(this.BTN_PROCOK);
             this.Controls.Add(this.BTN_COPY);
             this.Controls.Add(this.BTN_OK);
             this.Controls.Add(this.TBOX_PName);
@@ -91,6 +103,7 @@
         private System.Windows.Forms.TextBox TBOX_PName;
         private System.Windows.Forms.Button BTN_OK;
         private System.Windows.Forms.Button BTN_COPY;
+        private System.Windows.Forms.Button BTN_PROCOK;
     }
 }
 
