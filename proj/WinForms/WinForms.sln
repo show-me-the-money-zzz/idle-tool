@@ -5,6 +5,8 @@ VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdleTool", "IdleTool\IdleTool.csproj", "{8B90E11D-BC52-4F97-9898-6D453A6F3650}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessChecker", "ProcessChecker\ProcessChecker.csproj", "{5FF73B6A-BBEC-43E1-82A8-E2FBE92503BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{8B90E11D-BC52-4F97-9898-6D453A6F3650}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B90E11D-BC52-4F97-9898-6D453A6F3650}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B90E11D-BC52-4F97-9898-6D453A6F3650}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FF73B6A-BBEC-43E1-82A8-E2FBE92503BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FF73B6A-BBEC-43E1-82A8-E2FBE92503BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FF73B6A-BBEC-43E1-82A8-E2FBE92503BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FF73B6A-BBEC-43E1-82A8-E2FBE92503BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
