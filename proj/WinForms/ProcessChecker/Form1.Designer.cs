@@ -3,14 +3,14 @@
     partial class Form1
     {
         /// <summary>
-        /// 필수 디자이너 변수입니다.
+        ///  Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
-        /// 사용 중인 모든 리소스를 정리합니다.
+        ///  Clean up any resources being used.
         /// </summary>
-        /// <param name="disposing">관리되는 리소스를 삭제해야 하면 true이고, 그렇지 않으면 false입니다.</param>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -20,174 +20,192 @@
             base.Dispose(disposing);
         }
 
-        #region Windows Form 디자이너에서 생성한 코드
+        #region Windows Form Designer generated code
 
         /// <summary>
-        /// 디자이너 지원에 필요한 메서드입니다. 
-        /// 이 메서드의 내용을 코드 편집기로 수정하지 마세요.
+        ///  Required method for Designer support - do not modify
+        ///  the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            this.TBOX_PID = new System.Windows.Forms.TextBox();
-            this.TBOX_PName = new System.Windows.Forms.TextBox();
-            this.BTN_OK = new System.Windows.Forms.Button();
-            this.BTN_COPY = new System.Windows.Forms.Button();
-            this.BTN_PROCOK = new System.Windows.Forms.Button();
-            this.LBL_PID = new System.Windows.Forms.Label();
-            this.LBL_PNAME = new System.Windows.Forms.Label();
-            this.TBOX_Result = new System.Windows.Forms.TextBox();
-            this.LBL_Result = new System.Windows.Forms.Label();
-            this.LBL_Handle = new System.Windows.Forms.Label();
-            this.TBOX_Handle = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.SuspendLayout();
+            panel1 = new Panel();
+            BTN_CHECK_PNAME = new Button();
+            TBOX_PNAME = new TextBox();
+            LBL_PNAME = new Label();
+            BTN_CHECK_PID = new Button();
+            TBOX_PID = new TextBox();
+            LBL_PID = new Label();
+            panel2 = new Panel();
+            TBOX_HANDLE = new TextBox();
+            LBL_HANDLE = new Label();
+            BTN_COPY = new Button();
+            TBOX_RESULT = new TextBox();
+            LBL_RESULT = new Label();
+            panel1.SuspendLayout();
+            panel2.SuspendLayout();
+            SuspendLayout();
             // 
-            // TBOX_PID
+            // panel1
             // 
-            this.TBOX_PID.Location = new System.Drawing.Point(150, 12);
-            this.TBOX_PID.Name = "TBOX_PID";
-            this.TBOX_PID.Size = new System.Drawing.Size(143, 21);
-            this.TBOX_PID.TabIndex = 0;
+            panel1.BorderStyle = BorderStyle.FixedSingle;
+            panel1.Controls.Add(BTN_CHECK_PNAME);
+            panel1.Controls.Add(TBOX_PNAME);
+            panel1.Controls.Add(LBL_PNAME);
+            panel1.Controls.Add(BTN_CHECK_PID);
+            panel1.Controls.Add(TBOX_PID);
+            panel1.Controls.Add(LBL_PID);
+            panel1.Location = new Point(12, 12);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(370, 80);
+            panel1.TabIndex = 0;
             // 
-            // TBOX_PName
+            // BTN_CHECK_PNAME
             // 
-            this.TBOX_PName.Location = new System.Drawing.Point(150, 43);
-            this.TBOX_PName.Name = "TBOX_PName";
-            this.TBOX_PName.Size = new System.Drawing.Size(143, 21);
-            this.TBOX_PName.TabIndex = 1;
+            BTN_CHECK_PNAME.Location = new Point(272, 48);
+            BTN_CHECK_PNAME.Name = "BTN_CHECK_PNAME";
+            BTN_CHECK_PNAME.Size = new Size(75, 23);
+            BTN_CHECK_PNAME.TabIndex = 5;
+            BTN_CHECK_PNAME.Text = "확인";
+            BTN_CHECK_PNAME.UseVisualStyleBackColor = true;
+            BTN_CHECK_PNAME.Click += OnClick_Check_PName;
             // 
-            // BTN_OK
+            // TBOX_PNAME
             // 
-            this.BTN_OK.Location = new System.Drawing.Point(315, 12);
-            this.BTN_OK.Name = "BTN_OK";
-            this.BTN_OK.Size = new System.Drawing.Size(46, 23);
-            this.BTN_OK.TabIndex = 2;
-            this.BTN_OK.Text = "확인";
-            this.BTN_OK.UseVisualStyleBackColor = true;
-			this.BTN_OK.Click += OnClick_OK;
-            // 
-            // BTN_PROCOK
-            // 
-            this.BTN_PROCOK.Location = new System.Drawing.Point(315, 41);
-            this.BTN_PROCOK.Name = "BTN_PROCOK";
-            this.BTN_PROCOK.Size = new System.Drawing.Size(46, 23);
-            this.BTN_PROCOK.TabIndex = 4;
-            this.BTN_PROCOK.Text = "확인";
-            this.BTN_PROCOK.UseVisualStyleBackColor = true;
-            this.BTN_PROCOK.Click += OnClick_PorcOK;
-            // 
-            // BTN_COPY
-            // 
-            this.BTN_COPY.Location = new System.Drawing.Point(315, 103);
-            this.BTN_COPY.Name = "BTN_COPY";
-            this.BTN_COPY.Size = new System.Drawing.Size(46, 23);
-            this.BTN_COPY.TabIndex = 3;
-            this.BTN_COPY.Text = "복사";
-            this.BTN_COPY.UseVisualStyleBackColor = true;
-			this.BTN_COPY.Click += OnClick_Copy;
-            // 
-            // LBL_PID
-            // 
-            this.LBL_PID.Font = new System.Drawing.Font("굴림", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.LBL_PID.Location = new System.Drawing.Point(32, 14);
-            this.LBL_PID.Name = "LBL_PID";
-            this.LBL_PID.Size = new System.Drawing.Size(112, 21);
-            this.LBL_PID.TabIndex = 5;
-            this.LBL_PID.Text = "PID";
+            TBOX_PNAME.Location = new Point(105, 45);
+            TBOX_PNAME.Name = "TBOX_PNAME";
+            TBOX_PNAME.Size = new Size(150, 23);
+            TBOX_PNAME.TabIndex = 4;
             // 
             // LBL_PNAME
             // 
-            this.LBL_PNAME.Font = new System.Drawing.Font("굴림", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.LBL_PNAME.Location = new System.Drawing.Point(32, 41);
-            this.LBL_PNAME.Name = "LBL_PNAME";
-            this.LBL_PNAME.Size = new System.Drawing.Size(112, 21);
-            this.LBL_PNAME.TabIndex = 6;
-            this.LBL_PNAME.Text = "프로세스 이름";
+            LBL_PNAME.AutoSize = true;
+            LBL_PNAME.Font = new Font("맑은 고딕", 9F, FontStyle.Bold);
+            LBL_PNAME.Location = new Point(16, 48);
+            LBL_PNAME.Name = "LBL_PNAME";
+            LBL_PNAME.Size = new Size(83, 15);
+            LBL_PNAME.TabIndex = 3;
+            LBL_PNAME.Text = "프로세스 이름";
             // 
-            // TBOX_Result
+            // BTN_CHECK_PID
             // 
-            this.TBOX_Result.Enabled = false;
-            this.TBOX_Result.Location = new System.Drawing.Point(150, 103);
-            this.TBOX_Result.Name = "TBOX_Result";
-            this.TBOX_Result.Size = new System.Drawing.Size(143, 21);
-            this.TBOX_Result.TabIndex = 7;
+            BTN_CHECK_PID.Location = new Point(272, 10);
+            BTN_CHECK_PID.Name = "BTN_CHECK_PID";
+            BTN_CHECK_PID.Size = new Size(75, 23);
+            BTN_CHECK_PID.TabIndex = 2;
+            BTN_CHECK_PID.Text = "확인";
+            BTN_CHECK_PID.UseVisualStyleBackColor = true;
+            BTN_CHECK_PID.Click += OnClick_Check_PID;
             // 
-            // LBL_Result
+            // TBOX_PID
             // 
-            this.LBL_Result.Font = new System.Drawing.Font("굴림", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.LBL_Result.Location = new System.Drawing.Point(32, 103);
-            this.LBL_Result.Name = "LBL_Result";
-            this.LBL_Result.Size = new System.Drawing.Size(112, 21);
-            this.LBL_Result.TabIndex = 8;
-            this.LBL_Result.Text = "결과";
+            TBOX_PID.Location = new Point(105, 7);
+            TBOX_PID.Name = "TBOX_PID";
+            TBOX_PID.Size = new Size(150, 23);
+            TBOX_PID.TabIndex = 1;
             // 
-            // LBL_Handle
+            // LBL_PID
             // 
-            this.LBL_Handle.Font = new System.Drawing.Font("굴림", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.LBL_Handle.Location = new System.Drawing.Point(32, 137);
-            this.LBL_Handle.Name = "LBL_Handle";
-            this.LBL_Handle.Size = new System.Drawing.Size(112, 21);
-            this.LBL_Handle.TabIndex = 9;
-            this.LBL_Handle.Text = "HANDLE";
+            LBL_PID.AutoSize = true;
+            LBL_PID.Font = new Font("맑은 고딕", 9F, FontStyle.Bold);
+            LBL_PID.Location = new Point(16, 10);
+            LBL_PID.Name = "LBL_PID";
+            LBL_PID.Size = new Size(27, 15);
+            LBL_PID.TabIndex = 0;
+            LBL_PID.Text = "PID";
             // 
-            // TBOX_Handle
+            // panel2
             // 
-            this.TBOX_Handle.Enabled = false;
-            this.TBOX_Handle.Location = new System.Drawing.Point(150, 137);
-            this.TBOX_Handle.Name = "TBOX_Handle";
-            this.TBOX_Handle.Size = new System.Drawing.Size(143, 21);
-            this.TBOX_Handle.TabIndex = 10;
+            panel2.BorderStyle = BorderStyle.FixedSingle;
+            panel2.Controls.Add(TBOX_HANDLE);
+            panel2.Controls.Add(LBL_HANDLE);
+            panel2.Controls.Add(BTN_COPY);
+            panel2.Controls.Add(TBOX_RESULT);
+            panel2.Controls.Add(LBL_RESULT);
+            panel2.Location = new Point(12, 114);
+            panel2.Name = "panel2";
+            panel2.Size = new Size(370, 80);
+            panel2.TabIndex = 6;
             // 
-            // label1
+            // TBOX_HANDLE
             // 
-            this.label1.Location = new System.Drawing.Point(21, 77);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(360, 12);
-            this.label1.TabIndex = 11;
-            this.label1.Text = "-----------------------------------------------------------";
+            TBOX_HANDLE.Enabled = false;
+            TBOX_HANDLE.Location = new Point(105, 45);
+            TBOX_HANDLE.Name = "TBOX_HANDLE";
+            TBOX_HANDLE.Size = new Size(150, 23);
+            TBOX_HANDLE.TabIndex = 4;
+            // 
+            // LBL_HANDLE
+            // 
+            LBL_HANDLE.AutoSize = true;
+            LBL_HANDLE.Font = new Font("맑은 고딕", 9F, FontStyle.Bold);
+            LBL_HANDLE.Location = new Point(16, 48);
+            LBL_HANDLE.Name = "LBL_HANDLE";
+            LBL_HANDLE.Size = new Size(55, 15);
+            LBL_HANDLE.TabIndex = 3;
+            LBL_HANDLE.Text = "HANDLE";
+            // 
+            // BTN_COPY
+            // 
+            BTN_COPY.Location = new Point(272, 10);
+            BTN_COPY.Name = "BTN_COPY";
+            BTN_COPY.Size = new Size(75, 23);
+            BTN_COPY.TabIndex = 2;
+            BTN_COPY.Text = "복사";
+            BTN_COPY.UseVisualStyleBackColor = true;
+            BTN_COPY.Click += OnClick_Copy;
+            // 
+            // TBOX_RESULT
+            // 
+            TBOX_RESULT.Enabled = false;
+            TBOX_RESULT.Location = new Point(105, 7);
+            TBOX_RESULT.Name = "TBOX_RESULT";
+            TBOX_RESULT.Size = new Size(150, 23);
+            TBOX_RESULT.TabIndex = 1;
+            // 
+            // LBL_RESULT
+            // 
+            LBL_RESULT.AutoSize = true;
+            LBL_RESULT.Font = new Font("맑은 고딕", 9F, FontStyle.Bold);
+            LBL_RESULT.Location = new Point(16, 10);
+            LBL_RESULT.Name = "LBL_RESULT";
+            LBL_RESULT.Size = new Size(31, 15);
+            LBL_RESULT.TabIndex = 0;
+            LBL_RESULT.Text = "결과";
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(404, 181);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.TBOX_Handle);
-            this.Controls.Add(this.LBL_Handle);
-            this.Controls.Add(this.LBL_Result);
-            this.Controls.Add(this.TBOX_Result);
-            this.Controls.Add(this.LBL_PNAME);
-            this.Controls.Add(this.LBL_PID);
-            this.Controls.Add(this.BTN_PROCOK);
-            this.Controls.Add(this.BTN_COPY);
-            this.Controls.Add(this.BTN_OK);
-            this.Controls.Add(this.TBOX_PName);
-            this.Controls.Add(this.TBOX_PID);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Form1";
-            this.Text = "Process Checker";
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(404, 211);
+            Controls.Add(panel2);
+            Controls.Add(panel1);
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            MaximizeBox = false;
+            Name = "Form1";
+            Text = "PID 체커";
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
+            panel2.ResumeLayout(false);
+            panel2.PerformLayout();
+            ResumeLayout(false);
         }
 
         #endregion
 
-        private System.Windows.Forms.TextBox TBOX_PID;
-        private System.Windows.Forms.TextBox TBOX_PName;
-
-        private System.Windows.Forms.Button BTN_OK;
-        private System.Windows.Forms.Button BTN_PROCOK;
-
-        private System.Windows.Forms.Button BTN_COPY;
-        private System.Windows.Forms.Label LBL_PID;
-        private System.Windows.Forms.Label LBL_PNAME;
-        private System.Windows.Forms.TextBox TBOX_Result;
-        private System.Windows.Forms.Label LBL_Result;
-        private System.Windows.Forms.Label LBL_Handle;
-        private System.Windows.Forms.TextBox TBOX_Handle;
-        private System.Windows.Forms.Label label1;
+        private Panel panel1;
+        private Button BTN_CHECK_PID;
+        private TextBox TBOX_PID;
+        private Label LBL_PID;
+        private Button BTN_CHECK_PNAME;
+        private TextBox TBOX_PNAME;
+        private Label LBL_PNAME;
+        private Panel panel2;
+        private Button button1;
+        private TextBox TBOX_HANDLE;
+        private Label LBL_HANDLE;
+        private Button BTN_COPY;
+        private TextBox TBOX_RESULT;
+        private Label LBL_RESULT;
     }
 }
-
