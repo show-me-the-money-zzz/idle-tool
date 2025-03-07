@@ -61,8 +61,8 @@ namespace ProcessChecker
         void Update_Handle(Process __process)
         {
             string text = $"Main: {__process.MainWindowHandle}";
-            //if (nint.Zero != __process.Handle)
-            //    text += $" ({__process.Handle})";
+            if (nint.Zero != __process.Handle)
+                text += $" ({__process.Handle})";
 
             TBOX_HANDLE.Text = text;
         }

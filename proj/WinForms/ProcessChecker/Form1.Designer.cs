@@ -132,7 +132,7 @@
             TBOX_HANDLE.Enabled = false;
             TBOX_HANDLE.Location = new Point(105, 45);
             TBOX_HANDLE.Name = "TBOX_HANDLE";
-            TBOX_HANDLE.Size = new Size(150, 23);
+            TBOX_HANDLE.Size = new Size(242, 23);
             TBOX_HANDLE.TabIndex = 4;
             // 
             // LBL_HANDLE
