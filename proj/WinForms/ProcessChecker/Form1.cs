@@ -85,5 +85,14 @@ namespace ProcessChecker
             Clipboard.SetText(TBOX_RESULT.Text);
             MessageBox.Show("클립보드에 복사하였습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+
+        public void OnClick_Reset(object sender, EventArgs e)
+        {
+            TBOX_PID.Text = "";
+            TBOX_PNAME.Text = "";
+
+            TBOX_RESULT.Text = "";
+            TBOX_HANDLE.Text = "";
+        }
     }
 }

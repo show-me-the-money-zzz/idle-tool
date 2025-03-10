@@ -37,6 +37,7 @@
             TBOX_PID = new TextBox();
             LBL_PID = new Label();
             panel2 = new Panel();
+            BTN_RESET = new Button();
             TBOX_HANDLE = new TextBox();
             LBL_HANDLE = new Label();
             BTN_COPY = new Button();
@@ -74,7 +75,7 @@
             // 
             TBOX_PNAME.Location = new Point(105, 45);
             TBOX_PNAME.Name = "TBOX_PNAME";
-            TBOX_PNAME.Size = new Size(150, 23);
+            TBOX_PNAME.Size = new Size(161, 23);
             TBOX_PNAME.TabIndex = 4;
             // 
             // LBL_PNAME
@@ -101,7 +102,7 @@
             // 
             TBOX_PID.Location = new Point(105, 7);
             TBOX_PID.Name = "TBOX_PID";
-            TBOX_PID.Size = new Size(150, 23);
+            TBOX_PID.Size = new Size(161, 23);
             TBOX_PID.TabIndex = 1;
             // 
             // LBL_PID
@@ -117,6 +118,7 @@
             // panel2
             // 
             panel2.BorderStyle = BorderStyle.FixedSingle;
+            panel2.Controls.Add(BTN_RESET);
             panel2.Controls.Add(TBOX_HANDLE);
             panel2.Controls.Add(LBL_HANDLE);
             panel2.Controls.Add(BTN_COPY);
@@ -127,12 +129,22 @@
             panel2.Size = new Size(370, 80);
             panel2.TabIndex = 6;
             // 
+            // BTN_RESET
+            // 
+            BTN_RESET.Location = new Point(324, 45);
+            BTN_RESET.Name = "BTN_RESET";
+            BTN_RESET.Size = new Size(23, 23);
+            BTN_RESET.TabIndex = 5;
+            BTN_RESET.Text = "R";
+            BTN_RESET.UseVisualStyleBackColor = true;
+            BTN_RESET.Click += OnClick_Reset;
+            // 
             // TBOX_HANDLE
             // 
             TBOX_HANDLE.Enabled = false;
             TBOX_HANDLE.Location = new Point(105, 45);
             TBOX_HANDLE.Name = "TBOX_HANDLE";
-            TBOX_HANDLE.Size = new Size(242, 23);
+            TBOX_HANDLE.Size = new Size(213, 23);
             TBOX_HANDLE.TabIndex = 4;
             // 
             // LBL_HANDLE
@@ -160,7 +172,7 @@
             TBOX_RESULT.Enabled = false;
             TBOX_RESULT.Location = new Point(105, 7);
             TBOX_RESULT.Name = "TBOX_RESULT";
-            TBOX_RESULT.Size = new Size(150, 23);
+            TBOX_RESULT.Size = new Size(161, 23);
             TBOX_RESULT.TabIndex = 1;
             // 
             // LBL_RESULT
@@ -207,5 +219,6 @@
         private Button BTN_COPY;
         private TextBox TBOX_RESULT;
         private Label LBL_RESULT;
+        private Button BTN_RESET;
     }
 }
