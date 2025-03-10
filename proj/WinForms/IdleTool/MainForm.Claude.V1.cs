@@ -89,7 +89,7 @@ namespace IdleTool
 
         IntPtr Get_TargetWindow()
         {
-            const string AppName = "notepad";
+            const string AppName = "LORDNINE";
 
             Console.WriteLine("🔹 (10회차) 메모장 찾기...");
             Process[] processes = Process.GetProcessesByName(AppName);
@@ -116,8 +116,8 @@ namespace IdleTool
 
                 // 키보드 이벤트 전송 - 여기서는 'A' 키와 Enter 키를 예시로 사용
                 SendKeyboardInput(VK_M);
-                Thread.Sleep(100);
-                SendKeyboardInput(VK_RETURN);
+                Thread.Sleep(500);
+                //SendKeyboardInput(VK_RETURN);
 
                 MessageBox.Show("키보드 입력이 전송되었습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
