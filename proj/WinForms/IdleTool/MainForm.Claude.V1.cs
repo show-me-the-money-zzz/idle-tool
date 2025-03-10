@@ -77,6 +77,7 @@ namespace IdleTool
 
         // 가상 키 코드
         const int VK_A = 0x41;
+        const int VK_M = 0x4D;
         const int VK_RETURN = 0x0D;
         #endregion
 
@@ -88,11 +89,13 @@ namespace IdleTool
 
         IntPtr Get_TargetWindow()
         {
+            const string AppName = "notepad";
+
             Console.WriteLine("🔹 (10회차) 메모장 찾기...");
-            Process[] processes = Process.GetProcessesByName("notepad");
+            Process[] processes = Process.GetProcessesByName(AppName);
             if (processes.Length == 0)
             {
-                Console.WriteLine("❌ 메모장을 찾을 수 없습니다.");
+                Console.WriteLine($"❌ {AppName}을 찾을 수 없습니다.");
                 return IntPtr.Zero;
             }
 
@@ -103,14 +106,6 @@ namespace IdleTool
         #region []
         private void btnSendKeyboardInput_Click()
         {
-            //Console.WriteLine("🔹 (10회차) 메모장 찾기...");
-            //Process[] processes = Process.GetProcessesByName("notepad");
-            //if (processes.Length == 0)
-            //{
-            //    Console.WriteLine("❌ 메모장을 찾을 수 없습니다.");
-            //    return;
-            //}
-
             IntPtr targetWindow = Get_TargetWindow();
 
             if (targetWindow != IntPtr.Zero)
@@ -120,7 +115,7 @@ namespace IdleTool
                 Thread.Sleep(500); // 창이 활성화될 시간을 줌
 
                 // 키보드 이벤트 전송 - 여기서는 'A' 키와 Enter 키를 예시로 사용
-                SendKeyboardInput(VK_A);
+                SendKeyboardInput(VK_M);
                 Thread.Sleep(100);
                 SendKeyboardInput(VK_RETURN);
 
@@ -134,8 +129,7 @@ namespace IdleTool
 
         private void btnSendMouseClick_Click(object sender, EventArgs e)
         {
-            //string targetWindowTitle = txtTargetWindow.Text;
-            IntPtr targetWindow = FindWindow(null, "notepad");
+            IntPtr targetWindow = Get_TargetWindow();
 
             if (targetWindow != IntPtr.Zero)
             {
