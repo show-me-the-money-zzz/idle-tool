@@ -139,8 +139,8 @@ namespace IdleTool
                 Thread.Sleep(500); // 창이 활성화될 시간을 줌
 
                 // 마우스 이벤트 전송 - 화면의 특정 위치(x, y)에 클릭
-                int x = 236; // 원하는 X 좌표로 변경
-                int y = 300; // 원하는 Y 좌표로 변경
+                int x = 280; // 원하는 X 좌표로 변경
+                int y = 320; // 원하는 Y 좌표로 변경
                 SendMouseClick(x, y);
 
                 MessageBox.Show("마우스 클릭이 전송되었습니다.", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
