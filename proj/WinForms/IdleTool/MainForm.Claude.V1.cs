@@ -84,7 +84,8 @@ namespace IdleTool
         #region [입력 - 테스트]
         void InputTest()
         {
-            btnSendKeyboardInput_Click();
+            //btnSendKeyboardInput_Click();
+            btnSendMouseClick_Click();
         }
 
         IntPtr Get_TargetWindow()
@@ -127,7 +128,7 @@ namespace IdleTool
             }
         }
 
-        private void btnSendMouseClick_Click(object sender, EventArgs e)
+        private void btnSendMouseClick_Click()
         {
             IntPtr targetWindow = Get_TargetWindow();
 
@@ -138,7 +139,7 @@ namespace IdleTool
                 Thread.Sleep(500); // 창이 활성화될 시간을 줌
 
                 // 마우스 이벤트 전송 - 화면의 특정 위치(x, y)에 클릭
-                int x = 300; // 원하는 X 좌표로 변경
+                int x = 236; // 원하는 X 좌표로 변경
                 int y = 300; // 원하는 Y 좌표로 변경
                 SendMouseClick(x, y);
 
