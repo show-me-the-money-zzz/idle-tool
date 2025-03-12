@@ -1,16 +1,18 @@
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox, ttk, filedialog
 import time
 import threading
 import pyautogui
 import pytesseract
-from PIL import ImageGrab
+from PIL import ImageGrab, Image
 import cv2
 import numpy as np
 import win32gui
 import win32process
 import win32con
 import psutil
+import os
+from datetime import datetime
 
 # Tesseract OCR 경로 설정 (Windows 기준)
 pytesseract.pytesseract.tesseract_cmd = r'D:\libs\Tesseract-OCR\tesseract.exe'
@@ -18,8 +20,8 @@ pytesseract.pytesseract.tesseract_cmd = r'D:\libs\Tesseract-OCR\tesseract.exe'
 class AutomationApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("PID 기반 화면 캡처 및 자동화 도구")
-        self.root.geometry("550x600")
+        self.root.title("PID/앱 이름 기반 화면 캡처 및 자동화 도구")
+        self.root.geometry("600x650")
         self.root.resizable(True, True)
         
         self.capture_thread = None
@@ -35,22 +37,45 @@ class AutomationApp:
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.pack(fill=tk.BOTH, expand=True)
         
-        # PID 입력 프레임
-        pid_frame = ttk.LabelFrame(main_frame, text="대상 프로그램 설정", padding="10")
-        pid_frame.pack(fill=tk.X, pady=5)
+        # 대상 프로그램 연결 프레임
+        connect_frame = ttk.LabelFrame(main_frame, text="대상 프로그램 연결", padding="10")
+        connect_frame.pack(fill=tk.X, pady=5)
         
-        # PID 입력
-        ttk.Label(pid_frame, text="프로세스 ID (PID):").grid(row=0, column=0, sticky=tk.W, pady=2)
+        # PID 탭과 앱 이름 탭
+        tab_control = ttk.Notebook(connect_frame)
+        tab_control.pack(fill=tk.X, pady=5)
+        
+        pid_tab = ttk.Frame(tab_control, padding="10")
+        name_tab = ttk.Frame(tab_control, padding="10")
+        
+        tab_control.add(pid_tab, text="PID로 연결")
+        tab_control.add(name_tab, text="앱 이름으로 연결")
+        
+        # PID 탭 내용
+        ttk.Label(pid_tab, text="프로세스 ID (PID):").grid(row=0, column=0, sticky=tk.W, pady=2)
         self.pid_var = tk.StringVar()
-        ttk.Entry(pid_frame, textvariable=self.pid_var, width=10).grid(row=0, column=1, sticky=tk.W, pady=2)
+        ttk.Entry(pid_tab, textvariable=self.pid_var, width=10).grid(row=0, column=1, sticky=tk.W, pady=2)
+        ttk.Button(pid_tab, text="연결", command=self.connect_to_pid).grid(row=0, column=2, padx=5, pady=2)
         
-        # PID 연결 버튼
-        self.connect_btn = ttk.Button(pid_frame, text="연결", command=self.connect_to_pid)
-        self.connect_btn.grid(row=0, column=2, padx=5, pady=2)
+        # 앱 이름 탭 내용
+        ttk.Label(name_tab, text="앱 이름 (부분 일치):").grid(row=0, column=0, sticky=tk.W, pady=2)
+        self.app_name_var = tk.StringVar()
+        ttk.Entry(name_tab, textvariable=self.app_name_var, width=20).grid(row=0, column=1, sticky=tk.W, pady=2)
+        ttk.Button(name_tab, text="검색 및 연결", command=self.connect_to_app_name).grid(row=0, column=2, padx=5, pady=2)
+        
+        # 검색 결과 선택 (앱 이름으로 검색 시)
+        ttk.Label(name_tab, text="검색 결과:").grid(row=1, column=0, sticky=tk.W, pady=2)
+        self.app_list = ttk.Combobox(name_tab, width=40, state="readonly")
+        self.app_list.grid(row=1, column=1, columnspan=2, sticky=tk.W, pady=2)
+        ttk.Button(name_tab, text="선택 연결", command=self.connect_to_selected_app).grid(row=2, column=1, pady=2)
         
         # 연결된 윈도우 정보
         self.window_info_var = tk.StringVar(value="연결된 창 없음")
-        ttk.Label(pid_frame, textvariable=self.window_info_var).grid(row=1, column=0, columnspan=3, sticky=tk.W, pady=2)
+        ttk.Label(connect_frame, textvariable=self.window_info_var).pack(fill=tk.X, pady=5)
+        
+        # 창 전체 캡처 버튼
+        self.capture_window_btn = ttk.Button(connect_frame, text="창 전체 캡처 저장", command=self.capture_full_window)
+        self.capture_window_btn.pack(pady=5)
         
         # 영역 설정 프레임
         area_frame = ttk.LabelFrame(main_frame, text="캡처 영역 설정 (창 내부 좌표)", padding="10")
@@ -96,7 +121,7 @@ class AutomationApp:
         self.result_text.pack(fill=tk.BOTH, expand=True)
         
         # 스크롤바 추가
-        scrollbar = ttk.Scrollbar(self.result_text, command=self.result_text.yview)
+        scrollbar = ttk.Scrollbar(result_frame, command=self.result_text.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.result_text.config(yscrollcommand=scrollbar.set)
         
@@ -176,6 +201,125 @@ class AutomationApp:
         except Exception as e:
             messagebox.showerror("오류", f"연결 중 오류가 발생했습니다: {str(e)}")
     
+    def connect_to_app_name(self):
+        """앱 이름(창 제목)으로 창을 검색합니다"""
+        try:
+            app_name = self.app_name_var.get().strip()
+            if not app_name:
+                raise ValueError("앱 이름이 입력되지 않았습니다.")
+            
+            # 앱 이름(창 제목)으로 창 찾기
+            def callback(hwnd, windows):
+                if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
+                    title = win32gui.GetWindowText(hwnd)
+                    if app_name.lower() in title.lower():
+                        _, pid = win32process.GetWindowThreadProcessId(hwnd)
+                        try:
+                            process = psutil.Process(pid)
+                            proc_name = process.name()
+                            windows.append((hwnd, title, pid, proc_name))
+                        except:
+                            pass
+                return True
+            
+            windows = []
+            win32gui.EnumWindows(callback, windows)
+            
+            if not windows:
+                messagebox.showinfo("검색 결과", "일치하는 창을 찾을 수 없습니다.")
+                return
+            
+            # 검색 결과를 콤보박스에 표시
+            self.app_list["values"] = [f"{title} (PID: {pid}, {proc_name})" for hwnd, title, pid, proc_name in windows]
+            self.app_list.current(0)  # 첫 번째 항목 선택
+            
+            # 창 핸들, PID 값 등을 저장 (나중에 선택용)
+            self.found_windows = windows
+            
+            self.status_var.set(f"{len(windows)}개 창을 찾았습니다. 연결할 창을 선택하세요.")
+            
+        except ValueError as e:
+            messagebox.showerror("입력 오류", f"올바른 앱 이름을 입력해주세요: {str(e)}")
+        except Exception as e:
+            messagebox.showerror("오류", f"검색 중 오류가 발생했습니다: {str(e)}")
+    
+    def connect_to_selected_app(self):
+        """콤보박스에서 선택된 앱에 연결합니다"""
+        try:
+            if not hasattr(self, 'found_windows') or not self.found_windows:
+                messagebox.showerror("오류", "먼저 앱을 검색해주세요.")
+                return
+            
+            selected_index = self.app_list.current()
+            if selected_index < 0:
+                messagebox.showerror("오류", "연결할 창을 선택해주세요.")
+                return
+            
+            # 선택된 창 정보
+            self.target_hwnd, title, pid, proc_name = self.found_windows[selected_index]
+            
+            # 창이 여전히 존재하는지 확인
+            if not win32gui.IsWindow(self.target_hwnd):
+                messagebox.showerror("오류", "선택한 창이 존재하지 않습니다.")
+                return
+            
+            # 창 정보 저장
+            self.update_window_info()
+            
+            self.window_info_var.set(f"연결됨: '{title}' (PID: {pid}, {proc_name})")
+            self.status_var.set(f"창 '{title}'에 연결되었습니다.")
+            
+        except Exception as e:
+            messagebox.showerror("오류", f"연결 중 오류가 발생했습니다: {str(e)}")
+    
+    def capture_full_window(self):
+        """연결된 창 전체를 캡처하여 파일로 저장합니다"""
+        try:
+            if not self.target_hwnd:
+                messagebox.showerror("오류", "먼저 창에 연결해주세요.")
+                return
+            
+            # 창이 여전히 존재하는지 확인
+            if not win32gui.IsWindow(self.target_hwnd):
+                messagebox.showerror("오류", "연결된 창이 더 이상 존재하지 않습니다.")
+                self.target_hwnd = None
+                self.window_info_var.set("연결된 창 없음")
+                return
+            
+            # 창이 최소화되어 있으면 복원
+            if win32gui.IsIconic(self.target_hwnd):
+                win32gui.ShowWindow(self.target_hwnd, win32con.SW_RESTORE)
+                time.sleep(0.5)  # 창이 복원되기를 기다림
+            
+            # 창 위치와 크기 업데이트
+            self.update_window_info()
+            left, top, right, bottom = self.window_rect
+            width = right - left
+            height = bottom - top
+            
+            # 화면 캡처
+            screenshot = ImageGrab.grab(bbox=(left, top, right, bottom))
+            
+            # 저장 경로 선택
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            initial_file = f"window_capture_{timestamp}.png"
+            
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".png",
+                filetypes=[("PNG 파일", "*.png"), ("JPEG 파일", "*.jpg"), ("모든 파일", "*.*")],
+                initialfile=initial_file
+            )
+            
+            if file_path:
+                screenshot.save(file_path)
+                self.status_var.set(f"창 캡처가 저장되었습니다: {file_path}")
+                
+                # 선택적: 저장된 이미지 뷰어로 열기
+                # os.startfile(file_path)
+                
+        except Exception as e:
+            messagebox.showerror("캡처 오류", f"창 캡처 중 오류가 발생했습니다: {str(e)}")
+    
     def update_window_info(self):
         """타겟 윈도우의 현재 위치와 크기 정보를 업데이트"""
         if self.target_hwnd:
@@ -187,7 +331,7 @@ class AutomationApp:
         rel_x, rel_y = x, y
         
         # 연결된 창이 있으면 상대 좌표 계산
-        if self.target_hwnd:
+        if self.target_hwnd and win32gui.IsWindow(self.target_hwnd):
             self.update_window_info()
             left, top, _, _ = self.window_rect
             rel_x, rel_y = x - left, y - top
@@ -205,7 +349,7 @@ class AutomationApp:
             try:
                 # 타겟 윈도우 확인
                 if not self.target_hwnd:
-                    messagebox.showerror("오류", "먼저 프로세스에 연결해주세요.")
+                    messagebox.showerror("오류", "먼저 창에 연결해주세요.")
                     return
                 
                 # 창이 여전히 존재하는지 확인
@@ -292,7 +436,7 @@ class AutomationApp:
         """대상 창을 활성화하고 M 키 입력 함수"""
         try:
             if not self.target_hwnd:
-                messagebox.showerror("오류", "먼저 프로세스에 연결해주세요.")
+                messagebox.showerror("오류", "먼저 창에 연결해주세요.")
                 return
             
             # 창이 여전히 존재하는지 확인
@@ -316,7 +460,7 @@ class AutomationApp:
         """대상 창 기준 상대 좌표에서 마우스 클릭 함수"""
         try:
             if not self.target_hwnd:
-                messagebox.showerror("오류", "먼저 프로세스에 연결해주세요.")
+                messagebox.showerror("오류", "먼저 창에 연결해주세요.")
                 return
             
             # 창이 여전히 존재하는지 확인
