@@ -15,7 +15,7 @@ import os
 from datetime import datetime
 
 ''' Package 
-pip install pillow pyautogui pytesseract opencv-python numpy
+pip install pillow pyautogui pytesseract opencv-python numpy pywin32 psutil
 '''
 
 # Tesseract OCR 경로 설정 (Windows 기준)
