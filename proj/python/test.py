@@ -19,7 +19,9 @@ pip install pillow pyautogui pytesseract opencv-python numpy pywin32 psutil
 '''
 
 # Tesseract OCR 경로 설정 (Windows 기준)
-pytesseract.pytesseract.tesseract_cmd = r'D:\libs\Tesseract-OCR\tesseract.exe'
+#pytesseract.pytesseract.tesseract_cmd = r'D:\libs\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = r'..\..\Tesseract-OCR\tesseract.exe'
+## 설치링크: https://github.com/UB-Mannheim/tesseract/wiki
 
 class AutomationApp:
     def __init__(self, root):
