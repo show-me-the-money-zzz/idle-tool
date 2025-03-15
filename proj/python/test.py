@@ -14,6 +14,10 @@ import psutil
 import os
 from datetime import datetime
 
+''' Package 
+pip install pillow pyautogui pytesseract opencv-python numpy
+'''
+
 # Tesseract OCR 경로 설정 (Windows 기준)
 pytesseract.pytesseract.tesseract_cmd = r'D:\libs\Tesseract-OCR\tesseract.exe'
 
