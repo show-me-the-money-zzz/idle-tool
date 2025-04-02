@@ -1,50 +1,67 @@
 import tkinter as tk
 from tkinter import messagebox, ttk, filedialog
 import time
-import threading
 import pyautogui
-import pytesseract
-from PIL import ImageGrab, Image
-import cv2
-import numpy as np
-import win32gui
-import win32process
-import win32con
-import psutil
-import os
 from datetime import datetime
+import os
+import win32gui
 
-''' Package 
-pip install pillow pyautogui pytesseract opencv-python numpy pywin32 psutil
-'''
+from core.window_utils import WindowManager
+from core.capture_utils import CaptureManager
 
-# Tesseract OCR 경로 설정 (Windows 기준)
-#pytesseract.pytesseract.tesseract_cmd = r'D:\libs\Tesseract-OCR\tesseract.exe'
-pytesseract.pytesseract.tesseract_cmd = r'..\..\Tesseract-OCR\tesseract.exe'
-## 설치링크: https://github.com/UB-Mannheim/tesseract/wiki
-
-class AutomationApp:
+class AutomationAppUI:
+    """자동화 도구 UI 클래스"""
+    
     def __init__(self, root):
+        # 메인 윈도우 설정
         self.root = root
         self.root.title("PID/앱 이름 기반 화면 캡처 및 자동화 도구")
         self.root.geometry("600x650")
         self.root.resizable(True, True)
         
-        self.capture_thread = None
-        self.is_capturing = False
-        self.capture_interval = 1.0  # 기본 1초 간격
-        self.target_hwnd = None
-        self.window_rect = (0, 0, 0, 0)  # (left, top, right, bottom)
+        # 기본 매니저 객체 생성
+        self.window_manager = WindowManager()
+        self.capture_manager = CaptureManager(self.window_manager, self.handle_capture_callback)
         
+        # UI 컴포넌트 생성
         self.setup_ui()
+        
+        # 마우스 위치 추적 시작
+        self.track_mouse_position()
     
     def setup_ui(self):
+        """UI 구성요소 초기화"""
         # 메인 프레임
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.pack(fill=tk.BOTH, expand=True)
         
         # 대상 프로그램 연결 프레임
-        connect_frame = ttk.LabelFrame(main_frame, text="대상 프로그램 연결", padding="10")
+        self.setup_connection_frame(main_frame)
+        
+        # 영역 설정 프레임
+        self.setup_area_frame(main_frame)
+        
+        # 캡처 시작/중지 버튼
+        btn_frame = ttk.Frame(main_frame)
+        btn_frame.pack(fill=tk.X, pady=5)
+        
+        self.capture_btn = ttk.Button(btn_frame, text="캡처 시작", command=self.toggle_capture)
+        self.capture_btn.pack(side=tk.LEFT, padx=5)
+        
+        # 텍스트 결과 영역
+        self.setup_result_frame(main_frame)
+        
+        # 자동화 버튼 프레임
+        self.setup_automation_frame(main_frame)
+        
+        # 상태 표시 바
+        self.status_var = tk.StringVar(value="준비 완료")
+        status_bar = ttk.Label(self.root, textvariable=self.status_var, relief=tk.SUNKEN, anchor=tk.W)
+        status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
+    def setup_connection_frame(self, parent):
+        """연결 프레임 설정"""
+        connect_frame = ttk.LabelFrame(parent, text="대상 프로그램 연결", padding="10")
         connect_frame.pack(fill=tk.X, pady=5)
         
         # PID 탭과 앱 이름 탭
@@ -54,8 +71,8 @@ class AutomationApp:
         pid_tab = ttk.Frame(tab_control, padding="10")
         name_tab = ttk.Frame(tab_control, padding="10")
         
-        tab_control.add(pid_tab, text="PID로 연결")
         tab_control.add(name_tab, text="앱 이름으로 연결")
+        tab_control.add(pid_tab, text="PID로 연결")
         
         # PID 탭 내용
         ttk.Label(pid_tab, text="프로세스 ID (PID):").grid(row=0, column=0, sticky=tk.W, pady=2)
@@ -82,9 +99,10 @@ class AutomationApp:
         # 창 전체 캡처 버튼
         self.capture_window_btn = ttk.Button(connect_frame, text="창 전체 캡처 저장", command=self.capture_full_window)
         self.capture_window_btn.pack(pady=5)
-        
-        # 영역 설정 프레임
-        area_frame = ttk.LabelFrame(main_frame, text="캡처 영역 설정 (창 내부 좌표)", padding="10")
+
+    def setup_area_frame(self, parent):
+        """영역 설정 프레임"""
+        area_frame = ttk.LabelFrame(parent, text="캡처 영역 설정 (창 내부 좌표)", padding="10")
         area_frame.pack(fill=tk.X, pady=5)
         
         # X 좌표 (상대적)
@@ -111,16 +129,10 @@ class AutomationApp:
         ttk.Label(area_frame, text="캡처 간격(초):").grid(row=2, column=0, sticky=tk.W, pady=2)
         self.interval_var = tk.StringVar(value="1.0")
         ttk.Entry(area_frame, textvariable=self.interval_var, width=10).grid(row=2, column=1, sticky=tk.W, pady=2)
-        
-        # 캡처 시작/중지 버튼
-        btn_frame = ttk.Frame(main_frame)
-        btn_frame.pack(fill=tk.X, pady=5)
-        
-        self.capture_btn = ttk.Button(btn_frame, text="캡처 시작", command=self.toggle_capture)
-        self.capture_btn.pack(side=tk.LEFT, padx=5)
-        
-        # 텍스트 결과 영역
-        result_frame = ttk.LabelFrame(main_frame, text="인식된 텍스트", padding="10")
+
+    def setup_result_frame(self, parent):
+        """결과 프레임 설정"""
+        result_frame = ttk.LabelFrame(parent, text="인식된 텍스트", padding="10")
         result_frame.pack(fill=tk.BOTH, expand=True, pady=5)
         
         self.result_text = tk.Text(result_frame, wrap=tk.WORD, height=10)
@@ -130,9 +142,10 @@ class AutomationApp:
         scrollbar = ttk.Scrollbar(result_frame, command=self.result_text.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.result_text.config(yscrollcommand=scrollbar.set)
-        
-        # 자동화 버튼 프레임
-        automation_frame = ttk.LabelFrame(main_frame, text="자동화 제어", padding="10")
+
+    def setup_automation_frame(self, parent):
+        """자동화 프레임 설정"""
+        automation_frame = ttk.LabelFrame(parent, text="자동화 제어", padding="10")
         automation_frame.pack(fill=tk.X, pady=5)
         
         # M 키 입력 버튼
@@ -155,81 +168,38 @@ class AutomationApp:
         # 현재 마우스 위치 표시 레이블 (절대 좌표와 상대 좌표)
         self.mouse_pos_label = ttk.Label(automation_frame, text="마우스 위치: 절대(X=0, Y=0) / 상대(X=0, Y=0)")
         self.mouse_pos_label.grid(row=3, column=0, columnspan=2, sticky=tk.W, pady=5)
-        
-        # 마우스 위치 추적 시작
-        self.track_mouse_position()
-        
-        # 상태 표시 바
-        self.status_var = tk.StringVar(value="준비 완료")
-        status_bar = ttk.Label(self.root, textvariable=self.status_var, relief=tk.SUNKEN, anchor=tk.W)
-        status_bar.pack(side=tk.BOTTOM, fill=tk.X)
-    
+
     def connect_to_pid(self):
-        """입력된 PID를 가진 프로세스의 메인 윈도우를 찾습니다"""
+        """PID로 창 연결"""
         try:
             pid = int(self.pid_var.get())
             if not pid:
                 raise ValueError("PID가 입력되지 않았습니다.")
             
-            # PID가 유효한지 확인
-            process = psutil.Process(pid)
-            
-            # 해당 프로세스의 창 찾기
-            def callback(hwnd, hwnds):
-                if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
-                    _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
-                    if found_pid == pid:
-                        text = win32gui.GetWindowText(hwnd)
-                        if text:  # 타이틀이 있는 창만 처리
-                            hwnds.append((hwnd, text))
-                return True
-            
-            windows = []
-            win32gui.EnumWindows(callback, windows)
-            
-            if not windows:
+            window_info = self.window_manager.find_window_by_pid(pid)
+            if not window_info:
                 messagebox.showerror("오류", f"PID {pid}에 해당하는 창을 찾을 수 없습니다.")
                 return
             
-            # 첫 번째 창 선택 (복수의 창이 있을 경우 향후 선택 UI 추가 가능)
-            self.target_hwnd, title = windows[0]
+            hwnd, title = window_info
+            self.window_manager.set_target_window(hwnd)
             
-            # 창 정보 저장
-            self.update_window_info()
-            
-            self.window_info_var.set(f"연결됨: '{title}' (HWND: {self.target_hwnd})")
+            self.window_info_var.set(f"연결됨: '{title}' (HWND: {hwnd})")
             self.status_var.set(f"PID {pid}에 연결되었습니다.")
             
         except ValueError as e:
             messagebox.showerror("입력 오류", f"올바른 PID를 입력해주세요: {str(e)}")
-        except psutil.NoSuchProcess:
-            messagebox.showerror("오류", f"PID {pid}에 해당하는 프로세스가 없습니다.")
         except Exception as e:
             messagebox.showerror("오류", f"연결 중 오류가 발생했습니다: {str(e)}")
-    
+
     def connect_to_app_name(self):
-        """앱 이름(창 제목)으로 창을 검색합니다"""
+        """앱 이름으로 창 검색"""
         try:
             app_name = self.app_name_var.get().strip()
             if not app_name:
                 raise ValueError("앱 이름이 입력되지 않았습니다.")
             
-            # 앱 이름(창 제목)으로 창 찾기
-            def callback(hwnd, windows):
-                if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
-                    title = win32gui.GetWindowText(hwnd)
-                    if app_name.lower() in title.lower():
-                        _, pid = win32process.GetWindowThreadProcessId(hwnd)
-                        try:
-                            process = psutil.Process(pid)
-                            proc_name = process.name()
-                            windows.append((hwnd, title, pid, proc_name))
-                        except:
-                            pass
-                return True
-            
-            windows = []
-            win32gui.EnumWindows(callback, windows)
+            windows = self.window_manager.find_windows_by_name(app_name)
             
             if not windows:
                 messagebox.showinfo("검색 결과", "일치하는 창을 찾을 수 없습니다.")
@@ -248,9 +218,9 @@ class AutomationApp:
             messagebox.showerror("입력 오류", f"올바른 앱 이름을 입력해주세요: {str(e)}")
         except Exception as e:
             messagebox.showerror("오류", f"검색 중 오류가 발생했습니다: {str(e)}")
-    
+
     def connect_to_selected_app(self):
-        """콤보박스에서 선택된 앱에 연결합니다"""
+        """콤보박스에서 선택된 앱에 연결"""
         try:
             if not hasattr(self, 'found_windows') or not self.found_windows:
                 messagebox.showerror("오류", "먼저 앱을 검색해주세요.")
@@ -262,49 +232,33 @@ class AutomationApp:
                 return
             
             # 선택된 창 정보
-            self.target_hwnd, title, pid, proc_name = self.found_windows[selected_index]
+            hwnd, title, pid, proc_name = self.found_windows[selected_index]
             
             # 창이 여전히 존재하는지 확인
-            if not win32gui.IsWindow(self.target_hwnd):
+            if not win32gui.IsWindow(hwnd):
                 messagebox.showerror("오류", "선택한 창이 존재하지 않습니다.")
                 return
             
-            # 창 정보 저장
-            self.update_window_info()
+            self.window_manager.set_target_window(hwnd)
             
             self.window_info_var.set(f"연결됨: '{title}' (PID: {pid}, {proc_name})")
             self.status_var.set(f"창 '{title}'에 연결되었습니다.")
             
         except Exception as e:
             messagebox.showerror("오류", f"연결 중 오류가 발생했습니다: {str(e)}")
-    
+
     def capture_full_window(self):
-        """연결된 창 전체를 캡처하여 파일로 저장합니다"""
+        """창 전체 캡처"""
         try:
-            if not self.target_hwnd:
+            if not self.window_manager.is_window_valid():
                 messagebox.showerror("오류", "먼저 창에 연결해주세요.")
                 return
             
-            # 창이 여전히 존재하는지 확인
-            if not win32gui.IsWindow(self.target_hwnd):
-                messagebox.showerror("오류", "연결된 창이 더 이상 존재하지 않습니다.")
-                self.target_hwnd = None
-                self.window_info_var.set("연결된 창 없음")
-                return
-            
-            # 창이 최소화되어 있으면 복원
-            if win32gui.IsIconic(self.target_hwnd):
-                win32gui.ShowWindow(self.target_hwnd, win32con.SW_RESTORE)
-                time.sleep(0.5)  # 창이 복원되기를 기다림
-            
-            # 창 위치와 크기 업데이트
-            self.update_window_info()
-            left, top, right, bottom = self.window_rect
-            width = right - left
-            height = bottom - top
-            
             # 화면 캡처
-            screenshot = ImageGrab.grab(bbox=(left, top, right, bottom))
+            screenshot = self.capture_manager.capture_full_window()
+            if not screenshot:
+                messagebox.showerror("오류", "캡처에 실패했습니다.")
+                return
             
             # 저장 경로 선택
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -320,49 +274,33 @@ class AutomationApp:
                 screenshot.save(file_path)
                 self.status_var.set(f"창 캡처가 저장되었습니다: {file_path}")
                 
-                # 선택적: 저장된 이미지 뷰어로 열기
-                # os.startfile(file_path)
-                
         except Exception as e:
             messagebox.showerror("캡처 오류", f"창 캡처 중 오류가 발생했습니다: {str(e)}")
-    
-    def update_window_info(self):
-        """타겟 윈도우의 현재 위치와 크기 정보를 업데이트"""
-        if self.target_hwnd:
-            self.window_rect = win32gui.GetWindowRect(self.target_hwnd)
-    
+
     def track_mouse_position(self):
-        """현재 마우스 위치를 절대 좌표와 타겟 창 기준 상대 좌표로 표시"""
+        """마우스 위치 추적"""
         x, y = pyautogui.position()
         rel_x, rel_y = x, y
         
         # 연결된 창이 있으면 상대 좌표 계산
-        if self.target_hwnd and win32gui.IsWindow(self.target_hwnd):
-            self.update_window_info()
-            left, top, _, _ = self.window_rect
-            rel_x, rel_y = x - left, y - top
+        if self.window_manager.is_window_valid():
+            rel_x, rel_y = self.window_manager.get_relative_position(x, y)
         
         self.mouse_pos_label.config(text=f"마우스 위치: 절대(X={x}, Y={y}) / 상대(X={rel_x}, Y={rel_y})")
         self.root.after(100, self.track_mouse_position)
     
     def toggle_capture(self):
         """캡처 시작/중지 전환"""
-        if self.is_capturing:
-            self.is_capturing = False
+        if self.capture_manager.is_capturing:
+            # 캡처 중지
+            self.capture_manager.stop_capture()
             self.capture_btn.config(text="캡처 시작")
             self.status_var.set("캡처 중지됨")
         else:
             try:
                 # 타겟 윈도우 확인
-                if not self.target_hwnd:
+                if not self.window_manager.is_window_valid():
                     messagebox.showerror("오류", "먼저 창에 연결해주세요.")
-                    return
-                
-                # 창이 여전히 존재하는지 확인
-                if not win32gui.IsWindow(self.target_hwnd):
-                    messagebox.showerror("오류", "연결된 창이 더 이상 존재하지 않습니다.")
-                    self.target_hwnd = None
-                    self.window_info_var.set("연결된 창 없음")
                     return
                 
                 # 입력값 검증
@@ -375,59 +313,25 @@ class AutomationApp:
                 if width <= 0 or height <= 0 or interval <= 0:
                     raise ValueError("너비, 높이, 간격은 양수여야 합니다.")
                 
-                self.capture_interval = interval
-                self.is_capturing = True
+                # 캡처 시작
+                self.capture_manager.start_capture(x, y, width, height, interval)
                 self.capture_btn.config(text="캡처 중지")
                 self.status_var.set("캡처 중...")
-                
-                # 새 스레드에서 캡처 실행
-                self.capture_thread = threading.Thread(target=self.capture_text, daemon=True)
-                self.capture_thread.start()
                 
             except ValueError as e:
                 messagebox.showerror("입력 오류", f"올바른 값을 입력해주세요: {str(e)}")
     
-    def capture_text(self):
-        """지정된 영역의 텍스트를 캡처하고 OCR로 인식"""
-        while self.is_capturing:
-            try:
-                # 창이 여전히 존재하는지 확인
-                if not win32gui.IsWindow(self.target_hwnd):
-                    self.root.after(0, lambda: messagebox.showerror("오류", "창이 닫혔습니다."))
-                    self.is_capturing = False
-                    self.root.after(0, lambda: self.capture_btn.config(text="캡처 시작"))
-                    break
-                
-                # 윈도우 위치 업데이트
-                self.update_window_info()
-                left, top, _, _ = self.window_rect
-                
-                # 상대 좌표로 입력된 값을 절대 좌표로 변환
-                x = int(self.x_var.get()) + left
-                y = int(self.y_var.get()) + top
-                width = int(self.width_var.get())
-                height = int(self.height_var.get())
-                
-                # 화면 캡처
-                screenshot = ImageGrab.grab(bbox=(x, y, x+width, y+height))
-                
-                # 이미지 전처리 (옵션)
-                img = np.array(screenshot)
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-                
-                # OCR 실행
-                text = pytesseract.image_to_string(img, lang='kor+eng')
-                
-                # 결과 표시 (메인 스레드에서 UI 업데이트)
-                timestamp = time.strftime("%H:%M:%S", time.localtime())
-                self.root.after(0, self.update_result, f"[{timestamp}] 인식 결과:\n{text}\n{'='*50}\n")
-                
-            except Exception as e:
-                self.root.after(0, self.update_status, f"오류 발생: {str(e)}")
-            
-            # 지정된 간격만큼 대기
-            time.sleep(self.capture_interval)
+    def handle_capture_callback(self, type_str, message):
+        """캡처 콜백 처리"""
+        if type_str == "result":
+            # 텍스트 결과 영역에 추가
+            self.update_result(message)
+        elif type_str == "error":
+            # 에러 메시지 표시
+            self.update_status(message)
+            # 심각한 오류면 UI 업데이트
+            if "창이 닫혔습니다" in message:
+                self.root.after(0, lambda: self.capture_btn.config(text="캡처 시작"))
     
     def update_result(self, text):
         """텍스트 결과 영역 업데이트"""
@@ -439,70 +343,50 @@ class AutomationApp:
         self.status_var.set(text)
     
     def press_m_key(self):
-        """대상 창을 활성화하고 M 키 입력 함수"""
+        """M 키 입력"""
         try:
-            if not self.target_hwnd:
+            if not self.window_manager.is_window_valid():
                 messagebox.showerror("오류", "먼저 창에 연결해주세요.")
                 return
             
-            # 창이 여전히 존재하는지 확인
-            if not win32gui.IsWindow(self.target_hwnd):
-                messagebox.showerror("오류", "연결된 창이 더 이상 존재하지 않습니다.")
-                self.target_hwnd = None
-                self.window_info_var.set("연결된 창 없음")
-                return
-            
-            # 창 활성화
-            win32gui.SetForegroundWindow(self.target_hwnd)
-            time.sleep(0.1)  # 창이 활성화되기를 기다림
-            
             # M 키 입력
-            pyautogui.press('m')
-            self.status_var.set("'M' 키가 입력되었습니다.")
+            if self.window_manager.send_key('m'):
+                self.status_var.set("'M' 키가 입력되었습니다.")
+            else:
+                messagebox.showerror("오류", "키 입력에 실패했습니다.")
+                
         except Exception as e:
             messagebox.showerror("키 입력 오류", f"키 입력 중 오류가 발생했습니다: {str(e)}")
     
     def mouse_click(self):
-        """대상 창 기준 상대 좌표에서 마우스 클릭 함수"""
+        """마우스 클릭"""
         try:
-            if not self.target_hwnd:
+            if not self.window_manager.is_window_valid():
                 messagebox.showerror("오류", "먼저 창에 연결해주세요.")
                 return
             
-            # 창이 여전히 존재하는지 확인
-            if not win32gui.IsWindow(self.target_hwnd):
-                messagebox.showerror("오류", "연결된 창이 더 이상 존재하지 않습니다.")
-                self.target_hwnd = None
-                self.window_info_var.set("연결된 창 없음")
-                return
-            
-            # 윈도우 위치 업데이트
-            self.update_window_info()
-            left, top, _, _ = self.window_rect
-            
-            # 클릭 좌표 계산 (상대 좌표를 절대 좌표로 변환)
+            # 클릭 좌표 계산
             if self.click_x_var.get() and self.click_y_var.get():
                 rel_x = int(self.click_x_var.get())
                 rel_y = int(self.click_y_var.get())
-                abs_x = left + rel_x
-                abs_y = top + rel_y
+                
+                # 상대 좌표 위치 클릭
+                if self.window_manager.click_at_position(rel_x, rel_y):
+                    self.status_var.set(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+                else:
+                    messagebox.showerror("오류", "클릭 작업에 실패했습니다.")
             else:
                 # 현재 마우스 위치에서 클릭
-                abs_x, abs_y = pyautogui.position()
-                rel_x, rel_y = abs_x - left, abs_y - top
-            
-            # 창 활성화 (선택적)
-            win32gui.SetForegroundWindow(self.target_hwnd)
-            time.sleep(0.1)  # 창이 활성화되기를 기다림
-            
-            # 클릭
-            pyautogui.click(abs_x, abs_y)
-            self.status_var.set(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+                x, y = pyautogui.position()
+                left, top, _, _ = self.window_manager.get_window_rect()
+                rel_x, rel_y = x - left, y - top
+                
+                # 창 활성화 후 클릭
+                if self.window_manager.activate_window():
+                    pyautogui.click(x, y)
+                    self.status_var.set(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+                else:
+                    messagebox.showerror("오류", "클릭 작업에 실패했습니다.")
+                    
         except Exception as e:
             messagebox.showerror("마우스 클릭 오류", f"마우스 클릭 중 오류가 발생했습니다: {str(e)}")
-
-if __name__ == "__main__":
-    # 메인 앱 실행
-    root = tk.Tk()
-    app = AutomationApp(root)
-    root.mainloop()
