@@ -1,11 +1,11 @@
-# 이 부분을 수정하세요 (region_selector.py 파일)
-
 import tkinter as tk
 import pyautogui
 import win32gui
 import time
-from PIL import Image, ImageTk, ImageGrab
+from PIL import Image, ImageTk
 import numpy as np
+import mss
+import mss.tools
 
 class RegionSelector:
     """마우스 드래그로 영역을 선택하는 도구"""
@@ -24,6 +24,12 @@ class RegionSelector:
         self.screenshot = None
         self.target_window_only = False
         self.window_rect = (0, 0, 0, 0)
+        
+        # 확대 뷰 관련 변수
+        self.zoom_window = None
+        self.zoom_canvas = None
+        self.zoom_factor = 3  # 확대 배율
+        self.zoom_size = 150  # 확대 창 크기
     
     def start_selection(self, callback=None, target_window_only=False):
         """영역 선택 시작"""
@@ -33,21 +39,27 @@ class RegionSelector:
         # 새 tkinter 창 생성 (메인 루트 창이 아닌 Toplevel 사용)
         self.root = tk.Toplevel()
         self.root.withdraw()  # 임시로 숨김
+        self.root.title("Region Selector - " + str(id(self)))  # 고유한 제목 사용
         
-        # 타겟 윈도우가 있고, 해당 윈도우만 캡처하는 모드라면
-        if target_window_only and self.window_manager and self.window_manager.is_window_valid():
-            # 창 위치 가져오기
-            self.window_rect = self.window_manager.get_window_rect()
-            left, top, right, bottom = self.window_rect
-            width = right - left
-            height = bottom - top
-            
-            # 전체 화면 스크린샷
-            screenshot = ImageGrab.grab(bbox=(left, top, right, bottom))
-        else:
-            # 전체 화면 스크린샷
-            screenshot = ImageGrab.grab()
-            self.window_rect = (0, 0, screenshot.width, screenshot.height)
+        # mss 인스턴스 생성
+        with mss.mss() as sct:
+            # 타겟 윈도우가 있고, 해당 윈도우만 캡처하는 모드라면
+            if target_window_only and self.window_manager and self.window_manager.is_window_valid():
+                # 창 위치 가져오기
+                self.window_rect = self.window_manager.get_window_rect()
+                left, top, right, bottom = self.window_rect
+                width = right - left
+                height = bottom - top
+                
+                # 전체 화면 스크린샷 (mss 사용)
+                monitor = {"top": top, "left": left, "width": width, "height": height}
+                sct_img = sct.grab(monitor)
+                self.screenshot = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+            else:
+                # 전체 화면 스크린샷 (mss 사용)
+                sct_img = sct.grab(sct.monitors[0])
+                self.screenshot = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+                self.window_rect = (0, 0, self.screenshot.width, self.screenshot.height)
         
         # 크기 설정
         if target_window_only and self.window_manager and self.window_manager.is_window_valid():
@@ -67,21 +79,24 @@ class RegionSelector:
         self.root.overrideredirect(True)  # 창 경계선 제거
         
         # 캔버스 생성
-        self.canvas = tk.Canvas(self.root, width=screenshot.width, height=screenshot.height)
+        self.canvas = tk.Canvas(self.root, width=self.screenshot.width, height=self.screenshot.height)
         self.canvas.pack(fill=tk.BOTH, expand=True)
         
         # PIL 이미지를 PhotoImage로 변환
-        # 이 방식은 Tkinter에서 이미지를 안정적으로 유지하기 위한 것입니다
-        photo = ImageTk.PhotoImage(screenshot)
+        photo = ImageTk.PhotoImage(self.screenshot)
         
         # 이미지를 캔버스 아이템으로 추가하고 참조 유지
         self.canvas.image = photo  # 이미지에 대한 참조 유지
         self.canvas.create_image(0, 0, image=photo, anchor=tk.NW)
         
+        # 확대 창 생성
+        self.create_zoom_window()
+        
         # 이벤트 바인딩
         self.canvas.bind("<ButtonPress-1>", self.on_press)
         self.canvas.bind("<B1-Motion>", self.on_drag)
         self.canvas.bind("<ButtonRelease-1>", self.on_release)
+        self.canvas.bind("<Motion>", self.on_mouse_move)  # 마우스 움직임 감지
         
         # ESC 키 누르면 취소
         self.root.bind("<Escape>", self.cancel_selection)
@@ -93,6 +108,79 @@ class RegionSelector:
         self.root.wait_window(self.root)
         
         return self.selected_region
+    
+    def create_zoom_window(self):
+        """확대 창 생성"""
+        self.zoom_window = tk.Toplevel()
+        self.zoom_window.title("Magnifier")
+        self.zoom_window.geometry(f"{self.zoom_size}x{self.zoom_size}")
+        self.zoom_window.attributes('-topmost', True)
+        
+        self.zoom_canvas = tk.Canvas(self.zoom_window, width=self.zoom_size, height=self.zoom_size)
+        self.zoom_canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # 확대 창이 닫히면 선택 취소
+        self.zoom_window.protocol("WM_DELETE_WINDOW", lambda: self.cancel_selection())
+    
+    def update_zoom_view(self, x, y):
+        """마우스 위치에 따라 확대 뷰 업데이트"""
+        if not hasattr(self, 'screenshot') or self.screenshot is None:
+            return
+            
+        # 확대할 영역 계산
+        zoom_radius = self.zoom_size // (2 * self.zoom_factor)
+        
+        # 확대 영역이 스크린샷 범위를 벗어나지 않도록 보정
+        left = max(0, x - zoom_radius)
+        top = max(0, y - zoom_radius)
+        right = min(self.screenshot.width, x + zoom_radius)
+        bottom = min(self.screenshot.height, y + zoom_radius)
+        
+        # 영역 크롭 및 확대
+        try:
+            zoom_area = self.screenshot.crop((left, top, right, bottom))
+            zoomed = zoom_area.resize(
+                (int(zoom_area.width * self.zoom_factor), 
+                 int(zoom_area.height * self.zoom_factor)),
+                Image.LANCZOS
+            )
+            
+            # 확대 창 이미지 업데이트
+            self.zoomed_image = ImageTk.PhotoImage(zoomed)
+            self.zoom_canvas.delete("all")
+            self.zoom_canvas.create_image(self.zoom_size//2, self.zoom_size//2, 
+                                          image=self.zoomed_image, anchor=tk.CENTER)
+            
+            # 중심 표시 (십자선)
+            self.zoom_canvas.create_line(0, self.zoom_size//2, self.zoom_size, self.zoom_size//2, 
+                                         fill="red", width=1)
+            self.zoom_canvas.create_line(self.zoom_size//2, 0, self.zoom_size//2, self.zoom_size, 
+                                         fill="red", width=1)
+            
+            # 확대 창 위치 업데이트 (마우스 위치에 따라)
+            x_screen, y_screen = pyautogui.position()
+            screen_width = self.root.winfo_screenwidth()
+            screen_height = self.root.winfo_screenheight()
+            
+            # 마우스가 화면 오른쪽/아래에 있으면 확대 창을 왼쪽/위에 배치
+            if x_screen > screen_width // 2:
+                zoom_x = x_screen - self.zoom_size - 20
+            else:
+                zoom_x = x_screen + 20
+                
+            if y_screen > screen_height // 2:
+                zoom_y = y_screen - self.zoom_size - 20
+            else:
+                zoom_y = y_screen + 20
+                
+            self.zoom_window.geometry(f"{self.zoom_size}x{self.zoom_size}+{zoom_x}+{zoom_y}")
+            
+        except Exception as e:
+            print(f"확대 뷰 업데이트 오류: {e}")
+    
+    def on_mouse_move(self, event):
+        """마우스 이동 시 확대 뷰 업데이트"""
+        self.update_zoom_view(event.x, event.y)
     
     def on_press(self, event):
         """마우스 버튼 누를 때"""
@@ -115,6 +203,9 @@ class RegionSelector:
         
         # 사각형 크기 업데이트
         self.canvas.coords(self.rect_id, self.start_x, self.start_y, self.current_x, self.current_y)
+        
+        # 확대 뷰 업데이트
+        self.update_zoom_view(event.x, event.y)
     
     def on_release(self, event):
         """마우스 버튼 놓을 때"""
@@ -158,6 +249,8 @@ class RegionSelector:
         }
         
         # 창 닫기
+        if self.zoom_window:
+            self.zoom_window.destroy()
         self.root.destroy()
         
         # 콜백 함수 호출
@@ -167,6 +260,8 @@ class RegionSelector:
     def cancel_selection(self, event=None):
         """ESC 키 눌러 선택 취소"""
         self.selected_region = None
+        if self.zoom_window:
+            self.zoom_window.destroy()
         self.root.destroy()
         
         # 콜백 함수 호출
