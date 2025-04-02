@@ -3,7 +3,7 @@
 """
 
 # 앱 기본 설정
-APP_TITLE = "PID/앱 이름 기반 화면 캡처 및 자동화 도구"
+APP_TITLE = "쇼 미더 머니 - LORDNINE"
 APP_WIDTH = 600
 APP_HEIGHT = 650
 
