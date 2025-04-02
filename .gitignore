@@ -10,3 +10,4 @@ IdleTool.deps.json
 IdleTool.exe
 /proj/WinForms/ProcessChecker/obj
 /proj/WinForms/ProcessChecker/bin
+__pycache__
