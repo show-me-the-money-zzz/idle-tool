@@ -92,7 +92,10 @@ class CaptureManager:
                     if self.callback_fn:
                         timestamp = time.strftime("%H:%M:%S", time.localtime())
                         # self.callback_fn("result", f"[{timestamp}] 인식 결과:\n{text}\n{'='*50}\n")
-                        self.callback_fn("result", f"[{timestamp}] {text}")
+                        logtext = f"[{timestamp}] {text}";
+                        if not text:
+                            logtext += "\n";
+                        self.callback_fn("result", logtext)
                     
                 except Exception as e:
                     # print(f"캡처 오류 발생: {str(e)}")
