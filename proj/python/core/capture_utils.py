@@ -1,11 +1,14 @@
-from PIL import ImageGrab
+import mss
+import mss.tools
+import numpy as np
 import time
 import threading
 from datetime import datetime
+from PIL import Image
 from core.ocr_engine import image_to_text
 
 class CaptureManager:
-    """화면 캡처 관리 클래스"""
+    """화면 캡처 관리 클래스 (mss 라이브러리 기반)"""
     
     def __init__(self, window_manager, callback_fn=None):
         self.window_manager = window_manager
@@ -13,6 +16,8 @@ class CaptureManager:
         self.capture_thread = None
         self.capture_interval = 1.0
         self.callback_fn = callback_fn
+        # mss 인스턴스 생성
+        self.sct = mss.mss()
     
     def start_capture(self, x, y, width, height, interval=1.0):
         """캡처 시작"""
@@ -52,7 +57,7 @@ class CaptureManager:
                     break
                 
                 # 윈도우 위치 가져오기
-                left, top, _, _ = self.window_manager.get_window_rect()
+                left, top, right, bottom = self.window_manager.get_window_rect()
                 
                 # 상대 좌표로 입력된 값을 절대 좌표로 변환
                 x = self.capture_params['x'] + left
@@ -60,11 +65,22 @@ class CaptureManager:
                 width = self.capture_params['width']
                 height = self.capture_params['height']
                 
+                # mss로 화면 캡처 영역 정의
+                monitor = {
+                    "top": y,
+                    "left": x,
+                    "width": width,
+                    "height": height
+                }
+                
                 # 화면 캡처
-                screenshot = ImageGrab.grab(bbox=(x, y, x+width, y+height))
+                screenshot = self.sct.grab(monitor)
+                
+                # mss의 결과를 PIL Image로 변환
+                img = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
                 
                 # OCR 실행
-                text = image_to_text(screenshot)
+                text = image_to_text(img)
                 
                 # 콜백 함수 호출
                 if self.callback_fn:
@@ -88,7 +104,25 @@ class CaptureManager:
         
         # 창 위치와 크기 가져오기
         left, top, right, bottom = self.window_manager.get_window_rect()
+        width = right - left
+        height = bottom - top
+        
+        # mss로 화면 캡처 영역 정의
+        monitor = {
+            "top": top,
+            "left": left,
+            "width": width,
+            "height": height
+        }
         
         # 화면 캡처
-        screenshot = ImageGrab.grab(bbox=(left, top, right, bottom))
-        return screenshot
+        screenshot = self.sct.grab(monitor)
+        
+        # mss의 결과를 PIL Image로 변환
+        img = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
+        return img
+    
+    def __del__(self):
+        """소멸자: mss 자원 해제"""
+        if hasattr(self, 'sct'):
+            self.sct.close()
