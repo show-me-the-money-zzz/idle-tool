@@ -8,6 +8,7 @@ import win32gui
 
 from core.window_utils import WindowManager
 from core.capture_utils import CaptureManager
+from config import *  # 상수값 가져오기
 
 class AutomationAppUI:
     """자동화 도구 UI 클래스"""
@@ -15,8 +16,8 @@ class AutomationAppUI:
     def __init__(self, root):
         # 메인 윈도우 설정
         self.root = root
-        self.root.title("PID/앱 이름 기반 화면 캡처 및 자동화 도구")
-        self.root.geometry("600x650")
+        self.root.title(APP_TITLE)
+        self.root.geometry(f"{APP_WIDTH}x{APP_HEIGHT}")
         self.root.resizable(True, True)
         
         # 기본 매니저 객체 생성
@@ -55,7 +56,7 @@ class AutomationAppUI:
         self.setup_automation_frame(main_frame)
         
         # 상태 표시 바
-        self.status_var = tk.StringVar(value="준비 완료")
+        self.status_var = tk.StringVar(value=STATUS_READY)
         status_bar = ttk.Label(self.root, textvariable=self.status_var, relief=tk.SUNKEN, anchor=tk.W)
         status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
@@ -76,13 +77,13 @@ class AutomationAppUI:
         
         # PID 탭 내용
         ttk.Label(pid_tab, text="프로세스 ID (PID):").grid(row=0, column=0, sticky=tk.W, pady=2)
-        self.pid_var = tk.StringVar()
+        self.pid_var = tk.StringVar(value=DEFAULT_PID)
         ttk.Entry(pid_tab, textvariable=self.pid_var, width=10).grid(row=0, column=1, sticky=tk.W, pady=2)
         ttk.Button(pid_tab, text="연결", command=self.connect_to_pid).grid(row=0, column=2, padx=5, pady=2)
         
         # 앱 이름 탭 내용
         ttk.Label(name_tab, text="앱 이름 (부분 일치):").grid(row=0, column=0, sticky=tk.W, pady=2)
-        self.app_name_var = tk.StringVar()
+        self.app_name_var = tk.StringVar(value=DEFAULT_APP_NAME)
         ttk.Entry(name_tab, textvariable=self.app_name_var, width=20).grid(row=0, column=1, sticky=tk.W, pady=2)
         ttk.Button(name_tab, text="검색 및 연결", command=self.connect_to_app_name).grid(row=0, column=2, padx=5, pady=2)
         
@@ -107,27 +108,27 @@ class AutomationAppUI:
         
         # X 좌표 (상대적)
         ttk.Label(area_frame, text="X 좌표:").grid(row=0, column=0, sticky=tk.W, pady=2)
-        self.x_var = tk.StringVar(value="0")
+        self.x_var = tk.StringVar(value=DEFAULT_CAPTURE_X)
         ttk.Entry(area_frame, textvariable=self.x_var, width=10).grid(row=0, column=1, sticky=tk.W, pady=2)
         
         # Y 좌표 (상대적)
         ttk.Label(area_frame, text="Y 좌표:").grid(row=0, column=2, sticky=tk.W, pady=2, padx=(10, 0))
-        self.y_var = tk.StringVar(value="0")
+        self.y_var = tk.StringVar(value=DEFAULT_CAPTURE_Y)
         ttk.Entry(area_frame, textvariable=self.y_var, width=10).grid(row=0, column=3, sticky=tk.W, pady=2)
         
         # 너비
         ttk.Label(area_frame, text="너비:").grid(row=1, column=0, sticky=tk.W, pady=2)
-        self.width_var = tk.StringVar(value="300")
+        self.width_var = tk.StringVar(value=DEFAULT_CAPTURE_WIDTH)
         ttk.Entry(area_frame, textvariable=self.width_var, width=10).grid(row=1, column=1, sticky=tk.W, pady=2)
         
         # 높이
         ttk.Label(area_frame, text="높이:").grid(row=1, column=2, sticky=tk.W, pady=2, padx=(10, 0))
-        self.height_var = tk.StringVar(value="100")
+        self.height_var = tk.StringVar(value=DEFAULT_CAPTURE_HEIGHT)
         ttk.Entry(area_frame, textvariable=self.height_var, width=10).grid(row=1, column=3, sticky=tk.W, pady=2)
         
         # 캡처 간격 설정
         ttk.Label(area_frame, text="캡처 간격(초):").grid(row=2, column=0, sticky=tk.W, pady=2)
-        self.interval_var = tk.StringVar(value="1.0")
+        self.interval_var = tk.StringVar(value=DEFAULT_CAPTURE_INTERVAL)
         ttk.Entry(area_frame, textvariable=self.interval_var, width=10).grid(row=2, column=1, sticky=tk.W, pady=2)
 
     def setup_result_frame(self, parent):
@@ -158,11 +159,11 @@ class AutomationAppUI:
         
         # 마우스 좌표 입력 필드 (상대적)
         ttk.Label(automation_frame, text="클릭 X (창 내부):").grid(row=1, column=0, sticky=tk.W, pady=2)
-        self.click_x_var = tk.StringVar(value="0")
+        self.click_x_var = tk.StringVar(value=DEFAULT_CLICK_X)
         ttk.Entry(automation_frame, textvariable=self.click_x_var, width=10).grid(row=1, column=1, sticky=tk.W, pady=2)
         
         ttk.Label(automation_frame, text="클릭 Y (창 내부):").grid(row=2, column=0, sticky=tk.W, pady=2)
-        self.click_y_var = tk.StringVar(value="0")
+        self.click_y_var = tk.StringVar(value=DEFAULT_CLICK_Y)
         ttk.Entry(automation_frame, textvariable=self.click_y_var, width=10).grid(row=2, column=1, sticky=tk.W, pady=2)
         
         # 현재 마우스 위치 표시 레이블 (절대 좌표와 상대 좌표)
@@ -190,7 +191,7 @@ class AutomationAppUI:
         except ValueError as e:
             messagebox.showerror("입력 오류", f"올바른 PID를 입력해주세요: {str(e)}")
         except Exception as e:
-            messagebox.showerror("오류", f"연결 중 오류가 발생했습니다: {str(e)}")
+            messagebox.showerror("오류", f"{ERROR_CONNECTION}: {str(e)}")
 
     def connect_to_app_name(self):
         """앱 이름으로 창 검색"""
@@ -217,7 +218,7 @@ class AutomationAppUI:
         except ValueError as e:
             messagebox.showerror("입력 오류", f"올바른 앱 이름을 입력해주세요: {str(e)}")
         except Exception as e:
-            messagebox.showerror("오류", f"검색 중 오류가 발생했습니다: {str(e)}")
+            messagebox.showerror("오류", f"{ERROR_CONNECTION}: {str(e)}")
 
     def connect_to_selected_app(self):
         """콤보박스에서 선택된 앱에 연결"""
@@ -245,13 +246,13 @@ class AutomationAppUI:
             self.status_var.set(f"창 '{title}'에 연결되었습니다.")
             
         except Exception as e:
-            messagebox.showerror("오류", f"연결 중 오류가 발생했습니다: {str(e)}")
+            messagebox.showerror("오류", f"{ERROR_CONNECTION}: {str(e)}")
 
     def capture_full_window(self):
         """창 전체 캡처"""
         try:
             if not self.window_manager.is_window_valid():
-                messagebox.showerror("오류", "먼저 창에 연결해주세요.")
+                messagebox.showerror("오류", ERROR_NO_WINDOW)
                 return
             
             # 화면 캡처
@@ -261,13 +262,18 @@ class AutomationAppUI:
                 return
             
             # 저장 경로 선택
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            initial_file = f"window_capture_{timestamp}.png"
+            timestamp = datetime.now().strftime(TIMESTAMP_FORMAT)
+            initial_file = f"window_capture_{timestamp}.{DEFAULT_IMAGE_FORMAT}"
+            
+            # 저장 디렉토리가 있는지 확인하고 없으면 생성
+            if not os.path.exists(SAVE_DIRECTORY):
+                os.makedirs(SAVE_DIRECTORY)
             
             file_path = filedialog.asksaveasfilename(
-                defaultextension=".png",
+                defaultextension=f".{DEFAULT_IMAGE_FORMAT}",
                 filetypes=[("PNG 파일", "*.png"), ("JPEG 파일", "*.jpg"), ("모든 파일", "*.*")],
-                initialfile=initial_file
+                initialfile=initial_file,
+                initialdir=SAVE_DIRECTORY
             )
             
             if file_path:
@@ -295,12 +301,12 @@ class AutomationAppUI:
             # 캡처 중지
             self.capture_manager.stop_capture()
             self.capture_btn.config(text="캡처 시작")
-            self.status_var.set("캡처 중지됨")
+            self.status_var.set(STATUS_STOPPED)
         else:
             try:
                 # 타겟 윈도우 확인
                 if not self.window_manager.is_window_valid():
-                    messagebox.showerror("오류", "먼저 창에 연결해주세요.")
+                    messagebox.showerror("오류", ERROR_NO_WINDOW)
                     return
                 
                 # 입력값 검증
@@ -316,7 +322,7 @@ class AutomationAppUI:
                 # 캡처 시작
                 self.capture_manager.start_capture(x, y, width, height, interval)
                 self.capture_btn.config(text="캡처 중지")
-                self.status_var.set("캡처 중...")
+                self.status_var.set(STATUS_CAPTURING)
                 
             except ValueError as e:
                 messagebox.showerror("입력 오류", f"올바른 값을 입력해주세요: {str(e)}")
@@ -330,7 +336,7 @@ class AutomationAppUI:
             # 에러 메시지 표시
             self.update_status(message)
             # 심각한 오류면 UI 업데이트
-            if "창이 닫혔습니다" in message:
+            if ERROR_WINDOW_CLOSED in message:
                 self.root.after(0, lambda: self.capture_btn.config(text="캡처 시작"))
     
     def update_result(self, text):
@@ -346,7 +352,7 @@ class AutomationAppUI:
         """M 키 입력"""
         try:
             if not self.window_manager.is_window_valid():
-                messagebox.showerror("오류", "먼저 창에 연결해주세요.")
+                messagebox.showerror("오류", ERROR_NO_WINDOW)
                 return
             
             # M 키 입력
@@ -362,7 +368,7 @@ class AutomationAppUI:
         """마우스 클릭"""
         try:
             if not self.window_manager.is_window_valid():
-                messagebox.showerror("오류", "먼저 창에 연결해주세요.")
+                messagebox.showerror("오류", ERROR_NO_WINDOW)
                 return
             
             # 클릭 좌표 계산
