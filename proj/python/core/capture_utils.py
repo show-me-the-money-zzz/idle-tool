@@ -68,7 +68,7 @@ class CaptureManager:
                     height = self.capture_params['height']
                     
                     # 디버깅 정보 출력
-                    print(f"캡처 영역: x={x}, y={y}, width={width}, height={height}")
+                    # print(f"캡처 영역: x={x}, y={y}, width={width}, height={height}")
                     
                     # 화면 캡처 (스레드 로컬 MSS 인스턴스 사용)
                     monitor = {
@@ -86,15 +86,16 @@ class CaptureManager:
                     text = image_to_text(img)
                     
                     # 디버깅 정보 출력
-                    print(f"인식된 텍스트: {text}")
+                    # print(f"인식된 텍스트: {text}")
                     
                     # 콜백 함수 호출
                     if self.callback_fn:
                         timestamp = time.strftime("%H:%M:%S", time.localtime())
-                        self.callback_fn("result", f"[{timestamp}] 인식 결과:\n{text}\n{'='*50}\n")
+                        # self.callback_fn("result", f"[{timestamp}] 인식 결과:\n{text}\n{'='*50}\n")
+                        self.callback_fn("result", f"[{timestamp}] {text}")
                     
                 except Exception as e:
-                    print(f"캡처 오류 발생: {str(e)}")
+                    # print(f"캡처 오류 발생: {str(e)}")
                     if self.callback_fn:
                         self.callback_fn("error", f"오류 발생: {str(e)}")
                 

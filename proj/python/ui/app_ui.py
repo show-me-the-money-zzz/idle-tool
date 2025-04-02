@@ -413,7 +413,7 @@ class AutomationAppUI:
     
     def handle_capture_callback(self, type_str, message):
         """캡처 콜백 처리"""
-        print(f"콜백 호출: {type_str} - {message[:30]}...")  # 디버깅 정보
+        # print(f"콜백 호출: {type_str} - {message[:30]}...")  # 디버깅 정보
         
         if type_str == "result":
             # 텍스트 결과 영역에 추가
