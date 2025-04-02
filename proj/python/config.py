@@ -3,7 +3,7 @@
 """
 
 # 앱 기본 설정
-APP_TITLE = "쇼 미더 머니 - LORDNINE"
+APP_TITLE = "쇼 미더 머니 - 로드나인" # 연결하려는 앱의 타이틀이 포함되면 안됨
 APP_WIDTH = 600
 APP_HEIGHT = 650
 
@@ -34,3 +34,4 @@ STATUS_STOPPED = "캡처 중지됨"
 ERROR_NO_WINDOW = "먼저 창에 연결해주세요."
 ERROR_WINDOW_CLOSED = "창이 닫혔습니다."
 ERROR_CONNECTION = "연결 중 오류가 발생했습니다"
+ERROR_FINDING = "검색 중 오류가 발생했습니다"
