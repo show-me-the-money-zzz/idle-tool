@@ -224,12 +224,16 @@ class AutomationAppUI:
         self.window_info_var = tk.StringVar(value="연결된 창 없음")
         ttk.Label(connect_frame, textvariable=self.window_info_var).pack(fill=tk.X, pady=5)
         
-        # 창 전체 캡처 버튼
+        # 창 전체 캡처 버튼과 활성화 버튼을 위한 프레임
         btn_frame = ttk.Frame(connect_frame)
         btn_frame.pack(fill=tk.X, pady=5)
         
         self.capture_window_btn = ttk.Button(btn_frame, text="창 전체 캡처 저장", command=self.capture_full_window)
         self.capture_window_btn.pack(side=tk.LEFT, padx=5)
+        
+        # 창 활성화 버튼 추가
+        self.activate_window_btn = ttk.Button(btn_frame, text="연결된 창 활성화", command=self.activate_connected_window)
+        self.activate_window_btn.pack(side=tk.LEFT, padx=5)
 
     def setup_area_frame(self, parent):
         """영역 설정 프레임"""
@@ -416,8 +420,11 @@ class AutomationAppUI:
             hwnd, title = window_info
             self.window_manager.set_target_window(hwnd)
             
+            # 창 활성화
+            self.window_manager.activate_window()
+            
             self.window_info_var.set(f"연결됨: '{title}' (HWND: {hwnd})")
-            self.status_var.set(f"PID {pid}에 연결되었습니다.")
+            self.status_var.set(f"PID {pid}에 연결되었습니다. 창이 활성화되었습니다.")
             
         except ValueError as e:
             messagebox.showerror("입력 오류", f"올바른 PID를 입력해주세요: {str(e)}")
@@ -473,8 +480,11 @@ class AutomationAppUI:
             
             self.window_manager.set_target_window(hwnd)
             
+            # 창 활성화
+            self.window_manager.activate_window()
+            
             self.window_info_var.set(f"연결됨: '{title}' (PID: {pid}, {proc_name})")
-            self.status_var.set(f"창 '{title}'에 연결되었습니다.")
+            self.status_var.set(f"창 '{title}'에 연결되었습니다. 창이 활성화되었습니다.")
             
         except Exception as e:
             messagebox.showerror("오류", f"{ERROR_CONNECTION}: {str(e)}")
@@ -639,3 +649,17 @@ class AutomationAppUI:
                     
         except Exception as e:
             messagebox.showerror("마우스 클릭 오류", f"마우스 클릭 중 오류가 발생했습니다: {str(e)}")
+    
+    def activate_connected_window(self):
+        """연결된 창 활성화"""
+        try:
+            if not self.window_manager.is_window_valid():
+                messagebox.showerror("오류", ERROR_NO_WINDOW)
+                return
+            
+            if self.window_manager.activate_window():
+                self.status_var.set("연결된 창이 활성화되었습니다.")
+            else:
+                messagebox.showerror("오류", "창 활성화에 실패했습니다.")
+        except Exception as e:
+            messagebox.showerror("오류", f"창 활성화 중 오류가 발생했습니다: {str(e)}")
