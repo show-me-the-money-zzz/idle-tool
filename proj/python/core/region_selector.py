@@ -84,7 +84,7 @@ class RegionSelector:
             self.root.geometry(f"{screen_width}x{screen_height}+0+0")
         
         # 창 설정
-        self.root.attributes('-alpha', 0.3)  # 반투명 설정
+        self.root.attributes('-alpha', 0.9)  # 반투명 설정
         self.root.attributes('-topmost', True)  # 항상 위에 표시
         self.root.overrideredirect(True)  # 창 경계선 제거
         
@@ -355,8 +355,51 @@ class RegionSelector:
         width = abs(self.current_x - self.start_x)
         height = abs(self.current_y - self.start_y)
         
-        # 이전 크기 텍스트 삭제 (있다면)
+        # 사각형 크기 업데이트
+        if self.rect_id:
+            self.canvas.delete(self.rect_id)
+        
+        # 이전 크기 텍스트와 반투명 효과 삭제
         self.canvas.delete("size_text")
+        self.canvas.delete("overlay")
+        
+        # 선택 영역 계산
+        x1 = min(self.start_x, self.current_x)
+        y1 = min(self.start_y, self.current_y)
+        x2 = max(self.start_x, self.current_x)
+        y2 = max(self.start_y, self.current_y)
+        width = x2 - x1
+        height = y2 - y1
+        
+        # 반투명 검은색 배경과 드래그 영역만 선명하게 보이는 효과 생성
+        # 1. 위쪽 사각형
+        if y1 > 0:
+            self.canvas.create_rectangle(0, 0, self.screenshot.width, y1, 
+                                        fill="#000000", stipple="gray50", outline="", tags="overlay")
+        
+        # 2. 아래쪽 사각형
+        if y2 < self.screenshot.height:
+            self.canvas.create_rectangle(0, y2, self.screenshot.width, self.screenshot.height, 
+                                        fill="#000000", stipple="gray50", outline="", tags="overlay")
+        
+        # 3. 왼쪽 사각형
+        if x1 > 0:
+            self.canvas.create_rectangle(0, y1, x1, y2, 
+                                        fill="#000000", stipple="gray50", outline="", tags="overlay")
+        
+        # 4. 오른쪽 사각형
+        if x2 < self.screenshot.width:
+            self.canvas.create_rectangle(x2, y1, self.screenshot.width, y2, 
+                                        fill="#000000", stipple="gray50", outline="", tags="overlay")
+        
+        # 드래그 영역 테두리 (선명한 빨간색)
+        self.rect_id = self.canvas.create_rectangle(
+            self.start_x, self.start_y, self.current_x, self.current_y,
+            outline='red', width=2
+        )
+        
+        # 확대 뷰 업데이트 (이미 상태 표시줄 업데이트를 포함함)
+        self.update_zoom_view(event.x, event.y)
         
         # 중앙에 크기 텍스트 표시
         x = min(self.start_x, self.current_x) + width / 2
@@ -372,6 +415,9 @@ class RegionSelector:
     
     def on_release(self, event):
         """마우스 버튼 놓을 때"""
+        # 오버레이 삭제
+        self.canvas.delete("overlay")
+
         self.current_x = event.x
         self.current_y = event.y
         
