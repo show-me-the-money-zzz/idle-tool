@@ -102,10 +102,10 @@ class RegionSelector:
         # 키 제어 안내 레이블 추가
         self.info_label = tk.Label(
             self.root, 
-            text="[S] 정사각형   [W] 너비 고정   [H] 높이 고정   [R] 16:9 비율   [ESC] 취소", 
+            text = f"[{DRAG_FIXED_WIDTH_KEY}] 너비 고정 / [{DRAG_FIXED_HEIGHT_KEY}] 높이 고정 / [{DRAG_KEEP_SQUARE_KEY}] 정사각 비율 / [{DRAG_ASPECT_RATIO_KEY}] {DRAG_ASPECT_RATIO_TEXT} 비율",
             bg="black", fg="white", 
             font=("Arial", 10, "bold"), 
-            padx=10, pady=5
+            padx=100, pady=0
         )
         self.info_label.place(x=10, y=10)
         
