@@ -133,11 +133,31 @@ class RegionSelector:
         """확대 창 생성"""
         self.zoom_window = tk.Toplevel()
         self.zoom_window.title("Magnifier")
-        self.zoom_window.geometry(f"{self.zoom_size}x{self.zoom_size}")
+        self.zoom_window.geometry(f"{self.zoom_size}x{self.zoom_size + 25}")  # 상태 표시줄 높이 추가
         self.zoom_window.attributes('-topmost', True)
         
-        self.zoom_canvas = tk.Canvas(self.zoom_window, width=self.zoom_size, height=self.zoom_size)
+        # 메인 프레임
+        main_frame = tk.Frame(self.zoom_window)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # 확대 캔버스
+        self.zoom_canvas = tk.Canvas(main_frame, width=self.zoom_size, height=self.zoom_size)
         self.zoom_canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # 상태 표시줄 추가
+        self.status_frame = tk.Frame(self.zoom_window, height=25, bg="lightgray")
+        self.status_frame.pack(fill=tk.X, side=tk.BOTTOM)
+        
+        # 상태 레이블
+        self.status_label = tk.Label(
+            self.status_frame, 
+            text="준비됨", 
+            font=("Arial", 9), 
+            bd=1, relief=tk.SUNKEN, 
+            anchor=tk.W,
+            bg="lightgray"
+        )
+        self.status_label.pack(fill=tk.X, padx=2, pady=2)
         
         # 확대 창이 닫히면 선택 취소
         self.zoom_window.protocol("WM_DELETE_WINDOW", lambda: self.cancel_selection())
@@ -161,7 +181,7 @@ class RegionSelector:
             zoom_area = self.screenshot.crop((left, top, right, bottom))
             zoomed = zoom_area.resize(
                 (int(zoom_area.width * self.zoom_factor), 
-                 int(zoom_area.height * self.zoom_factor)),
+                int(zoom_area.height * self.zoom_factor)),
                 Image.LANCZOS
             )
             
@@ -169,13 +189,16 @@ class RegionSelector:
             self.zoomed_image = ImageTk.PhotoImage(zoomed)
             self.zoom_canvas.delete("all")
             self.zoom_canvas.create_image(self.zoom_size//2, self.zoom_size//2, 
-                                          image=self.zoomed_image, anchor=tk.CENTER)
+                                        image=self.zoomed_image, anchor=tk.CENTER)
             
             # 중심 표시 (십자선)
             self.zoom_canvas.create_line(0, self.zoom_size//2, self.zoom_size, self.zoom_size//2, 
-                                         fill="red", width=1)
+                                        fill="red", width=1)
             self.zoom_canvas.create_line(self.zoom_size//2, 0, self.zoom_size//2, self.zoom_size, 
-                                         fill="red", width=1)
+                                        fill="red", width=1)
+            
+            # 키 상태 확인 및 상태 표시줄 업데이트
+            self.update_status_bar()
             
             # 확대 창 위치 업데이트 (마우스 위치에 따라)
             x_screen, y_screen = pyautogui.position()
@@ -189,14 +212,56 @@ class RegionSelector:
                 zoom_x = x_screen + 20
                 
             if y_screen > screen_height // 2:
-                zoom_y = y_screen - self.zoom_size - 20
+                zoom_y = y_screen - self.zoom_size - 20 - 25  # 상태 표시줄 높이 고려
             else:
                 zoom_y = y_screen + 20
                 
-            self.zoom_window.geometry(f"{self.zoom_size}x{self.zoom_size}+{zoom_x}+{zoom_y}")
+            self.zoom_window.geometry(f"{self.zoom_size}x{self.zoom_size + 25}+{zoom_x}+{zoom_y}")
             
         except Exception as e:
             print(f"확대 뷰 업데이트 오류: {e}")
+
+    def update_status_bar(self):
+        """현재 키 상태에 따라 상태 표시줄 업데이트"""
+        if not hasattr(self, 'status_label') or not self.status_label:
+            return
+        
+        # 키 상태 확인
+        is_square_key_pressed = keyboard.is_pressed(DRAG_KEEP_SQUARE_KEY)
+        is_width_key_pressed = keyboard.is_pressed(DRAG_FIXED_WIDTH_KEY)
+        is_height_key_pressed = keyboard.is_pressed(DRAG_FIXED_HEIGHT_KEY)
+        is_ratio_key_pressed = keyboard.is_pressed(DRAG_ASPECT_RATIO_KEY)
+        
+        status_text = "준비됨"
+        status_bg = "lightgray"
+        
+        # 활성화된 키에 따라 상태 텍스트와 색상 설정
+        if is_square_key_pressed:
+            status_text = f"[{DRAG_KEEP_SQUARE_KEY}] 정사각형 비율 유지"
+            status_bg = "#ffe6cc"  # 연한 주황색
+        elif is_width_key_pressed:
+            status_text = f"[{DRAG_FIXED_WIDTH_KEY}] 너비 고정"
+            status_bg = "#cce5ff"  # 연한 파란색
+        elif is_height_key_pressed:
+            status_text = f"[{DRAG_FIXED_HEIGHT_KEY}] 높이 고정"
+            status_bg = "#d4edda"  # 연한 녹색
+        elif is_ratio_key_pressed:
+            ratio_text = f"{DRAG_ASPECT_RATIO:.1f}"
+            if DRAG_ASPECT_RATIO == 16/9:
+                ratio_text = "16:9"
+            elif DRAG_ASPECT_RATIO == 4/3:
+                ratio_text = "4:3"
+            status_text = f"[{DRAG_ASPECT_RATIO_KEY}] {ratio_text} 비율 유지"
+            status_bg = "#f8d7da"  # 연한 빨간색
+        
+        # 드래그 상태에 따라 추가 정보
+        if self.start_x is not None and self.current_x is not None:
+            width = abs(self.current_x - self.start_x)
+            height = abs(self.current_y - self.start_y)
+            status_text += f" | {int(width)}x{int(height)}px"
+        
+        # 상태 레이블 업데이트
+        self.status_label.config(text=status_text, bg=status_bg)
     
     def on_mouse_move(self, event):
         """마우스 이동 시 확대 뷰 업데이트"""
@@ -279,7 +344,7 @@ class RegionSelector:
         # 사각형 크기 업데이트
         self.canvas.coords(self.rect_id, self.start_x, self.start_y, self.current_x, self.current_y)
         
-        # 확대 뷰 업데이트
+        # 확대 뷰 업데이트 (이미 상태 표시줄 업데이트를 포함함)
         self.update_zoom_view(event.x, event.y)
         
         # 선택 영역 크기 표시
