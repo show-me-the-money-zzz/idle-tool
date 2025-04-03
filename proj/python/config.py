@@ -19,7 +19,7 @@ DEFAULT_CLICK_X = "0"        # 기본 클릭 X 좌표
 DEFAULT_CLICK_Y = "0"        # 기본 클릭 Y 좌표
 
 # OCR 설정
-TESSERACT_PATH = r"..\..\Tesseract-OCR\tesseract.exe"  # Tesseract OCR 경로
+TESSERACT_PATH = r"D:\tool\Tesseract-OCR\tesseract.exe"  # Tesseract OCR 경로
 OCR_LANGUAGE = "kor+eng"     # OCR 인식 언어
 
 # 파일 저장 관련
