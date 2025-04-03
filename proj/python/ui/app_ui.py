@@ -279,13 +279,35 @@ class AutomationAppUI:
         result_frame = ttk.LabelFrame(parent, text="인식된 텍스트", padding="10")
         result_frame.pack(fill=tk.BOTH, expand=True, pady=5)
         
-        self.result_text = tk.Text(result_frame, wrap=tk.WORD, height=10)
-        self.result_text.pack(fill=tk.BOTH, expand=True)
+        # 버튼 프레임 (상단)
+        button_frame = ttk.Frame(result_frame)
+        button_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        # 로그 초기화 버튼
+        self.clear_log_btn = ttk.Button(
+            button_frame, 
+            text="로그 초기화", 
+            command=self.clear_result_log
+        )
+        self.clear_log_btn.pack(side=tk.RIGHT, padx=5)
+        
+        # 텍스트 영역과 스크롤바를 담을 프레임
+        text_frame = ttk.Frame(result_frame)
+        text_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # 텍스트 영역
+        self.result_text = tk.Text(text_frame, wrap=tk.WORD, height=10)
+        self.result_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         # 스크롤바 추가
-        scrollbar = ttk.Scrollbar(result_frame, command=self.result_text.yview)
+        scrollbar = ttk.Scrollbar(text_frame, command=self.result_text.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.result_text.config(yscrollcommand=scrollbar.set)
+
+    def clear_result_log(self):
+        """인식된 텍스트 로그 초기화"""
+        self.result_text.delete(1.0, tk.END)
+        self.status_var.set("로그가 초기화되었습니다.")
 
     def setup_automation_frame(self, parent):
         """자동화 프레임 설정"""
