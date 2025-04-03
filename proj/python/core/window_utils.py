@@ -136,7 +136,7 @@ class WindowManager:
                 return False
 
             self.activate_window()
-            time.sleep(0.01)
+            time.sleep(0.1)
 
             left, top, _, _ = self.window_rect
             abs_x = left + rel_x
@@ -149,13 +149,13 @@ class WindowManager:
             windll.user32.GetCursorPos(byref(pt))
 
             windll.user32.SetCursorPos(abs_x, abs_y)
-            time.sleep(0.01)
+            time.sleep(0.1)
 
             windll.user32.mouse_event(0x0002, 0, 0, 0, 0)  # LEFTDOWN
-            time.sleep(0.01)
+            time.sleep(0.1)
             windll.user32.mouse_event(0x0004, 0, 0, 0, 0)  # LEFTUP
 
-            time.sleep(0.01)
+            time.sleep(0.1)
             windll.user32.SetCursorPos(pt.x, pt.y)
 
             return True
