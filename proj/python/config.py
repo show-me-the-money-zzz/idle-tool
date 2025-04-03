@@ -5,7 +5,7 @@
 # 앱 기본 설정
 APP_TITLE = "쇼 미더 머니 - 로드나인" # 연결하려는 앱의 타이틀이 포함되면 안됨
 APP_WIDTH = 600
-APP_HEIGHT = 650
+APP_HEIGHT = 1200
 
 # 기본 입력값
 DEFAULT_APP_NAME = "LORDNINE"  # 기본 검색할 앱 이름
