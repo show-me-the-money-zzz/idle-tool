@@ -18,8 +18,8 @@ DEFAULT_CAPTURE_INTERVAL = "1.0" # 기본 캡처 간격(초)
 DEFAULT_CLICK_X = "0"        # 기본 클릭 X 좌표
 DEFAULT_CLICK_Y = "0"        # 기본 클릭 Y 좌표
 
-# OCR 설정
-TESSERACT_PATH = r"D:\tool\Tesseract-OCR\tesseract.exe"  # Tesseract OCR 경로
+# OCR 설정 - 기본값 (설정 파일이 없을 경우 사용)
+DEFAULT_TESSERACT_PATH = r"D:\tool\Tesseract-OCR\tesseract.exe"  # Tesseract OCR 기본 경로
 OCR_LANGUAGE = "kor+eng"     # OCR 인식 언어
 
 # 파일 저장 관련
@@ -35,3 +35,7 @@ ERROR_NO_WINDOW = "먼저 창에 연결해주세요."
 ERROR_WINDOW_CLOSED = "창이 닫혔습니다."
 ERROR_CONNECTION = "연결 중 오류가 발생했습니다"
 ERROR_FINDING = "검색 중 오류가 발생했습니다"
+ERROR_OCR_CONFIG = "Tesseract OCR 경로 설정이 필요합니다"
+
+# 설정 관련 상수
+SETTINGS_FILE = "app_settings.ini"
