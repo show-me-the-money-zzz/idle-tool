@@ -9,7 +9,8 @@ if exist main.spec del main.spec
 echo Building new executable...
 
 REM pyinstaller --onefile main.py
-pyinstaller --onefile --windowed --icon=lordnine.ico --name %EXE_NAME% main.py
+REM pyinstaller --onefile --windowed --icon=lordnine.ico --name %EXE_NAME% main.py
+pyinstaller --noupx --name %EXE_NAME% main.py
 
 echo.
 echo.

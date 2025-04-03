@@ -3,42 +3,38 @@ import win32process
 import win32con
 import psutil
 import time
-import pyautogui
 from tkinter import messagebox
+import win32api
+from ctypes import windll, Structure, c_ulong, POINTER, sizeof, byref, c_long
 
 class WindowManager:
     """윈도우 창 관리 및 제어 클래스"""
-    
+
     def __init__(self):
         self.target_hwnd = None
         self.window_rect = (0, 0, 0, 0)  # (left, top, right, bottom)
-    
+
     def find_window_by_pid(self, pid):
-        """PID로 윈도우 찾기"""
-        # PID가 유효한지 확인
         process = psutil.Process(pid)
-        
-        # 해당 프로세스의 창 찾기
+
         def callback(hwnd, hwnds):
             if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
                 _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
                 if found_pid == pid:
                     text = win32gui.GetWindowText(hwnd)
-                    if text:  # 타이틀이 있는 창만 처리
+                    if text:
                         hwnds.append((hwnd, text))
             return True
-        
+
         windows = []
         win32gui.EnumWindows(callback, windows)
-        
+
         if not windows:
             return None, None
-        
-        # 첫 번째 창 선택
+
         return windows[0]
-    
+
     def find_windows_by_name(self, app_name):
-        """앱 이름(창 제목)으로 창 검색"""
         def callback(hwnd, windows):
             if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
                 title = win32gui.GetWindowText(hwnd)
@@ -51,67 +47,125 @@ class WindowManager:
                     except:
                         pass
             return True
-        
+
         windows = []
         win32gui.EnumWindows(callback, windows)
         return windows
-    
+
     def set_target_window(self, hwnd):
-        """대상 윈도우 설정"""
         self.target_hwnd = hwnd
         self.update_window_info()
-    
+
     def update_window_info(self):
-        """타겟 윈도우의 현재 위치와 크기 정보를 업데이트"""
         if self.target_hwnd and win32gui.IsWindow(self.target_hwnd):
             self.window_rect = win32gui.GetWindowRect(self.target_hwnd)
             return True
         return False
-    
+
     def get_window_rect(self):
-        """윈도우의 위치와 크기 반환"""
         return self.window_rect
-    
+
     def is_window_valid(self):
-        """창이 유효한지 확인"""
         return self.target_hwnd is not None and win32gui.IsWindow(self.target_hwnd)
-    
+
     def activate_window(self):
-        """창 활성화"""
-        if self.is_window_valid():
-            # 창이 최소화되어 있으면 복원
+        if not self.is_window_valid():
+            return False
+
+        try:
             if win32gui.IsIconic(self.target_hwnd):
                 win32gui.ShowWindow(self.target_hwnd, win32con.SW_RESTORE)
-                time.sleep(0.5)  # 창이 복원되기를 기다림
-            
+                time.sleep(0.3)
+
+            win32gui.ShowWindow(self.target_hwnd, win32con.SW_SHOW)
+            time.sleep(0.2)
+
             win32gui.SetForegroundWindow(self.target_hwnd)
-            time.sleep(0.1)  # 창이 활성화되기를 기다림
+            time.sleep(0.3)
+
             return True
-        return False
-    
-    def send_key(self, key):
-        """키 입력 전송"""
-        if self.activate_window():
-            pyautogui.press(key)
-            return True
-        return False
-    
-    def click_at_position(self, rel_x, rel_y):
-        """상대 좌표 위치 클릭"""
-        if not self.activate_window():
+        except Exception as e:
+            print(f"창 활성화 오류: {e}")
             return False
-        
-        left, top, _, _ = self.window_rect
-        abs_x = left + rel_x
-        abs_y = top + rel_y
-        
-        pyautogui.click(abs_x, abs_y)
-        return True
-    
+
+    def send_key(self, key):
+        try:
+            if not self.is_window_valid():
+                print("창이 유효하지 않습니다.")
+                return False
+
+            self.activate_window()
+            time.sleep(0.5)
+
+            key_map = {
+                'm': 0x4D,
+                'M': 0x4D,
+            }
+            vk_code = key_map.get(key)
+            if not vk_code:
+                print(f"지원되지 않는 키: {key}")
+                return False
+
+            class KEYBDINPUT(Structure):
+                _fields_ = [("wVk", c_ulong), ("wScan", c_ulong), ("dwFlags", c_ulong),
+                            ("time", c_ulong), ("dwExtraInfo", POINTER(c_ulong))]
+
+            class INPUT(Structure):
+                _fields_ = [("type", c_ulong), ("ki", KEYBDINPUT)]
+
+            INPUT_KEYBOARD = 1
+            KEYEVENTF_KEYUP = 0x0002
+
+            ki_down = INPUT(type=INPUT_KEYBOARD,
+                            ki=KEYBDINPUT(wVk=vk_code, wScan=0, dwFlags=0, time=0, dwExtraInfo=None))
+            ki_up = INPUT(type=INPUT_KEYBOARD,
+                          ki=KEYBDINPUT(wVk=vk_code, wScan=0, dwFlags=KEYEVENTF_KEYUP, time=0, dwExtraInfo=None))
+
+            windll.user32.SendInput(1, byref(ki_down), sizeof(ki_down))
+            windll.user32.SendInput(1, byref(ki_up), sizeof(ki_up))
+
+            return True
+        except Exception as e:
+            print(f"키 입력 오류 (SendInput): {e}")
+            return False
+
+    def click_at_position(self, rel_x, rel_y):
+        try:
+            if not self.is_window_valid():
+                print("창이 유효하지 않습니다.")
+                return False
+
+            self.activate_window()
+            time.sleep(0.01)
+
+            left, top, _, _ = self.window_rect
+            abs_x = left + rel_x
+            abs_y = top + rel_y
+
+            class POINT(Structure):
+                _fields_ = [("x", c_long), ("y", c_long)]
+
+            pt = POINT()
+            windll.user32.GetCursorPos(byref(pt))
+
+            windll.user32.SetCursorPos(abs_x, abs_y)
+            time.sleep(0.01)
+
+            windll.user32.mouse_event(0x0002, 0, 0, 0, 0)  # LEFTDOWN
+            time.sleep(0.01)
+            windll.user32.mouse_event(0x0004, 0, 0, 0, 0)  # LEFTUP
+
+            time.sleep(0.01)
+            windll.user32.SetCursorPos(pt.x, pt.y)
+
+            return True
+        except Exception as e:
+            print(f"클릭 오류 (SendInput): {e}")
+            return False
+
     def get_relative_position(self, abs_x, abs_y):
-        """절대 좌표를 창 기준 상대 좌표로 변환"""
         if not self.is_window_valid():
             return abs_x, abs_y
-        
+
         left, top, _, _ = self.window_rect
         return abs_x - left, abs_y - top
