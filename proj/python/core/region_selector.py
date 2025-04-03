@@ -137,15 +137,21 @@ class RegionSelector:
         """확대 창 생성"""
         self.zoom_window = tk.Toplevel()
         self.zoom_window.title("Magnifier")
-        self.zoom_window.geometry(f"{self.zoom_size}x{self.zoom_size + 25}")  # 상태 표시줄 높이 추가
-        self.zoom_window.attributes('-topmost', True)
+        self.zoom_window.geometry(f"{self.zoom_size}x{self.zoom_size + 25}")
         
-        # 메인 프레임
-        main_frame = tk.Frame(self.zoom_window)
+        # 투명도 관련 문제 해결을 위한 설정
+        self.zoom_window.attributes('-alpha', 1.0)  # 완전 불투명하게 설정
+        self.zoom_window.attributes('-topmost', True)  # 항상 최상위에 표시
+        
+        # 다른 창들보다 더 위에 표시되도록 zorder 조정
+        self.zoom_window.lift()
+        
+        # 메인 프레임 (배경색 설정)
+        main_frame = tk.Frame(self.zoom_window, bg='black')
         main_frame.pack(fill=tk.BOTH, expand=True)
         
-        # 확대 캔버스
-        self.zoom_canvas = tk.Canvas(main_frame, width=self.zoom_size, height=self.zoom_size)
+        # 확대 캔버스 (배경색 설정)
+        self.zoom_canvas = tk.Canvas(main_frame, width=self.zoom_size, height=self.zoom_size, bg='black')
         self.zoom_canvas.pack(fill=tk.BOTH, expand=True)
         
         # 상태 표시줄 추가
@@ -183,6 +189,22 @@ class RegionSelector:
         # 영역 크롭 및 확대
         try:
             zoom_area = self.screenshot.crop((left, top, right, bottom))
+            
+            # 이미지 불투명도 향상 (필요한 경우)
+            # RGBA로 변환해서 알파 채널을 조정
+            if zoom_area.mode != 'RGB':
+                zoom_area = zoom_area.convert('RGB')
+            
+            # 이미지 대비 강화 (선명도 향상)
+            from PIL import ImageEnhance
+            enhancer = ImageEnhance.Contrast(zoom_area)
+            zoom_area = enhancer.enhance(1.2)  # 대비 20% 증가
+            
+            # 밝기 약간 증가
+            enhancer = ImageEnhance.Brightness(zoom_area)
+            zoom_area = enhancer.enhance(1.1)  # 밝기 10% 증가
+            
+            # 확대
             zoomed = zoom_area.resize(
                 (int(zoom_area.width * self.zoom_factor), 
                 int(zoom_area.height * self.zoom_factor)),
@@ -192,6 +214,10 @@ class RegionSelector:
             # 확대 창 이미지 업데이트
             self.zoomed_image = ImageTk.PhotoImage(zoomed)
             self.zoom_canvas.delete("all")
+            
+            # 배경색 설정 (이미지 가시성 향상)
+            self.zoom_canvas.config(bg='black')
+            
             self.zoom_canvas.create_image(self.zoom_size//2, self.zoom_size//2, 
                                         image=self.zoomed_image, anchor=tk.CENTER)
             
@@ -221,6 +247,10 @@ class RegionSelector:
                 zoom_y = y_screen + 20
                 
             self.zoom_window.geometry(f"{self.zoom_size}x{self.zoom_size + 25}+{zoom_x}+{zoom_y}")
+    
+            # 항상 최상위에 표시되도록 설정
+            self.zoom_window.attributes('-topmost', True)
+            self.zoom_window.lift()
             
         except Exception as e:
             print(f"확대 뷰 업데이트 오류: {e}")
