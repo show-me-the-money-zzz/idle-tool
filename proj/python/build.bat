@@ -1,5 +1,5 @@
 @echo off
-set EXE_NAME=로드나인치터
+set EXE_NAME=치터-로드나인
 echo Cleaning up previous build files...
 
 if exist build rmdir /s /q build
@@ -9,8 +9,7 @@ if exist main.spec del main.spec
 echo Building new executable...
 
 REM pyinstaller --onefile main.py
-REM pyinstaller --onefile --windowed --icon=myicon.ico --name MyApp main.py
-pyinstaller --onefile --windowed --name %EXE_NAME% main.py
+pyinstaller --onefile --windowed --icon=lordnine.ico --name %EXE_NAME% main.py
 
 echo.
 echo.
