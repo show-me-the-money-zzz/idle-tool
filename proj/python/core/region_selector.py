@@ -103,9 +103,13 @@ class RegionSelector:
         self.info_label = tk.Label(
             self.root, 
             text = f"[{DRAG_FIXED_WIDTH_KEY}] 너비 고정 / [{DRAG_FIXED_HEIGHT_KEY}] 높이 고정 / [{DRAG_KEEP_SQUARE_KEY}] 정사각 비율 / [{DRAG_ASPECT_RATIO_KEY}] {DRAG_ASPECT_RATIO_TEXT} 비율",
-            bg="black", fg="white", 
+            bg="#0000ff",
+            fg="#ffffff",
+
             font=("Arial", 10, "bold"), 
-            padx=100, pady=0
+            padx=100, pady=0,
+            bd=1,         # 테두리 추가
+            relief=tk.SOLID  # 단색 테두리
         )
         self.info_label.place(x=10, y=10)
         
