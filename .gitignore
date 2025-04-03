@@ -11,3 +11,4 @@ IdleTool.exe
 /proj/WinForms/ProcessChecker/obj
 /proj/WinForms/ProcessChecker/bin
 __pycache__
+/proj/python/captures
