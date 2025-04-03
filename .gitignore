@@ -12,3 +12,8 @@ IdleTool.exe
 /proj/WinForms/ProcessChecker/bin
 __pycache__
 /proj/python/captures
+/proj/python/dist
+/proj/python/build
+/proj/python/Null
+/proj/python/*.spec
+/Tesseract-OCR
