@@ -6,6 +6,8 @@ from PIL import Image, ImageTk
 import numpy as np
 import mss
 import mss.tools
+import keyboard  # 키보드 입력 감지를 위한 모듈
+from config import *  # 설정 상수 불러오기
 
 class RegionSelector:
     """마우스 드래그로 영역을 선택하는 도구"""
@@ -25,11 +27,19 @@ class RegionSelector:
         self.target_window_only = False
         self.window_rect = (0, 0, 0, 0)
         
+        # 고정 치수 관련 변수
+        self.fixed_width = None
+        self.fixed_height = None
+        self.fixed_aspect_ratio = None
+        
         # 확대 뷰 관련 변수
         self.zoom_window = None
         self.zoom_canvas = None
         self.zoom_factor = 3  # 확대 배율
         self.zoom_size = 150  # 확대 창 크기
+        
+        # 키 제어 안내 레이블
+        self.info_label = None
     
     def start_selection(self, callback=None, target_window_only=False):
         """영역 선택 시작"""
@@ -88,6 +98,16 @@ class RegionSelector:
         # 이미지를 캔버스 아이템으로 추가하고 참조 유지
         self.canvas.image = photo  # 이미지에 대한 참조 유지
         self.canvas.create_image(0, 0, image=photo, anchor=tk.NW)
+        
+        # 키 제어 안내 레이블 추가
+        self.info_label = tk.Label(
+            self.root, 
+            text="[S] 정사각형   [W] 너비 고정   [H] 높이 고정   [R] 16:9 비율   [ESC] 취소", 
+            bg="black", fg="white", 
+            font=("Arial", 10, "bold"), 
+            padx=10, pady=5
+        )
+        self.info_label.place(x=10, y=10)
         
         # 확대 창 생성
         self.create_zoom_window()
@@ -198,19 +218,136 @@ class RegionSelector:
     
     def on_drag(self, event):
         """마우스 드래그 중"""
-        self.current_x = event.x
-        self.current_y = event.y
+        current_x = event.x
+        current_y = event.y
+        
+        # 키보드 상태 확인
+        is_square_key_pressed = keyboard.is_pressed(DRAG_KEEP_SQUARE_KEY)
+        is_width_key_pressed = keyboard.is_pressed(DRAG_FIXED_WIDTH_KEY)
+        is_height_key_pressed = keyboard.is_pressed(DRAG_FIXED_HEIGHT_KEY)
+        is_ratio_key_pressed = keyboard.is_pressed(DRAG_ASPECT_RATIO_KEY)
+        
+        # 첫 드래그 시 고정 치수 설정
+        if self.fixed_width is None and is_width_key_pressed:
+            self.fixed_width = abs(current_x - self.start_x)
+        
+        if self.fixed_height is None and is_height_key_pressed:
+            self.fixed_height = abs(current_y - self.start_y)
+        
+        # 키 상태에 따라 좌표 조정
+        if is_square_key_pressed:
+            # 정사각형 유지
+            size = max(abs(current_x - self.start_x), abs(current_y - self.start_y))
+            if current_x >= self.start_x:
+                current_x = self.start_x + size
+            else:
+                current_x = self.start_x - size
+                
+            if current_y >= self.start_y:
+                current_y = self.start_y + size
+            else:
+                current_y = self.start_y - size
+        
+        elif is_width_key_pressed and self.fixed_width is not None:
+            # 너비 고정
+            if current_x >= self.start_x:
+                current_x = self.start_x + self.fixed_width
+            else:
+                current_x = self.start_x - self.fixed_width
+        
+        elif is_height_key_pressed and self.fixed_height is not None:
+            # 높이 고정
+            if current_y >= self.start_y:
+                current_y = self.start_y + self.fixed_height
+            else:
+                current_y = self.start_y - self.fixed_height
+        
+        elif is_ratio_key_pressed:
+            # 특정 비율 유지 (16:9 등)
+            width = abs(current_x - self.start_x)
+            height = width / DRAG_ASPECT_RATIO
+            
+            if current_y >= self.start_y:
+                current_y = self.start_y + height
+            else:
+                current_y = self.start_y - height
+        
+        # 현재 좌표 업데이트
+        self.current_x = current_x
+        self.current_y = current_y
         
         # 사각형 크기 업데이트
         self.canvas.coords(self.rect_id, self.start_x, self.start_y, self.current_x, self.current_y)
         
         # 확대 뷰 업데이트
         self.update_zoom_view(event.x, event.y)
+        
+        # 선택 영역 크기 표시
+        width = abs(self.current_x - self.start_x)
+        height = abs(self.current_y - self.start_y)
+        
+        # 이전 크기 텍스트 삭제 (있다면)
+        self.canvas.delete("size_text")
+        
+        # 중앙에 크기 텍스트 표시
+        x = min(self.start_x, self.current_x) + width / 2
+        y = min(self.start_y, self.current_y) + height / 2
+        
+        self.canvas.create_text(
+            x, y,
+            text=f"{int(width)} x {int(height)}",
+            fill="white",
+            font=("Arial", 12, "bold"),
+            tags="size_text"
+        )
     
     def on_release(self, event):
         """마우스 버튼 놓을 때"""
         self.current_x = event.x
         self.current_y = event.y
+        
+        # 키 상태에 따라 최종 조정 (on_drag와 동일한 로직)
+        is_square_key_pressed = keyboard.is_pressed(DRAG_KEEP_SQUARE_KEY)
+        is_width_key_pressed = keyboard.is_pressed(DRAG_FIXED_WIDTH_KEY)
+        is_height_key_pressed = keyboard.is_pressed(DRAG_FIXED_HEIGHT_KEY)
+        is_ratio_key_pressed = keyboard.is_pressed(DRAG_ASPECT_RATIO_KEY)
+        
+        if is_square_key_pressed:
+            # 정사각형 유지
+            size = max(abs(self.current_x - self.start_x), abs(self.current_y - self.start_y))
+            if self.current_x >= self.start_x:
+                self.current_x = self.start_x + size
+            else:
+                self.current_x = self.start_x - size
+                
+            if self.current_y >= self.start_y:
+                self.current_y = self.start_y + size
+            else:
+                self.current_y = self.start_y - size
+        
+        elif is_width_key_pressed and self.fixed_width is not None:
+            # 너비 고정
+            if self.current_x >= self.start_x:
+                self.current_x = self.start_x + self.fixed_width
+            else:
+                self.current_x = self.start_x - self.fixed_width
+        
+        elif is_height_key_pressed and self.fixed_height is not None:
+            # 높이 고정
+            if self.current_y >= self.start_y:
+                self.current_y = self.start_y + self.fixed_height
+            else:
+                self.current_y = self.start_y - self.fixed_height
+        
+        elif is_ratio_key_pressed:
+            # 특정 비율 유지 (16:9 등)
+            width = abs(self.current_x - self.start_x)
+            height = width / DRAG_ASPECT_RATIO
+            
+            if self.current_y >= self.start_y:
+                self.current_y = self.start_y + height
+            else:
+                self.current_y = self.start_y - height
         
         # 좌표 정규화 (시작점이 항상 좌상단, 끝점이 항상 우하단이 되도록)
         x1 = min(self.start_x, self.current_x)
@@ -248,6 +385,10 @@ class RegionSelector:
             "height": height
         }
         
+        # 고정 치수 변수 초기화
+        self.fixed_width = None
+        self.fixed_height = None
+        
         # 창 닫기
         if self.zoom_window:
             self.zoom_window.destroy()
@@ -260,6 +401,11 @@ class RegionSelector:
     def cancel_selection(self, event=None):
         """ESC 키 눌러 선택 취소"""
         self.selected_region = None
+        
+        # 고정 치수 변수 초기화
+        self.fixed_width = None
+        self.fixed_height = None
+        
         if self.zoom_window:
             self.zoom_window.destroy()
         self.root.destroy()
