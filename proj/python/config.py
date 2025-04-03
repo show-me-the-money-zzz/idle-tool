@@ -18,6 +18,8 @@ DEFAULT_CAPTURE_INTERVAL = "1.0" # 기본 캡처 간격(초)
 DEFAULT_CLICK_X = "0"        # 기본 클릭 X 좌표
 DEFAULT_CLICK_Y = "0"        # 기본 클릭 Y 좌표
 
+DRAG_ZOOM_FACTOR = 3 # 영역 드래그 미리보기 ZOOM 확대 배율
+
 # OCR 설정 - 기본값 (설정 파일이 없을 경우 사용)
 DEFAULT_TESSERACT_PATH = r"D:\tool\Tesseract-OCR\tesseract.exe"  # Tesseract OCR 기본 경로
 OCR_LANGUAGE = "kor+eng"     # OCR 인식 언어

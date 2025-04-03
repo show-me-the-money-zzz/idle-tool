@@ -35,7 +35,7 @@ class RegionSelector:
         # 확대 뷰 관련 변수
         self.zoom_window = None
         self.zoom_canvas = None
-        self.zoom_factor = 3  # 확대 배율
+        self.zoom_factor = DRAG_ZOOM_FACTOR  # 확대 배율
         self.zoom_size = 150  # 확대 창 크기
         
         # 키 제어 안내 레이블
