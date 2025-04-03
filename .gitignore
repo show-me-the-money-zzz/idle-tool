@@ -17,3 +17,4 @@ __pycache__
 /proj/python/Null
 /proj/python/*.spec
 /Tesseract-OCR
+/proj/python/app_settings.ini
