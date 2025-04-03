@@ -775,26 +775,20 @@ class AutomationAppUI:
                 rel_x = int(self.click_x_var.get())
                 rel_y = int(self.click_y_var.get())
                 
+                # 상태 표시 업데이트
+                self.status_var.set(f"클릭 중... (X={rel_x}, Y={rel_y})")
+                self.root.update()  # UI 업데이트
+                
                 # 상대 좌표 위치 클릭
                 if self.window_manager.click_at_position(rel_x, rel_y):
                     self.status_var.set(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
                 else:
                     messagebox.showerror("오류", "클릭 작업에 실패했습니다.")
             else:
-                # 현재 마우스 위치에서 클릭
-                x, y = pyautogui.position()
-                left, top, _, _ = self.window_manager.get_window_rect()
-                rel_x, rel_y = x - left, y - top
+                messagebox.showinfo("알림", "클릭할 좌표를 설정해주세요.")
                 
-                # 창 활성화 후 클릭
-                if self.window_manager.activate_window():
-                    pyautogui.click(x, y)
-                    self.status_var.set(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
-                else:
-                    messagebox.showerror("오류", "클릭 작업에 실패했습니다.")
-                    
         except Exception as e:
-            messagebox.showerror("마우스 클릭 오류", f"마우스 클릭 중 오류가 발생했습니다: {str(e)}")
+            messagebox.showerror("마우스 클릭 오류", f"마우스 클0릭 중 오류가 발생했습니다: {str(e)}")
     
     def activate_connected_window(self):
         """연결된 창 활성화"""
