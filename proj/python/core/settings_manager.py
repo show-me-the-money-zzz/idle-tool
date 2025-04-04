@@ -22,10 +22,18 @@ class SettingsManager:
         self.settings_file = SETTINGS_FILE
         self.default_values = default_values or {}
         
-        # 앱 실행 디렉토리 기준 경로 설정
-        self.app_dir = os.path.dirname(os.path.abspath(__file__))
-        self.settings_path = os.path.join(self.app_dir, '..', self.settings_file)
-        self.settings_path = os.path.normpath(self.settings_path)
+        # 사용자 AppData 디렉토리에 설정 파일 저장 (권한 문제 해결)
+        appdata_path = os.path.join(os.path.expanduser('~'), 'AppData', 'Local', 'ShowMeTheMoney', 'LORDNINE')
+        
+        # 폴더가 없으면 생성
+        if not os.path.exists(appdata_path):
+            try:
+                os.makedirs(appdata_path)
+            except Exception as e:
+                print(f"AppData 디렉토리 생성 중 오류: {str(e)}")
+        
+        # 설정 파일 전체 경로 설정
+        self.settings_path = os.path.join(appdata_path, self.settings_file)
         
         # 설정 로드 (파일이 없으면 기본값 사용)
         self.load_settings()
@@ -54,13 +62,15 @@ class SettingsManager:
     def save_settings(self):
         """설정 파일 저장"""
         try:
-            # 부모 디렉터리가 없으면 생성
-            parent_dir = os.path.dirname(self.settings_path)
-            if not os.path.exists(parent_dir):
-                os.makedirs(parent_dir)
+            # 설정 파일 디렉토리가 있는지 확인
+            settings_dir = os.path.dirname(self.settings_path)
+            if not os.path.exists(settings_dir):
+                os.makedirs(settings_dir)
                 
             with open(self.settings_path, 'w', encoding='utf-8') as f:
                 self.config.write(f)
+            
+            print(f"설정 파일 저장 완료: {self.settings_path}")
             return True
         except Exception as e:
             print(f"설정 파일 저장 중 오류 발생: {str(e)}")
