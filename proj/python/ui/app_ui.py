@@ -352,30 +352,43 @@ class AutomationAppUI:
         automation_frame = ttk.LabelFrame(parent, text="자동화 제어", padding="10")
         automation_frame.pack(fill=tk.X, pady=5)
         
-        # M 키 입력 버튼
-        self.key_btn = ttk.Button(automation_frame, text="'M' 키 입력", command=self.press_m_key)
-        self.key_btn.grid(row=0, column=0, padx=5, pady=5)
+        # 키 입력 관련 프레임
+        key_frame = ttk.Frame(automation_frame)
+        key_frame.grid(row=0, column=0, columnspan=3, sticky=tk.W, pady=5)
+        
+        # 키 입력 필드
+        ttk.Label(key_frame, text="입력 키:").pack(side=tk.LEFT, padx=(0, 5))
+        self.input_key_var = tk.StringVar(value="m")
+        ttk.Entry(key_frame, textvariable=self.input_key_var, width=5).pack(side=tk.LEFT, padx=(0, 10))
+        
+        # 키 입력 버튼
+        self.key_btn = ttk.Button(key_frame, text="키보드 입력", command=self.press_key)
+        self.key_btn.pack(side=tk.LEFT, padx=5)
+        
+        # ESC 키 입력 버튼
+        self.esc_btn = ttk.Button(key_frame, text="ESC 키 입력", command=self.press_esc_key)
+        self.esc_btn.pack(side=tk.LEFT, padx=5)
         
         # 마우스 클릭 버튼
         self.click_btn = ttk.Button(automation_frame, text="마우스 클릭", command=self.mouse_click)
-        self.click_btn.grid(row=0, column=1, padx=5, pady=5)
+        self.click_btn.grid(row=1, column=0, padx=5, pady=5)
         
         # 마우스 좌표 입력 필드 (상대적)
-        ttk.Label(automation_frame, text="클릭 X (창 내부):").grid(row=1, column=0, sticky=tk.W, pady=2)
+        ttk.Label(automation_frame, text="클릭 X (창 내부):").grid(row=2, column=0, sticky=tk.W, pady=2)
         self.click_x_var = tk.StringVar(value=DEFAULT_CLICK_X)
-        ttk.Entry(automation_frame, textvariable=self.click_x_var, width=10).grid(row=1, column=1, sticky=tk.W, pady=2)
+        ttk.Entry(automation_frame, textvariable=self.click_x_var, width=10).grid(row=2, column=1, sticky=tk.W, pady=2)
         
-        ttk.Label(automation_frame, text="클릭 Y (창 내부):").grid(row=2, column=0, sticky=tk.W, pady=2)
+        ttk.Label(automation_frame, text="클릭 Y (창 내부):").grid(row=3, column=0, sticky=tk.W, pady=2)
         self.click_y_var = tk.StringVar(value=DEFAULT_CLICK_Y)
-        ttk.Entry(automation_frame, textvariable=self.click_y_var, width=10).grid(row=2, column=1, sticky=tk.W, pady=2)
+        ttk.Entry(automation_frame, textvariable=self.click_y_var, width=10).grid(row=3, column=1, sticky=tk.W, pady=2)
         
         # 현재 마우스 위치 표시 레이블 (절대 좌표와 상대 좌표)
         self.mouse_pos_label = ttk.Label(automation_frame, text="마우스 위치: 절대(X=0, Y=0) / 상대(X=0, Y=0)")
-        self.mouse_pos_label.grid(row=3, column=0, columnspan=2, sticky=tk.W, pady=5)
+        self.mouse_pos_label.grid(row=4, column=0, columnspan=2, sticky=tk.W, pady=5)
         
-        # 마우스 위치 복사 버튼 (새로 추가)
+        # 마우스 위치 복사 버튼
         copy_pos_btn = ttk.Button(automation_frame, text="현재 위치 복사", command=self.copy_current_mouse_position)
-        copy_pos_btn.grid(row=4, column=0, columnspan=2, sticky=tk.W, pady=5)
+        copy_pos_btn.grid(row=5, column=0, columnspan=2, sticky=tk.W, pady=5)
     
     def select_capture_area(self):
         """드래그로 캡처 영역 선택"""
@@ -747,21 +760,43 @@ class AutomationAppUI:
         """상태 표시줄 업데이트"""
         self.status_var.set(text)
 
-    def press_m_key(self):
-        """M 키 입력"""
+    def press_key(self):
+        """사용자가 지정한 키 입력"""
         try:
             if not self.window_manager.is_window_valid():
                 messagebox.showerror("오류", ERROR_NO_WINDOW)
                 return
             
-            # M 키 입력
-            if self.window_manager.send_key('m'):
-                self.status_var.set("'M' 키가 입력되었습니다.")
+            # 사용자가 입력한 키 가져오기
+            key = self.input_key_var.get()
+            if not key:
+                messagebox.showinfo("알림", "입력할 키를 지정해주세요.")
+                return
+            
+            # 키 입력
+            if self.window_manager.send_key(key):
+                self.status_var.set(f"'{key}' 키가 입력되었습니다.")
             else:
                 messagebox.showerror("오류", "키 입력에 실패했습니다.")
                 
         except Exception as e:
             messagebox.showerror("키 입력 오류", f"키 입력 중 오류가 발생했습니다: {str(e)}")
+
+    def press_esc_key(self):
+        """ESC 키 입력"""
+        try:
+            if not self.window_manager.is_window_valid():
+                messagebox.showerror("오류", ERROR_NO_WINDOW)
+                return
+            
+            # ESC 키 입력
+            if self.window_manager.send_key('esc'):
+                self.status_var.set("'ESC' 키가 입력되었습니다.")
+            else:
+                messagebox.showerror("오류", "ESC 키 입력에 실패했습니다.")
+                
+        except Exception as e:
+            messagebox.showerror("키 입력 오류", f"ESC 키 입력 중 오류가 발생했습니다: {str(e)}")
 
     def mouse_click(self):
         """마우스 클릭"""

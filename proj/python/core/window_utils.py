@@ -7,6 +7,8 @@ from tkinter import messagebox
 import win32api
 from ctypes import windll, Structure, c_ulong, POINTER, sizeof, byref, c_long
 
+from pynput.keyboard import Key, Controller
+
 class WindowManager:
     """윈도우 창 관리 및 제어 클래스"""
 
@@ -87,46 +89,44 @@ class WindowManager:
         except Exception as e:
             print(f"창 활성화 오류: {e}")
             return False
-
+        
     def send_key(self, key):
+        # print(f"send_key_with_pynput({key})")
+        """pynput을 사용한 키 입력"""
         try:
-            if not self.is_window_valid():
-                print("창이 유효하지 않습니다.")
+            if not self.activate_window():
+                print("창 활성화에 실패했습니다.")
                 return False
-
-            self.activate_window()
-            time.sleep(0.5)
-
-            key_map = {
-                'm': 0x4D,
-                'M': 0x4D,
+                
+            # 활성화 대기
+            time.sleep(0.2)
+            
+            # 키보드 컨트롤러 생성
+            keyboard = Controller()
+            
+            # 특수키 매핑
+            special_keys = {
+                'enter': Key.enter,
+                'space': Key.space,
+                'tab': Key.tab,
+                'backspace': Key.backspace,
+                'esc': Key.esc
             }
-            vk_code = key_map.get(key)
-            if not vk_code:
-                print(f"지원되지 않는 키: {key}")
-                return False
-
-            class KEYBDINPUT(Structure):
-                _fields_ = [("wVk", c_ulong), ("wScan", c_ulong), ("dwFlags", c_ulong),
-                            ("time", c_ulong), ("dwExtraInfo", POINTER(c_ulong))]
-
-            class INPUT(Structure):
-                _fields_ = [("type", c_ulong), ("ki", KEYBDINPUT)]
-
-            INPUT_KEYBOARD = 1
-            KEYEVENTF_KEYUP = 0x0002
-
-            ki_down = INPUT(type=INPUT_KEYBOARD,
-                            ki=KEYBDINPUT(wVk=vk_code, wScan=0, dwFlags=0, time=0, dwExtraInfo=None))
-            ki_up = INPUT(type=INPUT_KEYBOARD,
-                          ki=KEYBDINPUT(wVk=vk_code, wScan=0, dwFlags=KEYEVENTF_KEYUP, time=0, dwExtraInfo=None))
-
-            windll.user32.SendInput(1, byref(ki_down), sizeof(ki_down))
-            windll.user32.SendInput(1, byref(ki_up), sizeof(ki_up))
-
+            
+            # 키 전송
+            if key in special_keys:
+                keyboard.press(special_keys[key])
+                time.sleep(0.1)
+                keyboard.release(special_keys[key])
+            else:
+                # 일반 문자 키
+                keyboard.press(key)
+                time.sleep(0.1)
+                keyboard.release(key)
+                
             return True
         except Exception as e:
-            print(f"키 입력 오류 (SendInput): {e}")
+            print(f"pynput 키 입력 오류: {e}")
             return False
 
     def click_at_position(self, rel_x, rel_y):
