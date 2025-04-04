@@ -18,3 +18,4 @@ __pycache__
 /proj/python/*.spec
 /Tesseract-OCR
 /proj/python/app_settings.ini
+/proj/python/lordnine_settings.ini
