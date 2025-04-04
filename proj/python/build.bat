@@ -11,6 +11,7 @@ echo Building new executable...
 @REM pyinstaller --onefile main.py
 pyinstaller --clean --onefile --windowed --uac-admin --name %EXE_NAME% main.py
 @REM pyinstaller --clean --onefile --windowed --uac-admin --icon=lordnine.ico --name %EXE_NAME% main.py
+@REM @REM --onefile 단일파일 / --windowed 콘솔 삭제 / --uac-admin 관리자 권한
 
 echo.
 echo.
