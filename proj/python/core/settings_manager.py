@@ -6,9 +6,7 @@ import os
 import configparser
 import tkinter as tk
 from tkinter import filedialog, messagebox
-
-# 기본 설정 파일 경로
-DEFAULT_SETTINGS_FILE = "app_settings.ini"
+from config import SETTINGS_FILE
 
 class SettingsManager:
     """설정 관리 클래스"""
@@ -21,7 +19,7 @@ class SettingsManager:
             default_values (dict): 기본 설정값 딕셔너리
         """
         self.config = configparser.ConfigParser()
-        self.settings_file = DEFAULT_SETTINGS_FILE
+        self.settings_file = SETTINGS_FILE
         self.default_values = default_values or {}
         
         # 앱 실행 디렉토리 기준 경로 설정
