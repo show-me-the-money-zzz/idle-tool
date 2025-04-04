@@ -369,26 +369,31 @@ class AutomationAppUI:
         self.esc_btn = ttk.Button(key_frame, text="ESC 키 입력", command=self.press_esc_key)
         self.esc_btn.pack(side=tk.LEFT, padx=5)
         
+        # 마우스 좌표 입력 필드 (상대적)
+        ttk.Label(automation_frame, text="클릭 X (창 내부):").grid(row=1, column=0, sticky=tk.W, pady=2)
+        self.click_x_var = tk.StringVar(value=DEFAULT_CLICK_X)
+        click_x_entry = ttk.Entry(automation_frame, textvariable=self.click_x_var, width=10)
+        click_x_entry.grid(row=1, column=1, sticky=tk.W, pady=2)
+        
         # 마우스 클릭 버튼
         self.click_btn = ttk.Button(automation_frame, text="마우스 클릭", command=self.mouse_click)
-        self.click_btn.grid(row=1, column=0, padx=5, pady=5)
+        self.click_btn.grid(row=1, column=2, padx=5, pady=2)
         
-        # 마우스 좌표 입력 필드 (상대적)
-        ttk.Label(automation_frame, text="클릭 X (창 내부):").grid(row=2, column=0, sticky=tk.W, pady=2)
-        self.click_x_var = tk.StringVar(value=DEFAULT_CLICK_X)
-        ttk.Entry(automation_frame, textvariable=self.click_x_var, width=10).grid(row=2, column=1, sticky=tk.W, pady=2)
-        
-        ttk.Label(automation_frame, text="클릭 Y (창 내부):").grid(row=3, column=0, sticky=tk.W, pady=2)
+        ttk.Label(automation_frame, text="클릭 Y (창 내부):").grid(row=2, column=0, sticky=tk.W, pady=2)
         self.click_y_var = tk.StringVar(value=DEFAULT_CLICK_Y)
-        ttk.Entry(automation_frame, textvariable=self.click_y_var, width=10).grid(row=3, column=1, sticky=tk.W, pady=2)
+        click_y_entry = ttk.Entry(automation_frame, textvariable=self.click_y_var, width=10)
+        click_y_entry.grid(row=2, column=1, sticky=tk.W, pady=2)
+        
+        # 탭 순서 설정 - 클릭 X에서 클릭 Y로 이동하도록
+        click_x_entry.bind('<Tab>', lambda e: click_y_entry.focus_set() or 'break')
         
         # 현재 마우스 위치 표시 레이블 (절대 좌표와 상대 좌표)
         self.mouse_pos_label = ttk.Label(automation_frame, text="마우스 위치: 절대(X=0, Y=0) / 상대(X=0, Y=0)")
-        self.mouse_pos_label.grid(row=4, column=0, columnspan=2, sticky=tk.W, pady=5)
+        self.mouse_pos_label.grid(row=3, column=0, columnspan=3, sticky=tk.W, pady=5)
         
         # 마우스 위치 복사 버튼
         copy_pos_btn = ttk.Button(automation_frame, text="현재 위치 복사", command=self.copy_current_mouse_position)
-        copy_pos_btn.grid(row=5, column=0, columnspan=2, sticky=tk.W, pady=5)
+        copy_pos_btn.grid(row=4, column=0, columnspan=3, sticky=tk.W, pady=5)
     
     def select_capture_area(self):
         """드래그로 캡처 영역 선택"""
