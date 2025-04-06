@@ -3,7 +3,7 @@ import os
 from ui.app_ui import AutomationAppUI
 from core.ocr_engine import setup_tesseract
 from core.settings_manager import SettingsManager
-from config import DEFAULT_TESSERACT_PATH
+from zzz.config import DEFAULT_TESSERACT_PATH
 
 def main():
     """메인 애플리케이션 실행"""

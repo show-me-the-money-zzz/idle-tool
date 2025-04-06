@@ -10,7 +10,7 @@ import win32gui
 from core.window_utils import WindowManager
 from core.capture_utils import CaptureManager
 from core.ocr_engine import setup_tesseract
-from config import *  # 상수값 가져오기
+from zzz.config import *  # 상수값 가져오기
 from core.region_selector import RegionSelector  # 영역 선택 도구
 
 class AutomationAppUI:

@@ -7,7 +7,7 @@ import numpy as np
 import mss
 import mss.tools
 import keyboard  # 키보드 입력 감지를 위한 모듈
-from config import *  # 설정 상수 불러오기
+from zzz.config import *  # 설정 상수 불러오기
 
 class RegionSelector:
     """마우스 드래그로 영역을 선택하는 도구"""

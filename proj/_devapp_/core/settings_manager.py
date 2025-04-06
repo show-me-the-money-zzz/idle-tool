@@ -6,7 +6,7 @@ import os
 import configparser
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from config import SETTINGS_FILE
+from zzz.config import SETTINGS_FILE
 
 class SettingsManager:
     """설정 관리 클래스"""
