@@ -19,6 +19,8 @@ class MenuBar:
         self._create_file_menu()
         self._create_settings_menu()
         self._create_help_menu()
+        
+        self.update_open_path_menu_state()
     
     def _create_file_menu(self):
         """파일 메뉴 생성"""
@@ -30,7 +32,16 @@ class MenuBar:
         """설정 메뉴 생성"""
         settings_menu = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="설정", menu=settings_menu)
-        settings_menu.add_command(label="Tesseract OCR 경로 설정", command=self.set_tesseract_path)
+        
+        # OCR 관련 설정 하위 메뉴
+        ocr_menu = tk.Menu(settings_menu, tearoff=0)
+        settings_menu.add_cascade(label="OCR 설정", menu=ocr_menu)
+        ocr_menu.add_command(label="Tesseract OCR 경로 설정", command=self.set_tesseract_path)
+        ocr_menu.add_command(label="Tesseract OCR 경로 열기", command=self.open_tesseract_folder)
+        
+        # 응용 프로그램 데이터 폴더 관련 메뉴
+        settings_menu.add_separator()
+        settings_menu.add_command(label="앱 데이터 경로 열기", command=self.open_appdata_folder)
     
     def _create_help_menu(self):
         """도움말 메뉴 생성"""
@@ -50,6 +61,63 @@ class MenuBar:
         if new_path:
             # OCR 재초기화 함수 호출
             self.ocr_initializer(new_path)
+            self.update_open_path_menu_state()
+            
+    def open_tesseract_folder(self):
+        """Tesseract OCR 폴더를 탐색기로 열기"""
+        try:
+            # 현재 설정된 Tesseract 경로 가져오기
+            tesseract_path = self.settings_manager.get('Tesseract', 'Path', '')
+            
+            if tesseract_path and os.path.exists(tesseract_path):
+                # 파일 경로에서 디렉토리 경로 추출
+                folder_path = os.path.dirname(tesseract_path)
+                
+                # 해당 폴더 탐색기로 열기
+                os.startfile(folder_path)
+            else:
+                messagebox.showinfo("알림", "Tesseract OCR 경로가 설정되어 있지 않습니다.", parent=self.root)
+        except Exception as e:
+            messagebox.showerror("오류", f"폴더를 여는 중 오류가 발생했습니다: {str(e)}", parent=self.root)
+            
+    def update_open_path_menu_state(self):
+        """OCR 경로 탐색기로 열기 메뉴 상태 업데이트"""
+        # 현재 설정된 Tesseract 경로 가져오기
+        tesseract_path = self.settings_manager.get('Tesseract', 'Path', '')
+        
+        # 메뉴바에서 설정 메뉴 가져오기
+        index = self.menubar.index("설정")
+        settings_menu = self.menubar.nametowidget(self.menubar.entrycget(index, "menu"))
+        
+        # OCR 설정 서브메뉴 가져오기
+        ocr_menu_index = settings_menu.index("OCR 설정")
+        ocr_menu = settings_menu.nametowidget(settings_menu.entrycget(ocr_menu_index, "menu"))
+        
+        # 메뉴 활성화/비활성화
+        if tesseract_path and os.path.exists(tesseract_path):
+            ocr_menu.entryconfig("Tesseract OCR 경로 열기", state="normal")
+        else:
+            ocr_menu.entryconfig("Tesseract OCR 경로 열기", state="disabled")
+            
+    def open_appdata_folder(self):
+        """앱 데이터 폴더 열기"""
+        try:
+            # Settings Manager에서 사용하는 AppData 경로 가져오기
+            # 경로는 설정 파일의 디렉토리 경로를 사용
+            appdata_path = os.path.dirname(self.settings_manager.settings_path)
+            
+            if os.path.exists(appdata_path):
+                # 해당 폴더 탐색기로 열기
+                os.startfile(appdata_path)
+            else:
+                # 폴더가 없으면 생성 후 열기
+                try:
+                    os.makedirs(appdata_path)
+                    os.startfile(appdata_path)
+                except Exception as e:
+                    messagebox.showerror("오류", f"폴더를 생성하는 중 오류가 발생했습니다: {str(e)}", parent=self.root)
+        except Exception as e:
+            messagebox.showerror("오류", f"앱 데이터 폴더를 여는 중 오류가 발생했습니다: {str(e)}", parent=self.root)
     
     def show_help(self):
         """사용법 표시"""
