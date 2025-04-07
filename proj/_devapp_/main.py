@@ -8,7 +8,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
     sys.path.append(current_dir)
 
-from zzz.app_ui import AutomationAppUI
+from zzz.app_ui import AppUI
 from core.settings_manager import SettingsManager
 from zzz.config import *
 
@@ -30,7 +30,7 @@ def main():
         pass  # 테마 적용 실패 시 기본값 사용
     
     # 메인 애플리케이션 UI 생성
-    app = AutomationAppUI(root, settings_manager)
+    app = AppUI(root, settings_manager)
     
     # 메인 이벤트 루프 실행
     root.mainloop()
