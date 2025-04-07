@@ -6,7 +6,7 @@
 APP_TITLE = "돈! 도온~~~" # 연결하려는 앱의 타이틀이 포함되면 안됨
 # APP_TITLE = "쌀먹 - [게임]" # 연결하려는 앱의 타이틀이 포함되면 안됨
 APP_WIDTH = 600
-APP_HEIGHT = 1200
+APP_HEIGHT = 1060
 
 # 기본 입력값
 DEFAULT_APP_NAME = "LORDNINE"  # 기본 검색할 앱 이름
