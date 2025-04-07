@@ -7,6 +7,10 @@ APP_TITLE = "돈! 도온~~~" # 연결하려는 앱의 타이틀이 포함되면 
 # APP_TITLE = "쌀먹 - [게임]" # 연결하려는 앱의 타이틀이 포함되면 안됨
 APP_WIDTH = 600
 APP_HEIGHT = 1060
+APP_THEME = 'vista'
+# clam: 단순 깔끔 / alt: 대체 스타일 / default: 기본 / classic: 클래식(기본 tk 스타일과 유사)
+# vista: Windows Vista/7 / winnative: 원래의 Windows 네이티브 / xpnative: Windows XP 네이티브
+# aqua: macOS의 기본
 
 # 기본 입력값
 DEFAULT_APP_NAME = "LORDNINE"  # 기본 검색할 앱 이름
