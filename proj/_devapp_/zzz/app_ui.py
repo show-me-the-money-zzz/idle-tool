@@ -200,9 +200,14 @@ class AppUI:
                 x, y, width, height, interval = current_settings
                 popup.set_capture_info(x, y, width, height, interval)
                 
+            # 보통 대화상자의 경우 모달로 열려면 wait_window()를 사용하지만,
+            # 여기서는 드래그 선택을 위해 창을 숨겨야 하므로 모달로 열지 않음
+                
         except Exception as e:
             from tkinter import messagebox
             messagebox.showerror("오류", f"캡처 영역 설정 창을 열 수 없습니다: {str(e)}")
+            import traceback
+            traceback.print_exc()  # 콘솔에 상세 오류 출력
 
     def on_capture_popup_close(self, settings):
         """캡처 영역 설정 팝업이 닫힐 때의 콜백"""
