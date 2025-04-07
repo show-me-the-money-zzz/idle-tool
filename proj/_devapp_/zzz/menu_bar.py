@@ -59,8 +59,8 @@ class MenuBar:
         new_path = self.settings_manager.prompt_tesseract_path(self.root)
         
         if new_path:
-            # OCR 재초기화 함수 호출
-            self.ocr_initializer(new_path)
+            # OCR 재초기화 함수 호출 (메시지 표시 옵션을 True로 설정)
+            self.ocr_initializer(new_path, True)
             self.update_open_path_menu_state()
             
     def open_tesseract_folder(self):

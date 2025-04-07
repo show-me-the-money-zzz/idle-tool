@@ -63,8 +63,8 @@ class AppUI:
         tesseract_path = self.settings_manager.check_tesseract_path(self.root)
         
         if tesseract_path and os.path.exists(tesseract_path):
-            # OCR 엔진 초기화
-            return self.initialize_ocr_with_path(tesseract_path)
+            # OCR 엔진 초기화 (기존 설정은 메시지 표시하지 않음)
+            return self.initialize_ocr_with_path(tesseract_path, show_message=False)
         else:
             # 사용자에게 경고 메시지 표시
             from tkinter import messagebox
@@ -76,16 +76,20 @@ class AppUI:
             )
             return False
     
-    def initialize_ocr_with_path(self, tesseract_path):
+    def initialize_ocr_with_path(self, tesseract_path, show_message=True):
         """지정된 경로로 OCR 엔진 초기화"""
         try:
             setup_tesseract(tesseract_path)
-            from tkinter import messagebox
-            messagebox.showinfo(
-                "설정 완료",
-                f"Tesseract OCR 경로가 설정되었습니다.\n{tesseract_path}",
-                parent=self.root
-            )
+            
+            # show_message 매개변수가 True일 때만 메시지 박스 표시
+            if show_message:
+                from tkinter import messagebox
+                messagebox.showinfo(
+                    "설정 완료",
+                    f"Tesseract OCR 경로가 설정되었습니다.\n{tesseract_path}",
+                    parent=self.root
+                )
+            
             self.status_var.set("Tesseract OCR 경로가 업데이트되었습니다.")
             return True
         except Exception as e:
