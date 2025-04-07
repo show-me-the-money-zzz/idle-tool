@@ -159,48 +159,6 @@ class AppUI:
         self.input_handler_frame.update_mouse_position()
         self.root.after(100, self.track_mouse_position)
 
-    def toggle_capture(self):
-        """캡처 시작/중지 전환"""
-        if self.capture_manager.is_capturing:
-            # 캡처 중지
-            self.capture_manager.stop_capture()
-            self.capture_btn.config(text="캡처 시작")
-            self.status_var.set(STATUS_STOPPED)
-        else:
-            try:
-                # Tesseract OCR이 설정되어 있는지 확인
-                tesseract_path = self.settings_manager.get('Tesseract', 'Path', '')
-                if not tesseract_path or not os.path.exists(tesseract_path):
-                    # OCR 설정 요청
-                    if not self.initialize_ocr():
-                        self.status_var.set(ERROR_OCR_CONFIG)
-                        return
-                
-                # 타겟 윈도우 확인
-                if not self.window_manager.is_window_valid():
-                    from tkinter import messagebox
-                    messagebox.showerror("오류", ERROR_NO_WINDOW)
-                    return
-                
-                # 캡처 영역 프레임에서 좌표와 간격 가져오기
-                capture_info = self.capture_area_frame.get_capture_info()
-                if not capture_info:
-                    return
-                
-                x, y, width, height, interval = capture_info
-                
-                # 캡처 시작
-                self.capture_manager.start_capture(x, y, width, height, interval)
-                self.capture_btn.config(text="캡처 중지")
-                self.status_var.set(STATUS_CAPTURING)
-                
-            except ValueError as e:
-                from tkinter import messagebox
-                messagebox.showerror("입력 오류", f"올바른 값을 입력해주세요: {str(e)}")
-            except Exception as e:
-                from tkinter import messagebox
-                messagebox.showerror("캡처 오류", f"캡처 시작 중 오류가 발생했습니다: {str(e)}")
-
     def handle_capture_callback(self, type_str, message):
         """캡처 콜백 처리"""
         if type_str == "result":
