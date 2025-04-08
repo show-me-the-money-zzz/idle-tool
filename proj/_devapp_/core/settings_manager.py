@@ -7,6 +7,7 @@ import configparser
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from zzz.config import SETTINGS_FILE
+from utils import finder
 
 class SettingsManager:
     """설정 관리 클래스"""
@@ -22,8 +23,7 @@ class SettingsManager:
         self.settings_file = SETTINGS_FILE
         self.default_values = default_values or {}
         
-        # 사용자 AppData 디렉토리에 설정 파일 저장 (권한 문제 해결)
-        appdata_path = os.path.join(os.path.expanduser('~'), 'AppData', 'Local', 'ShowMeTheMoney', 'LORDNINE')
+        appdata_path = finder.Get_LocalPth()
         
         # 폴더가 없으면 생성
         if not os.path.exists(appdata_path):
