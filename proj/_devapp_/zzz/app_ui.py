@@ -17,10 +17,12 @@ from ui.capture_area_frame import CaptureAreaFrame
 from ui.log_frame import LogFrame
 from ui.input_handler_frame import InputHandlerFrame
 
+
 class AppUI:
     """자동화 도구 UI 클래스"""
-    
     def __init__(self, root, settings_manager):
+        self.Test_Lua() # Lua 테스트
+        
         # 메인 윈도우 설정
         self.root = root
         self.root.title(APP_TITLE)
@@ -263,3 +265,21 @@ class AppUI:
             except Exception as e:
                 from tkinter import messagebox
                 messagebox.showerror("캡처 오류", f"캡처 시작 중 오류가 발생했습니다: {str(e)}")
+        
+    def Test_Lua(self):
+        # import lupa
+        # print(lupa.__file__)
+        # # --add-binary 에 포함시킬 .pyd 경로 확인
+        
+        script_path = os.path.join(os.path.dirname(__file__), "scripts", "logger.lua")
+        
+        from lupa import LuaRuntime
+        lua = LuaRuntime(unpack_returned_tuples=True)
+        
+        with open("./scripts/logger.lua", "r", encoding="utf-8") as f:
+            logger = f.read()
+            
+        lua.execute(logger)
+        
+        run_print = lua.eval("Print_Lua")
+        run_print("하하호호즐겁다")
