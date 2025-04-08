@@ -13,10 +13,16 @@ def setup_tesseract(tesseract_path):
     if not tesseract_path.lower().endswith('tesseract.exe'):
         raise ValueError("선택한 파일이 tesseract.exe가 아닙니다.")
     pytesseract.pytesseract.tesseract_cmd = tesseract_path
+    
+def resize_image(image, scale=2):
+    return cv2.resize(image, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
 
 def preprocess_image(image, filename=None):
     """OCR 인식률 향상을 위한 이미지 전처리"""
     img = np.array(image)
+    
+    # if zoomin: img = resize_image(image);
+    
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) # 그레이스케일 변환
     # img = cv2.GaussianBlur(img, (5, 5), 0)  # 노이즈 제거용 블러
     img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1] # 이진화
@@ -29,7 +35,12 @@ def preprocess_image(image, filename=None):
 def _image_to_text(img, lang='kor+eng'):
     """내부 OCR 수행 함수"""
     try:
-        text = pytesseract.image_to_string(img, lang=lang)
+        custom_config = r'--oem 3 --psm 7'
+        # OCR Engine Mode: 0=Legacy, 1=LSTM only, 3=Default
+        # Page Segmentation Mode: 7=단일 텍스트 라인, 6=블록, 11=스파스 텍스트
+        text = pytesseract.image_to_string(img, lang=lang,
+                                        #    config=custom_config
+                                           )
         return text
     except Exception as e:
         error_msg = str(e)
@@ -41,7 +52,7 @@ def _image_to_text(img, lang='kor+eng'):
 def image_to_text(image, lang='kor+eng'):
     """단일 이미지 OCR 실행 (메모리 관리 포함)"""
     img = preprocess_image(image,
-                        #    filename="basic_gray+thresh.png"
+                        #    filename="image_to_text.png"
                            )
     text = _image_to_text(img, lang)
     del img
