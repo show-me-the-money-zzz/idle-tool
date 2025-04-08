@@ -57,7 +57,7 @@ class CaptureAreaPopup(tk.Toplevel):
         # desc_entry.grid(row=3, column=0, columnspan=4, sticky=tk.W, pady=(0, 5))
         
         desc_key_description = tk.Text(coords_frame, height=1, width=40, relief="flat", bg=self.cget("background"))
-        desc_key_description.insert("1.0", f"예약 키워드2: {DEFAULT_KEYWORD}")
+        desc_key_description.insert("1.0", f"※ 예약 키워드: {" / ".join(DEFAULT_KEYWORD)}") #DEFAULT_KEYWORD = [ "피통", "마나통", "물약" ]
         desc_key_description.configure(font=("TkDefaultFont", 8), state="disabled")
         desc_key_description.grid(row=1, column=0, columnspan=4, sticky=tk.W, pady=(0, 5))
 
