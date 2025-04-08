@@ -14,11 +14,16 @@ def setup_tesseract(tesseract_path):
         raise ValueError("선택한 파일이 tesseract.exe가 아닙니다.")
     pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
-def preprocess_image(image):
+def preprocess_image(image, filename=None):
     """OCR 인식률 향상을 위한 이미지 전처리"""
     img = np.array(image)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) # 그레이스케일 변환
+    # img = cv2.GaussianBlur(img, (5, 5), 0)  # 노이즈 제거용 블러
+    img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1] # 이진화
+    
+    if filename:
+        cv2.imwrite(filename, img)
+        print(f"[디버깅] 전처리 이미지 저장됨: {filename}")
     return img
 
 def _image_to_text(img, lang='kor+eng'):
@@ -35,7 +40,9 @@ def _image_to_text(img, lang='kor+eng'):
 
 def image_to_text(image, lang='kor+eng'):
     """단일 이미지 OCR 실행 (메모리 관리 포함)"""
-    img = preprocess_image(image)
+    img = preprocess_image(image,
+                        #    filename="basic_gray+thresh.png"
+                           )
     text = _image_to_text(img, lang)
     del img
     gc.collect()
