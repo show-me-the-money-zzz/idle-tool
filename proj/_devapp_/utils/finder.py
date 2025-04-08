@@ -1,10 +1,13 @@
 import sys
+# from utils import system
 from pathlib import Path
 
 def Get_LocalPth():
     # 애플리케이션 실행 파일 기준 경로 설정
+    
+    # PyInstaller로 빌드된 경우
     if getattr(sys, 'frozen', False):
-        # PyInstaller로 빌드된 경우
+    # if False == system.DEVAPP: #utils.system.
         return Path(sys.executable).parent
     else:
         # 개발 환경인 경우

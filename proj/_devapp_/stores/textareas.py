@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 from utils import finder
 from zzz.config import PATH_Data
@@ -53,6 +54,9 @@ def Load():
         try:
             with open(STORE_FILE, "r", encoding="utf-8") as f:
                 TextAreas = json.load(f)
+            
+            if False == getattr(sys, 'frozen', False):#utils.system.DEVAPP
+                print(f"TextAreas.Load(): {" / ".join(TextAreas)}")
             return True
         except Exception as e:
             print(f"텍스트 영역 데이터 로드 오류: {e}")
