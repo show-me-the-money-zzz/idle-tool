@@ -22,6 +22,7 @@ DEFAULT_CAPTURE_HEIGHT = "100" # 기본 캡처 높이
 DEFAULT_CAPTURE_INTERVAL = "1.0" # 기본 캡처 간격(초)
 DEFAULT_CLICK_X = "0"        # 기본 클릭 X 좌표
 DEFAULT_CLICK_Y = "0"        # 기본 클릭 Y 좌표
+DEFAULT_KEYWORD = [ "피통", "마나통", "물약" ]
 
 DRAG_ZOOM_FACTOR = 4 # 영역 드래그 미리보기 ZOOM 확대 배율
 

@@ -47,35 +47,49 @@ class CaptureAreaPopup(tk.Toplevel):
         self.key_var = tk.StringVar(value=defualt_key)
         ttk.Entry(coords_frame, textvariable=self.key_var, width=10).grid(row=0, column=1, sticky=tk.W, pady=2)
 
-        ttk.Label(coords_frame, text="X 좌표:").grid(row=1, column=0, sticky=tk.W, pady=2)
+        # 설명 텍스트 (row=1)
+        # desc_label = ttk.Label(coords_frame, text=f"예약 키워드: {DEFAULT_KEYWORD}")
+        # desc_label.grid(row=1, column=0, columnspan=4, sticky=tk.W, pady=(0, 5))
+        # desc_label.configure(font=("TkDefaultFont", 8))  # 기본보다 약간 크게
+
+        # desc_entry = tk.Entry(coords_frame, relief="flat", state="readonly", readonlybackground=self.cget("background"))
+        # desc_entry.insert(0, f"예약 키워드3: {DEFAULT_KEYWORD}")
+        # desc_entry.grid(row=3, column=0, columnspan=4, sticky=tk.W, pady=(0, 5))
+        
+        desc_key_description = tk.Text(coords_frame, height=1, width=40, relief="flat", bg=self.cget("background"))
+        desc_key_description.insert("1.0", f"예약 키워드2: {DEFAULT_KEYWORD}")
+        desc_key_description.configure(font=("TkDefaultFont", 8), state="disabled")
+        desc_key_description.grid(row=1, column=0, columnspan=4, sticky=tk.W, pady=(0, 5))
+
+        ttk.Label(coords_frame, text="X 좌표:").grid(row=2, column=0, sticky=tk.W, pady=2)
         self.x_var = tk.StringVar(value=DEFAULT_CAPTURE_X)
-        ttk.Entry(coords_frame, textvariable=self.x_var, width=10).grid(row=1, column=1, sticky=tk.W, pady=2)
+        ttk.Entry(coords_frame, textvariable=self.x_var, width=10).grid(row=2, column=1, sticky=tk.W, pady=2)
 
-        ttk.Label(coords_frame, text="Y 좌표:").grid(row=1, column=2, sticky=tk.W, pady=2, padx=(10, 0))
+        ttk.Label(coords_frame, text="Y 좌표:").grid(row=2, column=2, sticky=tk.W, pady=2, padx=(10, 0))
         self.y_var = tk.StringVar(value=DEFAULT_CAPTURE_Y)
-        ttk.Entry(coords_frame, textvariable=self.y_var, width=10).grid(row=1, column=3, sticky=tk.W, pady=2)
+        ttk.Entry(coords_frame, textvariable=self.y_var, width=10).grid(row=2, column=3, sticky=tk.W, pady=2)
 
-        ttk.Label(coords_frame, text="너비:").grid(row=2, column=0, sticky=tk.W, pady=2)
+        ttk.Label(coords_frame, text="너비:").grid(row=3, column=0, sticky=tk.W, pady=2)
         self.width_var = tk.StringVar(value=DEFAULT_CAPTURE_WIDTH)
-        ttk.Entry(coords_frame, textvariable=self.width_var, width=10).grid(row=2, column=1, sticky=tk.W, pady=2)
+        ttk.Entry(coords_frame, textvariable=self.width_var, width=10).grid(row=3, column=1, sticky=tk.W, pady=2)
 
-        ttk.Label(coords_frame, text="높이:").grid(row=2, column=2, sticky=tk.W, pady=2, padx=(10, 0))
+        ttk.Label(coords_frame, text="높이:").grid(row=3, column=2, sticky=tk.W, pady=2, padx=(10, 0))
         self.height_var = tk.StringVar(value=DEFAULT_CAPTURE_HEIGHT)
-        ttk.Entry(coords_frame, textvariable=self.height_var, width=10).grid(row=2, column=3, sticky=tk.W, pady=2)
+        ttk.Entry(coords_frame, textvariable=self.height_var, width=10).grid(row=3, column=3, sticky=tk.W, pady=2)
 
-        ttk.Label(coords_frame, text="캡처 간격(초):").grid(row=3, column=0, sticky=tk.W, pady=2)
+        ttk.Label(coords_frame, text="캡처 간격(초):").grid(row=4, column=0, sticky=tk.W, pady=2)
         self.interval_var = tk.StringVar(value=DEFAULT_CAPTURE_INTERVAL)
-        ttk.Entry(coords_frame, textvariable=self.interval_var, width=10).grid(row=3, column=1, sticky=tk.W, pady=2)
+        ttk.Entry(coords_frame, textvariable=self.interval_var, width=10, state=tk.DISABLED).grid(row=4, column=1, sticky=tk.W, pady=2)
 
         self.window_only_var = tk.BooleanVar(value=True)
         window_only_check = ttk.Checkbutton(coords_frame, text="창 내부만 선택", variable=self.window_only_var)
-        window_only_check.grid(row=4, column=0, columnspan=4, sticky=tk.W, pady=2)
+        window_only_check.grid(row=5, column=0, columnspan=4, sticky=tk.W, pady=2)
 
         buttons_frame = ttk.Frame(settings_frame)
         buttons_frame.pack(fill=tk.X, pady=5)
 
-        ttk.Button(buttons_frame, text="드래그로 영역 선택", command=self.select_capture_area).pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
-        ttk.Button(buttons_frame, text="미리보기 갱신", command=self.update_area_preview).pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
+        ttk.Button(buttons_frame, text="영역 선택", command=self.select_capture_area).pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
+        ttk.Button(buttons_frame, text="미리보기", command=self.update_area_preview).pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
 
         self.read_text_btn = ttk.Button(buttons_frame, text="글자 읽기", command=self.toggle_read_text)
         self.read_text_btn.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
