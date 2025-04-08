@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 from datetime import datetime
 
 from zzz.config import *
+from stores import textareas
 
 class CaptureAreaPopup(tk.Toplevel):
     """캡처 영역 설정 팝업 창"""
@@ -40,30 +41,35 @@ class CaptureAreaPopup(tk.Toplevel):
 
         coords_frame = ttk.LabelFrame(settings_frame, text="위치 및 크기", padding="10")
         coords_frame.pack(fill=tk.X, pady=5)
+        
+        defualt_key = ""
+        ttk.Label(coords_frame, text="KEY").grid(row=0, column=0, sticky=tk.W, pady=2)
+        self.key_var = tk.StringVar(value=defualt_key)
+        ttk.Entry(coords_frame, textvariable=self.key_var, width=10).grid(row=0, column=1, sticky=tk.W, pady=2)
 
-        ttk.Label(coords_frame, text="X 좌표:").grid(row=0, column=0, sticky=tk.W, pady=2)
+        ttk.Label(coords_frame, text="X 좌표:").grid(row=1, column=0, sticky=tk.W, pady=2)
         self.x_var = tk.StringVar(value=DEFAULT_CAPTURE_X)
-        ttk.Entry(coords_frame, textvariable=self.x_var, width=10).grid(row=0, column=1, sticky=tk.W, pady=2)
+        ttk.Entry(coords_frame, textvariable=self.x_var, width=10).grid(row=1, column=1, sticky=tk.W, pady=2)
 
-        ttk.Label(coords_frame, text="Y 좌표:").grid(row=0, column=2, sticky=tk.W, pady=2, padx=(10, 0))
+        ttk.Label(coords_frame, text="Y 좌표:").grid(row=1, column=2, sticky=tk.W, pady=2, padx=(10, 0))
         self.y_var = tk.StringVar(value=DEFAULT_CAPTURE_Y)
-        ttk.Entry(coords_frame, textvariable=self.y_var, width=10).grid(row=0, column=3, sticky=tk.W, pady=2)
+        ttk.Entry(coords_frame, textvariable=self.y_var, width=10).grid(row=1, column=3, sticky=tk.W, pady=2)
 
-        ttk.Label(coords_frame, text="너비:").grid(row=1, column=0, sticky=tk.W, pady=2)
+        ttk.Label(coords_frame, text="너비:").grid(row=2, column=0, sticky=tk.W, pady=2)
         self.width_var = tk.StringVar(value=DEFAULT_CAPTURE_WIDTH)
-        ttk.Entry(coords_frame, textvariable=self.width_var, width=10).grid(row=1, column=1, sticky=tk.W, pady=2)
+        ttk.Entry(coords_frame, textvariable=self.width_var, width=10).grid(row=2, column=1, sticky=tk.W, pady=2)
 
-        ttk.Label(coords_frame, text="높이:").grid(row=1, column=2, sticky=tk.W, pady=2, padx=(10, 0))
+        ttk.Label(coords_frame, text="높이:").grid(row=2, column=2, sticky=tk.W, pady=2, padx=(10, 0))
         self.height_var = tk.StringVar(value=DEFAULT_CAPTURE_HEIGHT)
-        ttk.Entry(coords_frame, textvariable=self.height_var, width=10).grid(row=1, column=3, sticky=tk.W, pady=2)
+        ttk.Entry(coords_frame, textvariable=self.height_var, width=10).grid(row=2, column=3, sticky=tk.W, pady=2)
 
-        ttk.Label(coords_frame, text="캡처 간격(초):").grid(row=2, column=0, sticky=tk.W, pady=2)
+        ttk.Label(coords_frame, text="캡처 간격(초):").grid(row=3, column=0, sticky=tk.W, pady=2)
         self.interval_var = tk.StringVar(value=DEFAULT_CAPTURE_INTERVAL)
-        ttk.Entry(coords_frame, textvariable=self.interval_var, width=10).grid(row=2, column=1, sticky=tk.W, pady=2)
+        ttk.Entry(coords_frame, textvariable=self.interval_var, width=10).grid(row=3, column=1, sticky=tk.W, pady=2)
 
         self.window_only_var = tk.BooleanVar(value=True)
         window_only_check = ttk.Checkbutton(coords_frame, text="창 내부만 선택", variable=self.window_only_var)
-        window_only_check.grid(row=3, column=0, columnspan=4, sticky=tk.W, pady=2)
+        window_only_check.grid(row=4, column=0, columnspan=4, sticky=tk.W, pady=2)
 
         buttons_frame = ttk.Frame(settings_frame)
         buttons_frame.pack(fill=tk.X, pady=5)
@@ -76,7 +82,7 @@ class CaptureAreaPopup(tk.Toplevel):
 
         action_buttons_frame = ttk.Frame(settings_frame)
         action_buttons_frame.pack(fill=tk.X, pady=5)
-        ttk.Button(action_buttons_frame, text="적용", command=self.apply_settings).pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        ttk.Button(action_buttons_frame, text="저장", command=self.apply_settings).pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
         ttk.Button(action_buttons_frame, text="취소", command=self.on_close).pack(side=tk.RIGHT, padx=5, fill=tk.X, expand=True)
 
         preview_frame = ttk.LabelFrame(top_frame, text="영역 미리보기")
@@ -179,6 +185,12 @@ class CaptureAreaPopup(tk.Toplevel):
             capture_info = self.get_capture_info()
             if not capture_info:
                 return
+            
+            x, y, width, height, interval_dummy = capture_info
+            # print(f"{x}, {y}, {width}, {height}")
+            textareas.AddItem(self.key_var.get(), { "x": x, "y": y, "width": width, "height": height }
+                              , issave=True
+                              )
                 
             # 설정 저장
             self.capture_settings = capture_info
