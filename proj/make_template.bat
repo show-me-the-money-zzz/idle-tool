@@ -7,6 +7,8 @@ set DEST=./ZZZ/KKUSOGE
 set PATH_CORE=core
 set PATH_SCRIPTS=scripts
 set PATH_UI=ui
+set PATH_STORES=stores
+set PATH_UTILS=utils
 set PATH_ZZZ=zzz
 set PATH_DOT_VSCODE=.vscode
 
@@ -49,6 +51,16 @@ if exist "%DEST%\%PATH_SCRIPTS%" (
 if exist "%DEST%\%PATH_UI%" (
     echo 기존 %PATH_UI% 심볼릭 링크 삭제 중...
     rmdir "%DEST%\%PATH_UI%"
+)
+
+if exist "%DEST%\%PATH_STORES%" (
+    echo 기존 %PATH_STORES% 심볼릭 링크 삭제 중...
+    rmdir "%DEST%\%PATH_STORES%"
+)
+
+if exist "%DEST%\%PATH_UTILS%" (
+    echo 기존 %PATH_UTILS% 심볼릭 링크 삭제 중...
+    rmdir "%DEST%\%PATH_UTILS%"
 )
 
 REM 기존 파일 삭제
@@ -110,6 +122,20 @@ if exist "%DEV%\%PATH_UI%" (
     mklink /d "%DEST%\%PATH_UI%" "%CD%\%DEV%\%PATH_UI%"
 ) else (
     echo 경고: 소스 폴더가 존재하지 않습니다 - %DEV%\%PATH_UI%
+)
+
+echo %PATH_STORES% 폴더의 심볼릭 링크 생성...
+if exist "%DEV%\%PATH_STORES%" (
+    mklink /d "%DEST%\%PATH_STORES%" "%CD%\%DEV%\%PATH_STORES%"
+) else (
+    echo 경고: 소스 폴더가 존재하지 않습니다 - %DEV%\%PATH_STORES%
+)
+
+echo %PATH_UTILS% 폴더의 심볼릭 링크 생성...
+if exist "%DEV%\%PATH_UTILS%" (
+    mklink /d "%DEST%\%PATH_UTILS%" "%CD%\%DEV%\%PATH_UTILS%"
+) else (
+    echo 경고: 소스 폴더가 존재하지 않습니다 - %DEV%\%PATH_UTILS%
 )
 
 echo.
