@@ -83,7 +83,11 @@ class CaptureManager:
                     img = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
                     
                     # OCR 실행
+                    if img is None:
+                        raise ValueError("캡처된 이미지가 None입니다.")
                     text = image_to_text(img)
+                    del img
+                    import gc; gc.collect()
                     
                     # 디버깅 정보 출력
                     # print(f"인식된 텍스트: {text}")
@@ -98,7 +102,7 @@ class CaptureManager:
                         self.callback_fn("result", logtext)
                     
                 except Exception as e:
-                    # print(f"캡처 오류 발생: {str(e)}")
+                    # print(f"[캡처 오류] {type(e).__name__}: {str(e)}")
                     if self.callback_fn:
                         self.callback_fn("error", f"오류 발생: {str(e)}")
                 
