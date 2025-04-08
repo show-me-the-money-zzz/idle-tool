@@ -1,0 +1,11 @@
+import sys
+from pathlib import Path
+
+def Get_LocalPth():
+    # 애플리케이션 실행 파일 기준 경로 설정
+    if getattr(sys, 'frozen', False):
+        # PyInstaller로 빌드된 경우
+        return Path(sys.executable).parent
+    else:
+        # 개발 환경인 경우
+        return Path(__file__).parent.parent

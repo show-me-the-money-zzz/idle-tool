@@ -1,10 +1,11 @@
 import os
 import json
-from pathlib import Path
+from utils import finder
 from zzz.config import PATH_Data
 
 # 기본 경로 설정
-BASE_DIR = Path(__file__).parent.parent  # 프로젝트 루트 디렉토리
+# BASE_DIR = Path(__file__).parent.parent  # 프로젝트 루트 디렉토리
+BASE_DIR = finder.Get_LocalPth()
 STORE_DIR = BASE_DIR / PATH_Data  # 데이터 저장 디렉토리
 STORE_FILE = STORE_DIR / "textareas.json"
 
@@ -61,6 +62,10 @@ def Load():
 # 초기화 시 자동 로드
 def initialize():
     """모듈 초기화 (앱 시작 시 호출)"""
+    
+    # print(f"저장 경로: {STORE_DIR}")
+    # print(f"파일 경로: {STORE_FILE}")
+    
     # 데이터 디렉토리 확인 및 생성
     os.makedirs(STORE_DIR, exist_ok=True)
     
