@@ -1,36 +1,40 @@
 import os
 import json
 from pathlib import Path
+from zzz.config import PATH_Data
 
 # 기본 경로 설정
 BASE_DIR = Path(__file__).parent.parent  # 프로젝트 루트 디렉토리
-STORE_DIR = BASE_DIR / "data"  # 데이터 저장 디렉토리
+STORE_DIR = BASE_DIR / PATH_Data  # 데이터 저장 디렉토리
 STORE_FILE = STORE_DIR / "textareas.json"
 
 # 데이터 저장소
 TextAreas = {}
 
-def AddItem_TextArea(key, data):
+def AddItem(key, data, issave: True):
     """텍스트 영역 항목 추가/업데이트"""
     TextAreas[key] = data
+    
+    if issave: Save()
+    
     print(f"store.AddItem_TextArea({key}, {data})")
 
-def GetItem_TextArea(key, default=None):
+def GetItem(key, default=None):
     """텍스트 영역 항목 조회"""
     return TextAreas.get(key, default)
 
-def GetAllItems_TextArea():
+def GetAllItems():
     """모든 텍스트 영역 항목 조회"""
     return TextAreas.copy()
 
-def DeleteItem_TextArea(key):
+def DeleteItem(key):
     """텍스트 영역 항목 삭제"""
     if key in TextAreas:
         del TextAreas[key]
         return True
     return False
 
-def Save_TextAreas():
+def Save():
     """텍스트 영역 데이터 저장"""
     # 디렉토리가 없으면 생성
     os.makedirs(STORE_DIR, exist_ok=True)
@@ -39,7 +43,7 @@ def Save_TextAreas():
         json.dump(TextAreas, f, indent=2, ensure_ascii=False)
     return True
 
-def Load_TextAreas():
+def Load():
     """텍스트 영역 데이터 로드"""
     global TextAreas
     
@@ -61,7 +65,7 @@ def initialize():
     os.makedirs(STORE_DIR, exist_ok=True)
     
     # 데이터 로드
-    success = Load_TextAreas()
+    success = Load()
     if not success:
         print("텍스트 영역 데이터를 로드할 수 없습니다. 새 데이터 저장소를 생성합니다.")
     

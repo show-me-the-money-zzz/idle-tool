@@ -41,6 +41,7 @@ DRAG_ASPECT_RATIO_TEXT = "16:9" # DRAG_ASPECT_RATIO 출력을 위한 문자열�
 SAVE_DIRECTORY = "captures"  # 캡처 이미지 저장 기본 폴더
 DEFAULT_IMAGE_FORMAT = "png" # 기본 이미지 저장 형식
 TIMESTAMP_FORMAT = "%Y%m%d_%H%M%S" # 타임스탬프 형식
+PATH_Data = "data"
 
 # UI 관련 문자열
 STATUS_READY = "준비 완료"
