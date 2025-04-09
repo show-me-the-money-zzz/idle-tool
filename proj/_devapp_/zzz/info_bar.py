@@ -39,6 +39,7 @@ class InfoBar(ttk.Frame):
         self.update_info()
 
     def update_info(self):
+        print("tick~~")
         def Check_Vital(vital):
             return "Χ" if -1 == vital else str(vital)
         
@@ -54,4 +55,4 @@ class InfoBar(ttk.Frame):
         self.loc_kind_var.set(Info.Locate_Kind)
         self.loc_name_var.set(Info.Locate_Name)
 
-        self.after(1000, self.update_info)
+        self.after(Info.Loop_Interval_MS, self.update_info)
