@@ -63,7 +63,8 @@ class CaptureManager:
                         break
 
                     for n in range(len(LOOP_TEXT_KEYWORD)):
-                        area = Get_TextArea(LOOP_TEXT_KEYWORD[n])
+                        KEY = LOOP_TEXT_KEYWORD[n];
+                        area = Get_TextArea(KEY)
                         if area is None:
                             continue
 
@@ -99,7 +100,7 @@ class CaptureManager:
                         if self.callback_fn:
                             timestamp = time.strftime("%H:%M:%S", time.localtime())
                         # self.callback_fn("result", f"[{timestamp}] 인식 결과:\n{text}\n{'='*50}\n")
-                            logtext = f"[{timestamp}] {LOOP_TEXT_KEYWORD[n]}: {text}"
+                            logtext = f"[{timestamp}] {KEY}: {text}"
                             if not text:
                                 logtext += "\n"
                             self.callback_fn("result", logtext)
