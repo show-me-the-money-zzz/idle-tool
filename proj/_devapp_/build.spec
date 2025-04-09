@@ -5,9 +5,12 @@ import os
 filename = os.environ.get("PUBLISH_NAME", "파일명")
 use_console = os.environ.get("USE_CONSOLE", "False").lower() in ("True", "true", "1")
 
+# Analysis.datas
 datalist = [
     ('scripts', 'scripts')
 ]
+
+# Analysis.binaries
 binarylist = [
     ('C:\\\\Users\\\\ZV\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\site-packages\\\\lupa\\\\lua51.cp312-win_amd64.pyd', 'lupa'),
     ('C:\\\\Users\\\\ZV\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\site-packages\\\\lupa\\\\lua52.cp312-win_amd64.pyd', 'lupa'),

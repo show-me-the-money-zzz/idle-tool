@@ -20,6 +20,6 @@ Save_ImageAreas = ImageAreaStore.save
 
 
 def initialize():
-    # TextAreaStore.save()
-    # ImageAreaStore.save()
+    TextAreaStore.save()
+    ImageAreaStore.save()
     return True  # 초기화는 생성자에서 이미 처리됨
