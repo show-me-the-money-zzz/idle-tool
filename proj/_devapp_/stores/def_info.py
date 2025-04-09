@@ -1,8 +1,8 @@
-HP = 0
-MP = 0
+HP = -1
+MP = -1
 
-POTION = 0
-Is_Potion0 = False
+POTION = -1
+Is_Potion0 = -1
 
 Locate_Kind = ""
 Locate_Name = ""
@@ -14,7 +14,7 @@ def Update_Value(key, text):
         case "스탯:피통": _Set_HP(text)
         case "스탯:마나통": _Set_MP(text)
         case "스탯:물약": _Set_Potion(text)
-        # case "스탯:물약-엥꼬": Is_Potion0 = False
+        # case "스탯:물약-엥꼬": Is_Potion0 = 0
         
         case "지역:종류":
             global Locate_Kind
