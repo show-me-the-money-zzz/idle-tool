@@ -15,8 +15,7 @@ from zzz.config import *
 def main():
     """메인 함수"""
     
-    from stores import areas
-    areas.initialize()
+    Load_Stores()
     
     # 설정 관리자 생성
     settings_manager = SettingsManager()
@@ -38,6 +37,10 @@ def main():
     
     # 메인 이벤트 루프 실행
     root.mainloop()
+    
+def Load_Stores():
+    from stores import areas
+    areas.initialize()
 
 if __name__ == "__main__":
     main()
