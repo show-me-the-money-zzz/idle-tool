@@ -313,6 +313,9 @@ class CaptureAreaPopup(tk.Toplevel):
             x, y, width, height, interval_dummy = capture_info
             # print(f"{x}, {y}, {width}, {height}")
             KEY = self.key_var.get()
+            if not KEY:
+                messagebox.showerror("오류", "KEY 를 입력하세요.", parent=self)
+                return
  
             areas.Add_TextArea(KEY, { "x": x, "y": y, "width": width, "height": height }
                             #   , save=True
@@ -366,7 +369,9 @@ class CaptureAreaPopup(tk.Toplevel):
             # 저장할 기본 파일명 생성
             key = self.key_var.get().strip()
             if not key:
-                key = "capture"  # 기본 파일명
+                # key = "capture"  # 기본 파일명
+                messagebox.showerror("오류", "KEY 를 입력하세요.", parent=self)
+                return
             
             # # 현재 날짜와 시간 추가
             # from datetime import datetime
@@ -590,5 +595,6 @@ class CaptureAreaPopup(tk.Toplevel):
     def on_close(self):
         self.reading_text = False
         if self.on_close_callback:
-            self.on_close_callback(self.capture_settings)
+            # self.on_close_callback(self.capture_settings)
+            self.on_close_callback(None)
         self.destroy()
