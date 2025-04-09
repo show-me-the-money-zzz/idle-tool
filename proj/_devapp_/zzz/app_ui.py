@@ -20,6 +20,9 @@ from ui.input_handler_frame import InputHandlerFrame
 from zzz.info_bar import InfoBar
 
 class AppUI:
+    RUNNER_BUTTON_START_TEXT  = "스캔 시작"
+    RUNNER_BUTTON_STOP_TEXT  = "스캔 중지"
+    
     def __init__(self, root, settings_manager):
         self.Test_Lua() # Lua 테스트
 
@@ -129,7 +132,7 @@ class AppUI:
         # 캡처 시작/중지 버튼
         self.capture_btn = ttk.Button(
             self.control_frame, 
-            text="캡처 시작", 
+            text=AppUI.RUNNER_BUTTON_START_TEXT, 
             command=self.toggle_capture
         )
         self.capture_btn.pack(side=tk.LEFT, padx=5)
@@ -176,7 +179,7 @@ class AppUI:
             self.status_var.set(message)
             # 심각한 오류면 UI 업데이트
             if ERROR_WINDOW_CLOSED in message:
-                self.root.after(0, lambda: self.capture_btn.config(text="캡처 시작"))
+                self.root.after(0, lambda: self.capture_btn.config(text=AppUI.RUNNER_BUTTON_START_TEXT))
                 
     def open_capture_area_popup(self):
         """캡처 영역 설정 팝업 열기"""
@@ -231,7 +234,7 @@ class AppUI:
         if self.capture_manager.is_capturing:
             # 캡처 중지
             self.capture_manager.stop_capture()
-            self.capture_btn.config(text="캡처 시작")
+            self.capture_btn.config(text=AppUI.RUNNER_BUTTON_START_TEXT)
             self.status_var.set(STATUS_STOPPED)
         else:
             try:
@@ -261,7 +264,7 @@ class AppUI:
                 
                 # 캡처 시작
                 self.capture_manager.start_capture(1.0)
-                self.capture_btn.config(text="캡처 중지")
+                self.capture_btn.config(text=AppUI.RUNNER_BUTTON_STOP_TEXT)
                 self.status_var.set(STATUS_CAPTURING)
                 
             except ValueError as e:
