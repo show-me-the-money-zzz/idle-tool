@@ -19,21 +19,21 @@ def Update_Value(key, text):
         case "지역:종류":
             global Locate_Kind
             Locate_Kind = text
-            print(f"Locate_Kind= {Locate_Kind}")
+            # print(f"Locate_Kind= {Locate_Kind}")
         case "지역:이름":
             global Locate_Name
             Locate_Name = text
-            print(f"Locate_Name= {Locate_Name}")
+            # print(f"Locate_Name= {Locate_Name}")
 
 def _Set_HP(text):
     global HP
     HP = _Parse_Vital("HP", text)
-    print(f"HP= {HP}")
+    # print(f"HP= {HP}")
     
 def _Set_MP(text):
     global MP
     MP = _Parse_Vital("MP", text)
-    print(f"MP= {MP}")
+    # print(f"MP= {MP}")
     
 def _Set_Potion(text):
     global POTION
@@ -42,7 +42,7 @@ def _Set_Potion(text):
         POTION = int(strvar)
     except Exception as e:
         POTION = -1;
-    print(f"POTION= {POTION}")
+    # print(f"POTION= {POTION}")
 
 def _Parse_Vital(kind, text):
     if text:

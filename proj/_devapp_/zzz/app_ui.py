@@ -17,47 +17,52 @@ from ui.capture_area_frame import CaptureAreaFrame
 from ui.log_frame import LogFrame
 from ui.input_handler_frame import InputHandlerFrame
 
+from zzz.info_bar import InfoBar
 
 class AppUI:
-    """자동화 도구 UI 클래스"""
     def __init__(self, root, settings_manager):
         self.Test_Lua() # Lua 테스트
-        
+
         # 메인 윈도우 설정
         self.root = root
         self.root.title(APP_TITLE)
         self.root.geometry(f"{APP_WIDTH}x{APP_HEIGHT}")
         self.root.resizable(True, True)
-        
+
         # 설정 관리자 저장
         self.settings_manager = settings_manager
-        
-        # 상태바 생성 (먼저 생성하여 status_var 참조 가능하게)
+
+        # 보조 정보바 생성 (상태바 위에 위치)
+        self.info_bar = InfoBar(self.root)
+        self.info_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
+        # 상태바 생성
         self.status_bar = StatusBar(self.root)
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
         self.status_var = self.status_bar.get_status_var()
         self.status_var.set(STATUS_READY)
-        
+
         # OCR 엔진 초기화
         self.initialize_ocr()
-        
+
         # 메뉴바 생성
         self.menu_bar = MenuBar(
             self.root, 
             self.settings_manager, 
             self.initialize_ocr_with_path
         )
-        
+
         # 기본 매니저 객체 생성
         self.window_manager = WindowManager()
         self.capture_manager = CaptureManager(self.window_manager, self.handle_capture_callback)
         self.region_selector = RegionSelector(self.window_manager)
-        
+
         # UI 컴포넌트 생성
         self.setup_ui()
-        
+
         # 마우스 위치 추적 시작
         self.track_mouse_position()
+
     
     def initialize_ocr(self):
         """OCR 엔진 초기화"""
@@ -121,14 +126,6 @@ class AppUI:
         self.control_frame = ttk.Frame(main_frame)
         self.control_frame.pack(fill=tk.X, pady=5)
         
-        # 아이템 생성 버튼 (영역 설정 팝업 열기)
-        self.create_item_btn = ttk.Button(
-            self.control_frame, 
-            text="아이템 생성", 
-            command=self.open_capture_area_popup
-        )
-        self.create_item_btn.pack(side=tk.LEFT, padx=5)
-        
         # 캡처 시작/중지 버튼
         self.capture_btn = ttk.Button(
             self.control_frame, 
@@ -136,6 +133,14 @@ class AppUI:
             command=self.toggle_capture
         )
         self.capture_btn.pack(side=tk.LEFT, padx=5)
+        
+        # 아이템 생성 버튼 (영역 설정 팝업 열기)
+        self.create_item_btn = ttk.Button(
+            self.control_frame, 
+            text="아이템 생성", 
+            command=self.open_capture_area_popup
+        )
+        self.create_item_btn.pack(side=tk.RIGHT, padx=5)
         
         # 3. 로그 프레임
         self.log_frame = LogFrame(

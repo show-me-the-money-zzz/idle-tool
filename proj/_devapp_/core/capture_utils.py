@@ -105,7 +105,7 @@ class CaptureManager:
                             logtext = f"[{timestamp}] {KEY}: {text}"
                             if not text:
                                 logtext += "\n"
-                            self.callback_fn("result", logtext)
+                            # self.callback_fn("result", logtext)
                             
                             Update_Value(KEY, text)
 
