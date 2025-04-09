@@ -210,20 +210,23 @@ class CaptureAreaPopup(tk.Toplevel):
         # 하단 로그 프레임
         log_frame = ttk.LabelFrame(self, text="인식된 텍스트", padding="10")
         log_frame.pack(fill=tk.BOTH, expand=True, pady=5)
-        
-        # 로그 컨트롤 프레임 - 상단으로 이동
+
+        # 로그 컨트롤 프레임 - 상단에 더 가깝게 배치
         log_ctrl_frame = ttk.Frame(log_frame)
-        log_ctrl_frame.pack(fill=tk.X, pady=(0, 5))
-        
+        log_ctrl_frame.pack(fill=tk.X, pady=(0, 2))  # 상단 패딩 0, 하단 패딩 2로 줄임
+
+        # 로그 초기화 버튼을 오른쪽에 배치
         ttk.Button(log_ctrl_frame, text="로그 초기화", command=self.clear_log).pack(side=tk.RIGHT)
-        
-        # 텍스트 영역
+
+        # 텍스트 영역 - 컨트롤 바로 아래에 배치
         text_frame = ttk.Frame(log_frame)
-        text_frame.pack(fill=tk.BOTH, expand=True)
-        
+        text_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 0))  # 패딩 제거
+
+        # 로그 텍스트 박스
         self.log_text = tk.Text(text_frame, wrap=tk.WORD, height=8)
         self.log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        
+
+        # 스크롤바
         scrollbar = ttk.Scrollbar(text_frame, command=self.log_text.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.log_text.config(yscrollcommand=scrollbar.set)
