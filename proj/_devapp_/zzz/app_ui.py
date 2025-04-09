@@ -18,6 +18,7 @@ from ui.log_frame import LogFrame
 from ui.input_handler_frame import InputHandlerFrame
 
 from zzz.info_bar import InfoBar
+from stores.def_info import Loop_Interval
 
 class AppUI:
     RUNNER_BUTTON_START_TEXT  = "스캔 시작"
@@ -131,11 +132,27 @@ class AppUI:
         
         # 캡처 시작/중지 버튼
         self.capture_btn = ttk.Button(
-            self.control_frame, 
-            text=AppUI.RUNNER_BUTTON_START_TEXT, 
+            self.control_frame,
+            text=AppUI.RUNNER_BUTTON_START_TEXT,
             command=self.toggle_capture
         )
-        self.capture_btn.pack(side=tk.LEFT, padx=5)
+        self.capture_btn.pack(side=tk.LEFT, padx=(5, 10))
+
+        # 간격 관련 컨트롤을 묶을 하위 프레임
+        interval_frame = ttk.Frame(self.control_frame)
+        interval_frame.pack(side=tk.LEFT)
+        
+        # 간격 입력 필드 + 라벨
+        self.interval_var = tk.StringVar(value=Loop_Interval)
+        ttk.Label(interval_frame, text="간격(초)").pack(side=tk.LEFT)
+        ttk.Entry(interval_frame, textvariable=self.interval_var, width=6).pack(side=tk.LEFT, padx=(3, 0))
+
+        # 간격 적용 버튼
+        ttk.Button(
+            interval_frame,
+            text="적용",
+            command=self.apply_interval
+        ).pack(side=tk.LEFT, padx=5)
         
         # 아이템 생성 버튼 (영역 설정 팝업 열기)
         self.create_item_btn = ttk.Button(
@@ -143,7 +160,7 @@ class AppUI:
             text="아이템 생성", 
             command=self.open_capture_area_popup
         )
-        self.create_item_btn.pack(side=tk.RIGHT, padx=5)
+        self.create_item_btn.pack(side=tk.RIGHT, padx=(0, 5))
         
         # 3. 로그 프레임
         self.log_frame = LogFrame(
@@ -273,6 +290,16 @@ class AppUI:
             except Exception as e:
                 from tkinter import messagebox
                 messagebox.showerror("캡처 오류", f"캡처 시작 중 오류가 발생했습니다: {str(e)}")
+                
+    def apply_interval(self):
+        try:
+            new_value = float(self.interval_var.get())
+            from stores import def_info
+            def_info.Loop_Interval = new_value
+            self.status_var.set(f"Loop 간격이 {new_value:.2f}초로 적용되었습니다.")
+        except ValueError:
+            from tkinter import messagebox
+            messagebox.showerror("입력 오류", "간격은 숫자 형식으로 입력해주세요.")
         
     def Test_Lua(self):
         # import lupa
