@@ -7,6 +7,8 @@ from datetime import datetime
 from zzz.config import *
 from stores import areas
 
+from utils.system import Calc_MS
+
 class CaptureAreaPopup(tk.Toplevel):
     """캡처 영역 설정 팝업 창"""
 
@@ -116,7 +118,7 @@ class CaptureAreaPopup(tk.Toplevel):
         options_frame.pack(fill=tk.X)
         
         ttk.Label(options_frame, text="캡처 간격(초):").grid(row=0, column=0, sticky=tk.W, pady=2)
-        self.interval_var = tk.StringVar(value=DEFAULT_CAPTURE_INTERVAL)
+        self.interval_var = tk.StringVar(value=1.0)
         ttk.Entry(options_frame, textvariable=self.interval_var, width=8, state=tk.DISABLED).grid(row=0, column=1, sticky=tk.W, pady=2)
         
         self.window_only_var = tk.BooleanVar(value=True)
@@ -242,7 +244,7 @@ class CaptureAreaPopup(tk.Toplevel):
             return
         self.read_text_from_area()
         try:
-            interval = int(float(self.interval_var.get()) * 1000)
+            interval = Calc_MS(float(self.interval_var.get()))
         except ValueError:
             interval = 2000
         self.after(interval, self._read_loop_main)
