@@ -1,3 +1,4 @@
+from zzz.config import DEFAULT_LOOP_INTERVAL
 from utils.system import Calc_MS
 
 HP = -1
@@ -9,7 +10,7 @@ Is_Potion0 = -1
 Locate_Kind = ""
 Locate_Name = ""
 
-Loop_Interval = 1.0
+Loop_Interval = DEFAULT_LOOP_INTERVAL
 Loop_Interval_MS = Calc_MS(Loop_Interval)
 
 def Update_Value(key, text):
