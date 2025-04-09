@@ -66,7 +66,7 @@ class CaptureAreaPopup(tk.Toplevel):
                                 bg=self.cget("background"))
         self.desc_key_text.grid(row=0, column=0, sticky=tk.EW)
         
-        keywords_text = f"※ 예약 키워드: {' / '.join(LOOP_KEYWORD)}"
+        keywords_text = f"※ 예약 키워드: {' / '.join(LOOP_TEXT_KEYWORD)}"
         self.desc_key_text.insert("1.0", keywords_text)
         
         # 텍스트 높이 자동 조절 함수

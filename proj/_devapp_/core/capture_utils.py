@@ -7,7 +7,7 @@ from datetime import datetime
 from PIL import Image
 from core.ocr_engine import image_to_text
 
-from zzz.config import LOOP_KEYWORD
+from zzz.config import LOOP_TEXT_KEYWORD
 from stores.areas import *
 
 class CaptureManager:
@@ -62,8 +62,8 @@ class CaptureManager:
                         self.is_capturing = False
                         break
 
-                    for n in range(len(LOOP_KEYWORD)):
-                        area = Get_TextArea(LOOP_KEYWORD[n])
+                    for n in range(len(LOOP_TEXT_KEYWORD)):
+                        area = Get_TextArea(LOOP_TEXT_KEYWORD[n])
                         if area is None:
                             continue
 
@@ -99,7 +99,7 @@ class CaptureManager:
                         if self.callback_fn:
                             timestamp = time.strftime("%H:%M:%S", time.localtime())
                         # self.callback_fn("result", f"[{timestamp}] 인식 결과:\n{text}\n{'='*50}\n")
-                            logtext = f"[{timestamp}] {LOOP_KEYWORD[n]}: {text}"
+                            logtext = f"[{timestamp}] {LOOP_TEXT_KEYWORD[n]}: {text}"
                             if not text:
                                 logtext += "\n"
                             self.callback_fn("result", logtext)
