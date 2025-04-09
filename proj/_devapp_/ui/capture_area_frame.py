@@ -4,6 +4,7 @@ import time
 from PIL import Image, ImageTk
 
 from zzz.config import *
+from stores.def_info import Loop_Interval
 
 class CaptureAreaFrame(ttk.LabelFrame):
     """캡처 영역 설정 프레임"""
@@ -55,7 +56,7 @@ class CaptureAreaFrame(ttk.LabelFrame):
         
         # 캡처 간격 설정
         ttk.Label(input_frame, text="캡처 간격(초):").grid(row=2, column=0, sticky=tk.W, pady=2)
-        self.interval_var = tk.StringVar(value=DEFAULT_CAPTURE_INTERVAL)
+        self.interval_var = tk.StringVar(value=Loop_Interval)
         ttk.Entry(input_frame, textvariable=self.interval_var, width=10).grid(row=2, column=1, sticky=tk.W, pady=2)
         
         # 영역 선택 버튼 (드래그로 영역 선택)
