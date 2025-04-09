@@ -46,20 +46,50 @@ class CaptureAreaPopup(tk.Toplevel):
         ttk.Label(coords_frame, text="KEY").grid(row=0, column=0, sticky=tk.W, pady=2)
         self.key_var = tk.StringVar(value=defualt_key)
         ttk.Entry(coords_frame, textvariable=self.key_var, width=10).grid(row=0, column=1, sticky=tk.W, pady=2)
-
-        # 설명 텍스트 (row=1)
-        # desc_label = ttk.Label(coords_frame, text=f"예약 키워드: {DEFAULT_KEYWORD}")
-        # desc_label.grid(row=1, column=0, columnspan=4, sticky=tk.W, pady=(0, 5))
-        # desc_label.configure(font=("TkDefaultFont", 8))  # 기본보다 약간 크게
-
-        # desc_entry = tk.Entry(coords_frame, relief="flat", state="readonly", readonlybackground=self.cget("background"))
-        # desc_entry.insert(0, f"예약 키워드3: {DEFAULT_KEYWORD}")
-        # desc_entry.grid(row=3, column=0, columnspan=4, sticky=tk.W, pady=(0, 5))
         
-        desc_key_description = tk.Text(coords_frame, height=1, width=40, relief="flat", bg=self.cget("background"))
-        desc_key_description.insert("1.0", f"※ 예약 키워드: {" / ".join(DEFAULT_KEYWORD)}") #DEFAULT_KEYWORD = [ "피통", "마나통", "물약" ]
-        desc_key_description.configure(font=("TkDefaultFont", 8), state="disabled")
-        desc_key_description.grid(row=1, column=0, columnspan=4, sticky=tk.W, pady=(0, 5))
+        # 설명 텍스트를 위한 프레임 추가 (상태바 형태)
+        status_frame = ttk.Frame(coords_frame)
+        status_frame.grid(row=1, column=0, columnspan=4, sticky=tk.EW, pady=(0, 5))
+        status_frame.columnconfigure(0, weight=1)  # 프레임이 늘어날 때 내부 요소도 함께 늘어나게 설정
+
+        # 자동 높이 조절되는 텍스트 영역
+        self.desc_key_text = tk.Text(status_frame, height=1, wrap=tk.WORD, 
+                                    font=("TkDefaultFont", 8), relief="flat", 
+                                    bg=self.cget("background"))
+        self.desc_key_text.grid(row=0, column=0, sticky=tk.EW)
+        
+        # 텍스트 내용 설정
+        keywords_text = f"※ 예약 키워드: {' / '.join(DEFAULT_KEYWORD)}"
+        self.desc_key_text.insert("1.0", keywords_text)
+        
+        # 텍스트 높이 자동 조절 함수 정의
+        def update_text_height(event=None):
+            # 텍스트 내용에 따라 필요한 줄 수 계산
+            width = self.desc_key_text.winfo_width()
+            if width > 1:  # 위젯이 실제로 그려졌을 때만 계산
+                text_content = self.desc_key_text.get("1.0", "end-1c")
+                font = self.desc_key_text.cget("font")
+                
+                # 줄 수 계산을 위한 임시 캔버스 생성
+                temp_canvas = tk.Canvas(self)
+                text_item = temp_canvas.create_text(0, 0, text=text_content, font=font, anchor="nw", width=width-10)
+                bbox = temp_canvas.bbox(text_item)
+                temp_canvas.destroy()
+                
+                if bbox:
+                    # 텍스트 높이에 따라 위젯 높이 조절
+                    line_height = 14  # 대략적인 줄 높이
+                    needed_lines = max(1, (bbox[3] - bbox[1]) // line_height)
+                    self.desc_key_text.configure(height=needed_lines)
+        
+        # 위젯이 그려진 후 높이 업데이트
+        self.desc_key_text.bind("<Configure>", update_text_height)
+        
+        # 편집 방지를 위해 상태 비활성화 (드래그는 가능)
+        self.desc_key_text.configure(state="disabled")
+        
+        # 텍스트 드래그만 허용하고 편집은 방지
+        self.desc_key_text.bind("<1>", lambda event: self.desc_key_text.focus_set())
 
         ttk.Label(coords_frame, text="X 좌표:").grid(row=2, column=0, sticky=tk.W, pady=2)
         self.x_var = tk.StringVar(value=DEFAULT_CAPTURE_X)
