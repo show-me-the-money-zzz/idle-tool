@@ -13,7 +13,7 @@ class CaptureAreaPopup(tk.Toplevel):
     def __init__(self, parent, window_manager, region_selector, capture_manager, status_var, on_close_callback=None):
         super().__init__(parent)
         self.title("캡처 영역 설정")
-        self.geometry("700x500")
+        self.geometry("700x640")
         self.transient(parent)
         self.on_close_callback = on_close_callback
         self.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -34,122 +34,199 @@ class CaptureAreaPopup(tk.Toplevel):
         self._setup_ui()
 
     def _setup_ui(self):
-        top_frame = ttk.Frame(self, padding="10")
-        top_frame.pack(fill=tk.X)
-        settings_frame = ttk.Frame(top_frame)
-        settings_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 10))
-
-        coords_frame = ttk.LabelFrame(settings_frame, text="위치 및 크기", padding="10")
-        coords_frame.pack(fill=tk.X, pady=5)
+        main_frame = ttk.Frame(self, padding="10", height=640)
+        main_frame.pack(fill=tk.BOTH, expand=True)
         
-        defualt_key = ""
-        ttk.Label(coords_frame, text="KEY").grid(row=0, column=0, sticky=tk.W, pady=2)
-        self.key_var = tk.StringVar(value=defualt_key)
-        ttk.Entry(coords_frame, textvariable=self.key_var, width=10).grid(row=0, column=1, sticky=tk.W, pady=2)
+        # 좌측 메인 영역과 우측 버튼 영역으로 분할
+        content_frame = ttk.Frame(main_frame)
+        content_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
         
-        # 설명 텍스트를 위한 프레임 추가 (상태바 형태)
-        status_frame = ttk.Frame(coords_frame)
-        status_frame.grid(row=1, column=0, columnspan=4, sticky=tk.EW, pady=(0, 5))
-        status_frame.columnconfigure(0, weight=1)  # 프레임이 늘어날 때 내부 요소도 함께 늘어나게 설정
-
-        # 자동 높이 조절되는 텍스트 영역
-        self.desc_key_text = tk.Text(status_frame, height=1, wrap=tk.WORD, 
-                                    font=("TkDefaultFont", 8), relief="flat", 
-                                    bg=self.cget("background"))
+        buttons_container = ttk.Frame(main_frame)
+        buttons_container.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # 위치 및 크기 설정 영역 (상단)
+        coords_frame = ttk.LabelFrame(content_frame, text="위치 및 크기", padding="10")
+        coords_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        # KEY 입력 영역
+        key_frame = ttk.Frame(coords_frame)
+        key_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        ttk.Label(key_frame, text="KEY").pack(side=tk.LEFT, padx=(0, 5))
+        self.key_var = tk.StringVar(value="")
+        ttk.Entry(key_frame, textvariable=self.key_var, width=20).pack(side=tk.LEFT, fill=tk.X, expand=True)
+        
+        # 예약 키워드 정보 (자동 높이 조절 Text 위젯)
+        info_frame = ttk.Frame(coords_frame)
+        info_frame.pack(fill=tk.X, pady=(0, 5))
+        info_frame.columnconfigure(0, weight=1)
+        
+        self.desc_key_text = tk.Text(info_frame, height=1, wrap=tk.WORD, 
+                                font=("TkDefaultFont", 8), relief="flat", 
+                                bg=self.cget("background"))
         self.desc_key_text.grid(row=0, column=0, sticky=tk.EW)
         
-        # 텍스트 내용 설정
         keywords_text = f"※ 예약 키워드: {' / '.join(DEFAULT_KEYWORD)}"
         self.desc_key_text.insert("1.0", keywords_text)
         
-        # 텍스트 높이 자동 조절 함수 정의
+        # 텍스트 높이 자동 조절 함수
         def update_text_height(event=None):
-            # 텍스트 내용에 따라 필요한 줄 수 계산
             width = self.desc_key_text.winfo_width()
-            if width > 1:  # 위젯이 실제로 그려졌을 때만 계산
+            if width > 1:
                 text_content = self.desc_key_text.get("1.0", "end-1c")
                 font = self.desc_key_text.cget("font")
                 
-                # 줄 수 계산을 위한 임시 캔버스 생성
                 temp_canvas = tk.Canvas(self)
                 text_item = temp_canvas.create_text(0, 0, text=text_content, font=font, anchor="nw", width=width-10)
                 bbox = temp_canvas.bbox(text_item)
                 temp_canvas.destroy()
                 
                 if bbox:
-                    # 텍스트 높이에 따라 위젯 높이 조절
-                    line_height = 14  # 대략적인 줄 높이
+                    line_height = 14
                     needed_lines = max(1, (bbox[3] - bbox[1]) // line_height)
                     self.desc_key_text.configure(height=needed_lines)
         
-        # 위젯이 그려진 후 높이 업데이트
         self.desc_key_text.bind("<Configure>", update_text_height)
-        
-        # 편집 방지를 위해 상태 비활성화 (드래그는 가능)
         self.desc_key_text.configure(state="disabled")
-        
-        # 텍스트 드래그만 허용하고 편집은 방지
         self.desc_key_text.bind("<1>", lambda event: self.desc_key_text.focus_set())
-
-        ttk.Label(coords_frame, text="X 좌표:").grid(row=2, column=0, sticky=tk.W, pady=2)
+        
+        # X, Y, 너비, 높이를 한 줄에 배치
+        controls_frame = ttk.Frame(coords_frame)
+        controls_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        # 균등한 간격으로 4개 컨트롤 배치
+        ttk.Label(controls_frame, text="X 좌표:").grid(row=0, column=0, sticky=tk.W, padx=(0, 2))
         self.x_var = tk.StringVar(value=DEFAULT_CAPTURE_X)
-        ttk.Entry(coords_frame, textvariable=self.x_var, width=10).grid(row=2, column=1, sticky=tk.W, pady=2)
-
-        ttk.Label(coords_frame, text="Y 좌표:").grid(row=2, column=2, sticky=tk.W, pady=2, padx=(10, 0))
+        ttk.Entry(controls_frame, textvariable=self.x_var, width=8).grid(row=0, column=1, sticky=tk.W, padx=(0, 5))
+        
+        ttk.Label(controls_frame, text="Y 좌표:").grid(row=0, column=2, sticky=tk.W, padx=(5, 2))
         self.y_var = tk.StringVar(value=DEFAULT_CAPTURE_Y)
-        ttk.Entry(coords_frame, textvariable=self.y_var, width=10).grid(row=2, column=3, sticky=tk.W, pady=2)
-
-        ttk.Label(coords_frame, text="너비:").grid(row=3, column=0, sticky=tk.W, pady=2)
+        ttk.Entry(controls_frame, textvariable=self.y_var, width=8).grid(row=0, column=3, sticky=tk.W, padx=(0, 5))
+        
+        ttk.Label(controls_frame, text="너비:").grid(row=0, column=4, sticky=tk.W, padx=(5, 2))
         self.width_var = tk.StringVar(value=DEFAULT_CAPTURE_WIDTH)
-        ttk.Entry(coords_frame, textvariable=self.width_var, width=10).grid(row=3, column=1, sticky=tk.W, pady=2)
-
-        ttk.Label(coords_frame, text="높이:").grid(row=3, column=2, sticky=tk.W, pady=2, padx=(10, 0))
+        ttk.Entry(controls_frame, textvariable=self.width_var, width=8).grid(row=0, column=5, sticky=tk.W, padx=(0, 5))
+        
+        ttk.Label(controls_frame, text="높이:").grid(row=0, column=6, sticky=tk.W, padx=(5, 2))
         self.height_var = tk.StringVar(value=DEFAULT_CAPTURE_HEIGHT)
-        ttk.Entry(coords_frame, textvariable=self.height_var, width=10).grid(row=3, column=3, sticky=tk.W, pady=2)
-
-        ttk.Label(coords_frame, text="캡처 간격(초):").grid(row=4, column=0, sticky=tk.W, pady=2)
+        ttk.Entry(controls_frame, textvariable=self.height_var, width=8).grid(row=0, column=7, sticky=tk.W, padx=(0, 5))
+        
+        # 간격 및 창 내부 선택 옵션
+        options_frame = ttk.Frame(coords_frame)
+        options_frame.pack(fill=tk.X)
+        
+        ttk.Label(options_frame, text="캡처 간격(초):").grid(row=0, column=0, sticky=tk.W, pady=2)
         self.interval_var = tk.StringVar(value=DEFAULT_CAPTURE_INTERVAL)
-        ttk.Entry(coords_frame, textvariable=self.interval_var, width=10, state=tk.DISABLED).grid(row=4, column=1, sticky=tk.W, pady=2)
-
+        ttk.Entry(options_frame, textvariable=self.interval_var, width=8, state=tk.DISABLED).grid(row=0, column=1, sticky=tk.W, pady=2)
+        
         self.window_only_var = tk.BooleanVar(value=True)
-        window_only_check = ttk.Checkbutton(coords_frame, text="창 내부만 선택", variable=self.window_only_var)
-        window_only_check.grid(row=5, column=0, columnspan=4, sticky=tk.W, pady=2)
-
-        buttons_frame = ttk.Frame(settings_frame)
-        buttons_frame.pack(fill=tk.X, pady=5)
-
-        ttk.Button(buttons_frame, text="영역 선택", command=self.select_capture_area).pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
-        ttk.Button(buttons_frame, text="미리보기", command=self.update_area_preview).pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
-
-        self.read_text_btn = ttk.Button(buttons_frame, text="글자 읽기", command=self.toggle_read_text)
-        self.read_text_btn.pack(side=tk.LEFT, padx=5, pady=5, fill=tk.X, expand=True)
-
-        action_buttons_frame = ttk.Frame(settings_frame)
-        action_buttons_frame.pack(fill=tk.X, pady=5)
-        ttk.Button(action_buttons_frame, text="저장", command=self.apply_settings).pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
-        ttk.Button(action_buttons_frame, text="취소", command=self.on_close).pack(side=tk.RIGHT, padx=5, fill=tk.X, expand=True)
-
-        preview_frame = ttk.LabelFrame(top_frame, text="영역 미리보기")
-        preview_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-
+        window_only_check = ttk.Checkbutton(options_frame, text="창 내부만 선택", variable=self.window_only_var)
+        window_only_check.grid(row=0, column=2, sticky=tk.W, pady=2, padx=(10, 0))
+        
+        # 미리보기 영역 (왼쪽 하단)
+        preview_frame = ttk.LabelFrame(content_frame, text="영역 미리보기")
+        preview_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
+        
         self.preview_canvas = tk.Canvas(preview_frame, width=300, height=200, bg='lightgray')
         self.preview_canvas.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        self.preview_canvas.create_text(150, 100, text="영역을 선택하면\n미리보기가 표시됩니다", fill="darkgray", justify=tk.CENTER)
+        self.preview_canvas.create_text(
+            150, 100, 
+            text="영역을 선택하면\n미리보기가 표시됩니다", 
+            fill="darkgray", 
+            justify=tk.CENTER
+        )
+        
+        # 오른쪽 버튼 그룹 - 첫 번째 그룹: 영역 선택/미리보기/글자 읽기
+        btn_width = 12  # 버튼 너비 통일
 
+        # 첫 번째 버튼 그룹을 위한 프레임
+        btn_group1 = ttk.LabelFrame(buttons_container, text="동작")
+        btn_group1.pack(side=tk.TOP, fill=tk.X, pady=(0, 10))
+
+        ttk.Button(
+            btn_group1, text="영역 선택", width=btn_width,
+            command=self.select_capture_area
+        ).pack(side=tk.TOP, pady=2, padx=5, fill=tk.X)
+
+        ttk.Button(
+            btn_group1, text="미리보기", width=btn_width,
+            command=self.update_area_preview
+        ).pack(side=tk.TOP, pady=2, padx=5, fill=tk.X)
+
+        self.read_text_btn = ttk.Button(
+            btn_group1, text="글자 읽기", width=btn_width,
+            command=self.toggle_read_text
+        )
+        self.read_text_btn.pack(side=tk.TOP, pady=2, padx=5, fill=tk.X)
+
+        # 두 번째 버튼 그룹을 위한 프레임 - 남은 공간을 모두 차지하도록 설정
+        btn_group2 = ttk.LabelFrame(buttons_container, text="작업")
+        btn_group2.pack(side=tk.TOP, fill=tk.BOTH, expand=True)  # expand=True로 남은 공간 차지
+
+        # 상단 버튼 영역
+        top_buttons = ttk.Frame(btn_group2)
+        top_buttons.pack(side=tk.TOP, fill=tk.X, padx=5, pady=2)
+
+        # 저장 버튼 - 녹색, 흰색 텍스트
+        save_btn = tk.Button(
+            top_buttons, text="저장", width=btn_width,
+            command=self.apply_settings,
+            bg="#2ecc71",  # 녹색 배경
+            fg="white",    # 흰색 텍스트
+            activebackground="#27ae60",  # 클릭 시 약간 더 어두운 녹색
+            activeforeground="white",    # 클릭 시 흰색 텍스트 유지
+            font=("TkDefaultFont", 9, "bold")  # 약간 더 굵은 폰트
+        )
+        save_btn.pack(side=tk.TOP, pady=(2, 1), fill=tk.X)  # 상단 패딩만 2, 하단 패딩은 1로 설정
+
+        # 이미지로 저장 버튼 - 저장 버튼과 가까이 배치
+        save_image_btn = tk.Button(
+            top_buttons, text="이미지로 저장", width=btn_width,
+            command=lambda: self.save_as_image(),  # 이 함수는 구현해야 함
+            bg="#3498db",  # 파란색 배경
+            fg="white",    # 흰색 텍스트
+            activebackground="#2980b9",  # 클릭 시 약간 더 어두운 파란색
+            activeforeground="white",    # 클릭 시 흰색 텍스트 유지
+            font=("TkDefaultFont", 9, "bold")  # 약간 더 굵은 폰트
+        )
+        save_image_btn.pack(side=tk.TOP, pady=1, fill=tk.X)
+
+        # 하단 버튼 영역 - 취소 버튼을 최하단에 배치하기 위한 프레임
+        bottom_frame = ttk.Frame(btn_group2)
+        bottom_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=5)
+
+        # 취소하고 닫기 버튼 - 빨간색, 흰색 텍스트
+        cancel_btn = tk.Button(
+            bottom_frame, text="취소하고 닫기", width=btn_width,
+            command=self.on_close,
+            bg="#e74c3c",  # 빨간색 배경
+            fg="white",    # 흰색 텍스트
+            activebackground="#c0392b",  # 클릭 시 약간 더 어두운 빨간색
+            activeforeground="white",    # 클릭 시 흰색 텍스트 유지
+            font=("TkDefaultFont", 9, "bold")  # 약간 더 굵은 폰트
+        )
+        cancel_btn.pack(side=tk.BOTTOM, fill=tk.X)
+                
+        # 하단 로그 프레임
         log_frame = ttk.LabelFrame(self, text="인식된 텍스트", padding="10")
         log_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        
+        # 로그 컨트롤 프레임 - 상단으로 이동
+        log_ctrl_frame = ttk.Frame(log_frame)
+        log_ctrl_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        ttk.Button(log_ctrl_frame, text="로그 초기화", command=self.clear_log).pack(side=tk.RIGHT)
+        
+        # 텍스트 영역
         text_frame = ttk.Frame(log_frame)
         text_frame.pack(fill=tk.BOTH, expand=True)
-
+        
         self.log_text = tk.Text(text_frame, wrap=tk.WORD, height=8)
         self.log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
         scrollbar = ttk.Scrollbar(text_frame, command=self.log_text.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.log_text.config(yscrollcommand=scrollbar.set)
-
-        log_ctrl_frame = ttk.Frame(log_frame)
-        log_ctrl_frame.pack(fill=tk.X, pady=5)
-        ttk.Button(log_ctrl_frame, text="로그 초기화", command=self.clear_log).pack(side=tk.RIGHT)
 
     def toggle_read_text(self):
         self.reading_text = not self.reading_text
@@ -236,9 +313,6 @@ class CaptureAreaPopup(tk.Toplevel):
             areas.Add_TextArea(self.key_var.get(), { "x": x, "y": y, "width": width, "height": height }
                             #   , save=True
                               )
-            areas.Add_ImageArea(self.key_var.get(), { "x": x, "y": y, "width": width, "height": height
-                                                     , f"file": "./{self.key_var.get()}.png"
-                                                     })
                 
             # 설정 저장
             self.capture_settings = capture_info
@@ -251,6 +325,70 @@ class CaptureAreaPopup(tk.Toplevel):
             
         except Exception as e:
             messagebox.showerror("설정 오류", f"설정을 적용하는 중 오류가 발생했습니다: {str(e)}", parent=self)
+            
+    def save_as_image(self):
+        """현재 캡처된 영역을 이미지 파일로 저장"""
+        try:
+            # 캡처 영역 좌표 가져오기
+            capture_info = self.get_capture_info()
+            if not capture_info:
+                return
+            
+            x, y, width, height, _ = capture_info
+            
+            # 창이 유효한지 확인
+            if not self.window_manager.is_window_valid():
+                messagebox.showerror("오류", "창이 연결되지 않았습니다.", parent=self)
+                return
+            
+            # 전체 창 캡처
+            full_window_img = self.capture_manager.capture_full_window()
+            if not full_window_img:
+                messagebox.showerror("오류", "창 캡처에 실패했습니다.", parent=self)
+                return
+            
+            areas.Add_ImageArea(self.key_var.get(), { "x": x, "y": y, "width": width, "height": height
+                                                     , f"file": "./{self.key_var.get()}.png"
+                                                     })
+            
+            # 지정된 영역 추출
+            img_width, img_height = full_window_img.size
+            crop_region = (
+                max(0, x),
+                max(0, y),
+                min(img_width, x + width),
+                min(img_height, y + height)
+            )
+            
+            cropped_img = full_window_img.crop(crop_region)
+            
+            # 저장할 파일 경로 설정
+            key = self.key_var.get().strip()
+            if not key:
+                key = "capture"  # 기본 파일명
+            
+            # 현재 날짜와 시간 추가
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            
+            # 파일 경로 생성
+            import os
+            from pathlib import Path
+            
+            # 저장 디렉토리 생성
+            save_dir = Path("./images")
+            os.makedirs(save_dir, exist_ok=True)
+            
+            # 파일 경로
+            file_path = save_dir / f"{key}_{timestamp}.png"
+            
+            # 이미지 저장
+            cropped_img.save(file_path)
+            
+            self.status_var.set(f"이미지가 저장되었습니다: {file_path}")
+            
+        except Exception as e:
+            messagebox.showerror("이미지 저장 오류", f"이미지 저장 중 오류가 발생했습니다: {str(e)}", parent=self)
     
     def set_capture_info(self, x, y, width, height, interval):
         """캡처 정보 설정"""
