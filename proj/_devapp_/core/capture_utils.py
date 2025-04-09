@@ -61,62 +61,49 @@ class CaptureManager:
                             self.callback_fn("error", "창이 닫혔습니다.")
                         self.is_capturing = False
                         break
-                    
-                    # LOOP_KEYWORD = [ "스탯:피통", "스탯:마나통", "스탯:물약", "스탯:물약-엥꼬", "지역:종류", "지역:이름", ]
-                    area = Get_TextArea(LOOP_KEYWORD[0]) #{'x': 60, 'y': 50, 'width': 240, 'height': 34}
-                    # if area:
-                    #     print(area) #{'x': 60, 'y': 50, 'width': 240, 'height': 34}
-                    # else: print("NONE");
-                    if None == area:
-                        continue
-                    
-                    # 윈도우 위치 가져오기
-                    left, top, _, _ = self.window_manager.get_window_rect()
-                    
-                    # 상대 좌표로 입력된 값을 절대 좌표로 변환
-                    # x = self.capture_params['x'] + left
-                    # y = self.capture_params['y'] + top
-                    # width = self.capture_params['width']
-                    # height = self.capture_params['height']
-                    x = left + area['x']
-                    y = top + area['y']
-                    width = area['width']
-                    height = area['height']
-                    
-                    # 디버깅 정보 출력
-                    # print(f"캡처 영역: x={x}, y={y}, width={width}, height={height}")
-                    
-                    # 화면 캡처 (스레드 로컬 MSS 인스턴스 사용)
-                    monitor = {
-                        "top": y,
-                        "left": x,
-                        "width": width,
-                        "height": height
-                    }
-                    screenshot = sct.grab(monitor)
-                    
+
+                    for n in range(len(LOOP_KEYWORD)):
+                        area = Get_TextArea(LOOP_KEYWORD[n])
+                        if area is None:
+                            continue
+
+                        # 윈도우 위치 가져오기
+                        left, top, _, _ = self.window_manager.get_window_rect()
+                        x = left + area['x']
+                        y = top + area['y']
+                        width = area['width']
+                        height = area['height']
+
+                        # 화면 캡처 (스레드 로컬 MSS 인스턴스 사용)
+                        monitor = {
+                            "top": y,
+                            "left": x,
+                            "width": width,
+                            "height": height
+                        }
+                        screenshot = sct.grab(monitor)
                     # mss의 결과를 PIL Image로 변환
-                    img = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
-                    
+                        img = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
+
                     # OCR 실행
-                    if img is None:
-                        raise ValueError("캡처된 이미지가 None입니다.")
-                    text = image_to_text(img)
-                    del img
-                    import gc; gc.collect()
+                        if img is None:
+                            raise ValueError("캡처된 이미지가 None입니다.")
+                        text = image_to_text(img)
+                        del img
+                        import gc; gc.collect()
                     
                     # 디버깅 정보 출력
                     # print(f"인식된 텍스트: {text}")
                     
                     # 콜백 함수 호출
-                    if self.callback_fn:
-                        timestamp = time.strftime("%H:%M:%S", time.localtime())
+                        if self.callback_fn:
+                            timestamp = time.strftime("%H:%M:%S", time.localtime())
                         # self.callback_fn("result", f"[{timestamp}] 인식 결과:\n{text}\n{'='*50}\n")
-                        logtext = f"[{timestamp}] {text}";
-                        if not text:
-                            logtext += "\n";
-                        self.callback_fn("result", logtext)
-                    
+                            logtext = f"[{timestamp}] {LOOP_KEYWORD[n]}: {text}"
+                            if not text:
+                                logtext += "\n"
+                            self.callback_fn("result", logtext)
+
                 except Exception as e:
                     # print(f"[캡처 오류] {type(e).__name__}: {str(e)}")
                     if self.callback_fn:
