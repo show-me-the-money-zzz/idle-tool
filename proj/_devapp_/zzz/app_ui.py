@@ -244,18 +244,18 @@ class AppUI:
                     messagebox.showerror("오류", ERROR_NO_WINDOW)
                     return
                 
-                # 캡처 설정 확인
-                if not self.capture_settings:
-                    from tkinter import messagebox
-                    messagebox.showinfo("알림", "캡처 영역을 먼저 설정해주세요.", parent=self.root)
-                    self.open_capture_area_popup()
-                    return
+                # # 캡처 설정 확인
+                # if not self.capture_settings:
+                #     from tkinter import messagebox
+                #     messagebox.showinfo("알림", "캡처 영역을 먼저 설정해주세요.", parent=self.root)
+                #     self.open_capture_area_popup()
+                #     return
                 
-                # 캡처 설정 가져오기
-                x, y, width, height, interval = self.capture_settings
+                # # 캡처 설정 가져오기
+                # x, y, width, height, interval = self.capture_settings
                 
                 # 캡처 시작
-                self.capture_manager.start_capture(x, y, width, height, interval)
+                self.capture_manager.start_capture(1.0)
                 self.capture_btn.config(text="캡처 중지")
                 self.status_var.set(STATUS_CAPTURING)
                 

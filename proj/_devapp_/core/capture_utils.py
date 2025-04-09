@@ -7,6 +7,9 @@ from datetime import datetime
 from PIL import Image
 from core.ocr_engine import image_to_text
 
+from zzz.config import LOOP_KEYWORD
+from stores.areas import *
+
 class CaptureManager:
     """화면 캡처 관리 클래스 (mss 라이브러리 기반)"""
     
@@ -19,7 +22,8 @@ class CaptureManager:
         # mss 인스턴스 생성
         self.sct = mss.mss()
     
-    def start_capture(self, x, y, width, height, interval=1.0):
+    # , x, y, width, height,
+    def start_capture(self, interval=1.0):
         """캡처 시작"""
         if self.is_capturing:
             return False
@@ -27,13 +31,13 @@ class CaptureManager:
         self.capture_interval = interval
         self.is_capturing = True
         
-        # 캡처 파라미터 저장
-        self.capture_params = {
-            'x': x,
-            'y': y,
-            'width': width,
-            'height': height
-        }
+        # # 캡처 파라미터 저장
+        # self.capture_params = {
+        #     'x': 0,
+        #     'y': 0,
+        #     'width': 0,
+        #     'height': 0
+        # }
         
         # 새 스레드에서 캡처 실행
         self.capture_thread = threading.Thread(target=self.capture_loop, daemon=True)
@@ -58,14 +62,26 @@ class CaptureManager:
                         self.is_capturing = False
                         break
                     
+                    # LOOP_KEYWORD = [ "스탯:피통", "스탯:마나통", "스탯:물약", "스탯:물약-엥꼬", "지역:종류", "지역:이름", ]
+                    area = Get_TextArea(LOOP_KEYWORD[0]) #{'x': 60, 'y': 50, 'width': 240, 'height': 34}
+                    # if area:
+                    #     print(area) #{'x': 60, 'y': 50, 'width': 240, 'height': 34}
+                    # else: print("NONE");
+                    if None == area:
+                        continue
+                    
                     # 윈도우 위치 가져오기
                     left, top, _, _ = self.window_manager.get_window_rect()
                     
                     # 상대 좌표로 입력된 값을 절대 좌표로 변환
-                    x = self.capture_params['x'] + left
-                    y = self.capture_params['y'] + top
-                    width = self.capture_params['width']
-                    height = self.capture_params['height']
+                    # x = self.capture_params['x'] + left
+                    # y = self.capture_params['y'] + top
+                    # width = self.capture_params['width']
+                    # height = self.capture_params['height']
+                    x = left + area['x']
+                    y = top + area['y']
+                    width = area['width']
+                    height = area['height']
                     
                     # 디버깅 정보 출력
                     # print(f"캡처 영역: x={x}, y={y}, width={width}, height={height}")
