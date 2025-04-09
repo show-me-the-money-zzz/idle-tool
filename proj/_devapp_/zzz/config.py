@@ -19,10 +19,11 @@ DEFAULT_CAPTURE_X = "0"      # 기본 캡처 X 좌표
 DEFAULT_CAPTURE_Y = "0"      # 기본 캡처 Y 좌표
 DEFAULT_CAPTURE_WIDTH = "300"  # 기본 캡처 너비
 DEFAULT_CAPTURE_HEIGHT = "100" # 기본 캡처 높이
-DEFAULT_CAPTURE_INTERVAL = "1.0" # 기본 캡처 간격(초)
+# DEFAULT_CAPTURE_INTERVAL = "1.0" # 기본 캡처 간격(초)
 DEFAULT_CLICK_X = "0"        # 기본 클릭 X 좌표
 DEFAULT_CLICK_Y = "0"        # 기본 클릭 Y 좌표
 
+DEFAULT_LOOP_INTERVAL = "1.0" # 기본 캡처 간격(초)
 LOOP_TEXT_KEYWORD = [
     "스탯:피통", "스탯:마나통", "스탯:물약",
     "지역:종류", "지역:이름",

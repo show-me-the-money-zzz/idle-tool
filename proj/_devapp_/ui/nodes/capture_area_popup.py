@@ -69,6 +69,8 @@ class CaptureAreaPopup(tk.Toplevel):
         self.desc_key_text.grid(row=0, column=0, sticky=tk.EW)
         
         keywords_text = f"※ 예약 키워드: {' / '.join(LOOP_TEXT_KEYWORD)}"
+        keywords_text += " / ";
+        keywords_text += f"{' / '.join(LOOP_IMAGE_KEYWORD)}"
         self.desc_key_text.insert("1.0", keywords_text)
         
         # 텍스트 높이 자동 조절 함수
@@ -151,7 +153,7 @@ class CaptureAreaPopup(tk.Toplevel):
         ).pack(side=tk.TOP, pady=2, padx=5, fill=tk.X)
 
         ttk.Button(
-            btn_group1, text="미리보기", width=btn_width,
+            btn_group1, text="미리보기 업뎃", width=btn_width,
             command=self.update_area_preview
         ).pack(side=tk.TOP, pady=2, padx=5, fill=tk.X)
 
