@@ -312,8 +312,9 @@ class CaptureAreaPopup(tk.Toplevel):
             
             x, y, width, height, interval_dummy = capture_info
             # print(f"{x}, {y}, {width}, {height}")
+            KEY = self.key_var.get()
  
-            areas.Add_TextArea(self.key_var.get(), { "x": x, "y": y, "width": width, "height": height }
+            areas.Add_TextArea(KEY, { "x": x, "y": y, "width": width, "height": height }
                             #   , save=True
                               )
                 
@@ -323,6 +324,7 @@ class CaptureAreaPopup(tk.Toplevel):
             # 메인 창에 성공 메시지 표시
             self.status_var.set("캡처 영역 설정이 저장되었습니다.")
             
+            messagebox.showinfo("알림", f"{KEY} 텍스트 데이터를 추가하였습니다.", parent=self)
             # 창 닫기
             self.on_close()
             
@@ -413,13 +415,17 @@ class CaptureAreaPopup(tk.Toplevel):
                 stored_path = file_path
             
             # 이미지 정보를 JSON에 저장
-            areas.Add_ImageArea(self.key_var.get(), {
+            areas.Add_ImageArea(key, {
                 "x": x, "y": y, 
                 "width": width, "height": height,
                 "file": stored_path
             })
             
             self.status_var.set(f"이미지가 저장되었습니다: {file_path}")
+            
+            messagebox.showinfo("알림", f"{key} 이미지 데이터를 추가하였습니다.", parent=self)
+            # 창 닫기
+            self.on_close()
             
         except Exception as e:
             messagebox.showerror("이미지 저장 오류", f"이미지 저장 중 오류가 발생했습니다: {str(e)}", parent=self)
