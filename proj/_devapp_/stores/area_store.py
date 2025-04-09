@@ -3,7 +3,6 @@ import sys
 import json
 # from pathlib import Path
 from utils import finder
-from zzz.config import PATH_Data
 
 class AreaStore:
     def __init__(self, name, filename):
@@ -19,7 +18,7 @@ class AreaStore:
 
     def _resolve_path(self):
         # base = Path(__file__).parent.parent / "data"
-        base = finder.Get_LocalPth() / PATH_Data
+        base = finder.Get_DataPath()
         os.makedirs(base, exist_ok=True)
         return base / self.filename
 

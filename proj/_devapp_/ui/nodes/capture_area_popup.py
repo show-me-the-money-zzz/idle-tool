@@ -350,10 +350,6 @@ class CaptureAreaPopup(tk.Toplevel):
                 messagebox.showerror("오류", "창 캡처에 실패했습니다.", parent=self)
                 return
             
-            areas.Add_ImageArea(self.key_var.get(), { "x": x, "y": y, "width": width, "height": height
-                                                     , f"file": "./{self.key_var.get()}.png"
-                                                     })
-            
             # 지정된 영역 추출
             img_width, img_height = full_window_img.size
             crop_region = (
@@ -365,28 +361,63 @@ class CaptureAreaPopup(tk.Toplevel):
             
             cropped_img = full_window_img.crop(crop_region)
             
-            # 저장할 파일 경로 설정
+            # 저장할 기본 파일명 생성
             key = self.key_var.get().strip()
             if not key:
                 key = "capture"  # 기본 파일명
             
-            # 현재 날짜와 시간 추가
-            from datetime import datetime
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            # # 현재 날짜와 시간 추가
+            # from datetime import datetime
+            # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
-            # 파일 경로 생성
-            import os
-            from pathlib import Path
+            # 기본 파일명
+            # default_filename = f"{key}_{timestamp}.png"
+            default_filename = key;
             
-            # 저장 디렉토리 생성
-            save_dir = Path("./images")
-            os.makedirs(save_dir, exist_ok=True)
+            # 기본 저장 경로 가져오기
+            from utils import finder
+            default_dir = finder.Get_DataPath()
             
-            # 파일 경로
-            file_path = save_dir / f"{key}_{timestamp}.png"
+            # 파일 저장 다이얼로그 표시
+            from tkinter import filedialog
+            file_path = filedialog.asksaveasfilename(
+                initialdir=default_dir,
+                initialfile=default_filename,
+                defaultextension=".png",
+                filetypes=[
+                    ("PNG 이미지", "*.png"),
+                    ("JPEG 이미지", "*.jpg;*.jpeg"),
+                    ("모든 파일", "*.*")
+                ],
+                title="이미지 저장"
+            )
+            
+            # 사용자가 취소를 눌렀으면 종료
+            if not file_path:
+                return
             
             # 이미지 저장
             cropped_img.save(file_path)
+            
+            # 상대 경로로 변환
+            from pathlib import Path
+            data_path = Path(finder.Get_DataPath())
+            file_path_obj = Path(file_path)
+            
+            try:
+                # 상대 경로 생성 시도
+                relative_path = file_path_obj.relative_to(data_path)
+                stored_path = str(relative_path)
+            except ValueError:
+                # 상대 경로 생성 실패 시 전체 경로 사용
+                stored_path = file_path
+            
+            # 이미지 정보를 JSON에 저장
+            areas.Add_ImageArea(self.key_var.get(), {
+                "x": x, "y": y, 
+                "width": width, "height": height,
+                "file": stored_path
+            })
             
             self.status_var.set(f"이미지가 저장되었습니다: {file_path}")
             
