@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 from datetime import datetime
 
 from zzz.config import *
-from stores import textareas
+from stores import textareas, imageareas
 
 class CaptureAreaPopup(tk.Toplevel):
     """캡처 영역 설정 팝업 창"""
@@ -202,7 +202,10 @@ class CaptureAreaPopup(tk.Toplevel):
             
             x, y, width, height, interval_dummy = capture_info
             # print(f"{x}, {y}, {width}, {height}")
-            textareas.AddItem(self.key_var.get(), { "x": x, "y": y, "width": width, "height": height }
+            # textareas.AddItem(self.key_var.get(), { "x": x, "y": y, "width": width, "height": height }
+            #                   , issave=True
+            #                   )
+            imageareas.AddItem(self.key_var.get(), { "x": x, "y": y, "width": width, "height": height, "file": "./dummy.png" }
                               , issave=True
                               )
                 

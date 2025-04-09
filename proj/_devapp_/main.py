@@ -39,8 +39,9 @@ def main():
     root.mainloop()
     
 def Load_Store():
-    from stores import textareas
+    from stores import textareas, imageareas
     textareas.initialize()
+    imageareas.initialize()
 
 if __name__ == "__main__":
     main()
