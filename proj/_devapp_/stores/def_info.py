@@ -1,6 +1,3 @@
-from zzz.config import DEFAULT_LOOP_INTERVAL
-from utils.system import Calc_MS
-
 HP = -1
 MP = -1
 
@@ -9,9 +6,6 @@ Is_Potion0 = -1
 
 Locate_Kind = ""
 Locate_Name = ""
-
-Loop_Interval = DEFAULT_LOOP_INTERVAL
-def Get_LoopInterval_MS(): return Calc_MS(Loop_Interval)
 
 def Update_Value(key, text):
     text = text.replace("\n", "").replace("\r", "")  # 줄바꿈 제거

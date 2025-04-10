@@ -18,7 +18,7 @@ from ui.log_frame import LogFrame
 from ui.input_handler_frame import InputHandlerFrame
 
 from zzz.info_bar import InfoBar
-from stores.def_info import Loop_Interval
+import core.sanner as Scanner
 
 class AppUI:
     RUNNER_BUTTON_START_TEXT  = "스캔 ▶"
@@ -143,7 +143,7 @@ class AppUI:
         interval_frame.pack(side=tk.LEFT)
         
         # 간격 입력 필드 + 라벨
-        self.interval_var = tk.StringVar(value=Loop_Interval)
+        self.interval_var = tk.StringVar(value=Scanner.Loop_Interval)
         ttk.Label(interval_frame, text="간격(초)").pack(side=tk.LEFT)
         ttk.Entry(interval_frame, textvariable=self.interval_var, width=6).pack(side=tk.LEFT, padx=(3, 0))
 
@@ -294,8 +294,7 @@ class AppUI:
     def apply_interval(self):
         try:
             new_value = float(self.interval_var.get())
-            from stores import def_info
-            def_info.Loop_Interval = new_value
+            Scanner.Loop_Interval = new_value
             self.status_var.set(f"Loop 간격이 {new_value:.2f}초로 적용되었습니다.")
         except ValueError:
             from tkinter import messagebox

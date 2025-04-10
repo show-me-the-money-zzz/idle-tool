@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
+
 import stores.def_info as Info
+import core.sanner as Scanner
 
 class InfoBar(ttk.Frame):
     def __init__(self, root):
@@ -39,7 +41,7 @@ class InfoBar(ttk.Frame):
         self.update_info()
 
     def update_info(self):
-        # print(f"tick~~ ({Info.Loop_Interval}): {Info.Get_LoopInterval_MS()}")
+        # print(f"tick~~ ({Scanner.Loop_Interval}): {Scanner.Get_LoopInterval_MS()}")
         def Check_Vital(vital):
             return "Χ" if -1 == vital else str(vital)
         
@@ -55,4 +57,4 @@ class InfoBar(ttk.Frame):
         self.loc_kind_var.set(Info.Locate_Kind)
         self.loc_name_var.set(Info.Locate_Name)
 
-        self.after(Info.Get_LoopInterval_MS(), self.update_info)
+        self.after(Scanner.Get_LoopInterval_MS(), self.update_info)
