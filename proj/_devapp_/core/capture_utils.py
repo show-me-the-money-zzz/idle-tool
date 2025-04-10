@@ -49,6 +49,28 @@ class CaptureManager:
         self.is_capturing = False
         return True
     
+    def _capture_crop(self
+                      , sct: mss.mss
+                      , x: int, y: int, width: int, height: int
+                      ) -> Image.Image:
+        # 윈도우 위치 가져오기
+        # left, top, _, _ = self.window_manager.get_window_rect()
+        left, top, right, bottom = self.window_manager.get_window_rect()
+        # print(f"_capture_crop(): app= {left}, {top} - {right - left} x {bottom - top} ({right} | {bottom})")
+
+        # 화면 캡처 (스레드 로컬 MSS 인스턴스 사용)
+        monitor = {
+            "top": top + y,
+            "left": left + x,
+            "width": width,
+            "height": height
+        }
+        screenshot = sct.grab(monitor)
+
+        # mss의 결과(원시 픽셀 데이터)를 PIL Image로 변환
+        img = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
+        return img
+    
     def capture_loop(self):
         """캡처 루프 실행"""
         # 각 스레드에서 새로운 MSS 인스턴스를 생성
@@ -70,23 +92,7 @@ class CaptureManager:
                         if area is None:
                             continue
 
-                        # 윈도우 위치 가져오기
-                        left, top, _, _ = self.window_manager.get_window_rect()
-                        x = left + area['x']
-                        y = top + area['y']
-                        width = area['width']
-                        height = area['height']
-
-                        # 화면 캡처 (스레드 로컬 MSS 인스턴스 사용)
-                        monitor = {
-                            "top": y,
-                            "left": x,
-                            "width": width,
-                            "height": height
-                        }
-                        screenshot = sct.grab(monitor)
-                        # mss의 결과를 PIL Image로 변환
-                        img = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
+                        img = self._capture_crop(sct, area['x'], area['y'], area['width'], area['height'])
 
                         # OCR 실행
                         if img is None:
