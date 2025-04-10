@@ -35,15 +35,8 @@ class CaptureAreaPopup(tk.Toplevel):
         self.capture_settings = None
 
         self.reading_text = False
-        
-        # 선택된 색상 저장 변수
-        self.selected_color = tk.StringVar(value="#000000")  # 기본 검정색
-        self.color_buttons = []  # 컬러 버튼 참조 저장
 
         self._setup_ui()
-        
-        # 초기 컬러 추가
-        self.add_default_colors()
 
     def _setup_ui(self):
         main_frame = ttk.Frame(self, padding="10", height=640)
@@ -79,7 +72,7 @@ class CaptureAreaPopup(tk.Toplevel):
         self.desc_key_text.grid(row=0, column=0, sticky=tk.EW)
         
         keywords_text = f"※ 예약 키워드: {' / '.join(LOOP_TEXT_KEYWORD)}"
-        keywords_text += " / "
+        keywords_text += " / ";
         keywords_text += f"{' / '.join(LOOP_IMAGE_KEYWORD)}"
         self.desc_key_text.insert("1.0", keywords_text)
         
@@ -140,46 +133,6 @@ class CaptureAreaPopup(tk.Toplevel):
         # 미리보기 영역 (왼쪽 하단)
         preview_frame = ttk.LabelFrame(content_frame, text="영역 미리보기")
         preview_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
-
-        # 색 추출 버튼 및 색상 선택 프레임 컨테이너
-        color_extract_container = ttk.Frame(preview_frame)
-        color_extract_container.pack(side=tk.TOP, fill=tk.X, pady=2, padx=5)
-
-        # 색 추출 버튼 - 사이즈를 텍스트 너비에 맞게 조정
-        self.extract_color_btn = ttk.Button(
-            color_extract_container, text="색 추출",
-            command=self.extract_color
-        )
-        self.extract_color_btn.pack(side=tk.LEFT, pady=2)
-        
-        # 선택된 색상 표시
-        self.color_display = tk.Frame(color_extract_container, width=20, height=20, 
-                                      bg=self.selected_color.get(), relief=tk.RAISED, borderwidth=1)
-        self.color_display.pack(side=tk.LEFT, padx=5)
-        
-        # 가로 스크롤 프레임 (색상 선택용)
-        color_scroll_frame = ttk.Frame(color_extract_container)
-        color_scroll_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 0))
-        
-        # 캔버스와 스크롤바
-        self.color_canvas = tk.Canvas(color_scroll_frame, height=30, bg=self.cget("background"))
-        self.color_canvas.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        
-        color_scrollbar = ttk.Scrollbar(color_scroll_frame, orient=tk.HORIZONTAL, 
-                                        command=self.color_canvas.xview)
-        color_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
-        
-        self.color_canvas.configure(xscrollcommand=color_scrollbar.set)
-        
-        # 색상 버튼을 담을 프레임
-        self.color_frame = ttk.Frame(self.color_canvas)
-        self.color_canvas.create_window((0, 0), window=self.color_frame, anchor=tk.NW)
-        
-        # 색상 프레임 업데이트 함수
-        def update_color_scroll_region(event=None):
-            self.color_canvas.configure(scrollregion=self.color_canvas.bbox("all"))
-        
-        self.color_frame.bind("<Configure>", update_color_scroll_region)
         
         self.preview_canvas = tk.Canvas(preview_frame, width=300, height=200, bg='lightgray')
         self.preview_canvas.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
@@ -285,102 +238,6 @@ class CaptureAreaPopup(tk.Toplevel):
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.log_text.config(yscrollcommand=scrollbar.set)
 
-    def add_default_colors(self):
-        """기본 색상 추가"""
-        default_colors = [
-            "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF",
-            "#000000", "#FFFFFF", "#808080", "#C0C0C0", "#800000", "#008000",
-            "#000080", "#808000", "#800080", "#008080", "#FFA500", "#A52A2A",
-            "#FFC0CB", "#90EE90", "#ADD8E6", "#FFD700", "#E6E6FA", "#D2B48C"
-        ]
-        
-        for color in default_colors:
-            self.add_color(color)
-            
-    def add_color(self, color_hex):
-        """색상 추가 함수"""
-        try:
-            # 색상 버튼 크기
-            btn_size = 20
-            
-            # 색상 버튼 프레임 (테두리 포함)
-            color_btn_frame = tk.Frame(self.color_frame, borderwidth=1, relief=tk.RAISED, padx=1, pady=1)
-            color_btn_frame.pack(side=tk.LEFT, padx=2)
-            
-            # 색상 버튼
-            color_btn = tk.Button(
-                color_btn_frame, 
-                width=btn_size, 
-                height=btn_size, 
-                bg=color_hex,
-                activebackground=color_hex,
-                bd=0,
-                command=lambda c=color_hex: self.select_color(c)
-            )
-            color_btn.pack()
-            
-            # 버튼 참조 저장
-            self.color_buttons.append((color_btn, color_hex))
-            
-            # 스크롤 영역 업데이트
-            self.color_canvas.configure(scrollregion=self.color_canvas.bbox("all"))
-            
-            return True
-        except Exception as e:
-            print(f"색상 추가 오류: {str(e)}")
-            return False
-    
-    def select_color(self, color_hex):
-        """색상 선택 함수"""
-        self.selected_color.set(color_hex)
-        self.color_display.config(bg=color_hex)
-        
-    def extract_color(self):
-        """현재 캡처 영역에서 색상 추출"""
-        try:
-            # 캡처 영역 좌표 가져오기
-            capture_info = self.get_capture_info()
-            if not capture_info:
-                return
-            
-            x, y, width, height, _ = capture_info
-            
-            # 창이 유효한지 확인
-            if not self.window_manager.is_window_valid():
-                messagebox.showerror("오류", "창이 연결되지 않았습니다.", parent=self)
-                return
-            
-            # 전체 창 캡처
-            full_window_img = self.capture_manager.capture_full_window()
-            if not full_window_img:
-                messagebox.showerror("오류", "창 캡처에 실패했습니다.", parent=self)
-                return
-            
-            # 중앙점 계산 (사용자가 더 큰 영역 대신 점으로 색상을 추출하려는 경우)
-            center_x = min(x + width // 2, full_window_img.width - 1)
-            center_y = min(y + height // 2, full_window_img.height - 1)
-            
-            # 픽셀 색상 추출
-            pixel_color = full_window_img.getpixel((center_x, center_y))
-            
-            # RGB 값을 16진수로 변환
-            if len(pixel_color) >= 3:  # RGB 또는 RGBA 형식 확인
-                r, g, b = pixel_color[:3]
-                hex_color = f"#{r:02x}{g:02x}{b:02x}"
-                
-                # 선택된 색상 업데이트
-                self.select_color(hex_color)
-                
-                # 추출된 색상 추가
-                self.add_color(hex_color)
-                
-                self.status_var.set(f"색상이 추출되었습니다: {hex_color}")
-            else:
-                messagebox.showerror("오류", "색상 추출에 실패했습니다.", parent=self)
-                
-        except Exception as e:
-            messagebox.showerror("색상 추출 오류", f"색상 추출 중 오류가 발생했습니다: {str(e)}", parent=self)
-
     def toggle_read_text(self):
         self.reading_text = not self.reading_text
         self.read_text_btn.config(text=CaptureAreaPopup.READTEXT_BUTTON_STOP_TEXT if self.reading_text else CaptureAreaPopup.READTEXT_BUTTON_START_TEXT)
@@ -467,13 +324,9 @@ class CaptureAreaPopup(tk.Toplevel):
                 messagebox.showerror("오류", "KEY 를 입력하세요.", parent=self)
                 return
  
-            areas.Add_TextArea(KEY, { 
-                "x": x, 
-                "y": y, 
-                "width": width, 
-                "height": height,
-                # "color": self.selected_color.get()  # 선택된 색상 저장
-            })
+            areas.Add_TextArea(KEY, { "x": x, "y": y, "width": width, "height": height }
+                            #   , save=True
+                              )
                 
             # 설정 저장
             self.capture_settings = capture_info
@@ -577,8 +430,7 @@ class CaptureAreaPopup(tk.Toplevel):
             areas.Add_ImageArea(key, {
                 "x": x, "y": y, 
                 "width": width, "height": height,
-                "file": stored_path,
-                # "color": self.selected_color.get()  # 선택된 색상 저장
+                "file": stored_path
             })
             
             self.status_var.set(f"이미지가 저장되었습니다: {file_path}")
@@ -586,6 +438,7 @@ class CaptureAreaPopup(tk.Toplevel):
             messagebox.showinfo("알림", f"{key} 이미지 데이터를 추가하였습니다.", parent=self)
             # 창 닫기
             self.on_close()
+            
         except Exception as e:
             messagebox.showerror("이미지 저장 오류", f"이미지 저장 중 오류가 발생했습니다: {str(e)}", parent=self)
     
