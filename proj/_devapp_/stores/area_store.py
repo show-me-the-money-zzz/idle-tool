@@ -29,7 +29,7 @@ class AreaStore:
                     self.items = json.load(f)
                     
                 if False == getattr(sys, 'frozen', False):  #utils.system.DEVAPP
-                    print(f"{self.name}.Load(): {" / ".join(self.items)}")
+                    print(f"{self.name}.Load(): {' / '.join(self.items)}")
                     
                 return True
             except Exception as e:
