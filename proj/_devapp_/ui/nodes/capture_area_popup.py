@@ -134,6 +134,67 @@ class CaptureAreaPopup(tk.Toplevel):
         preview_frame = ttk.LabelFrame(content_frame, text="영역 미리보기")
         preview_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 5))
         
+        # 색상 추출 버튼 + 컬러 팔레트 (미리보기 캔버스 위에 배치)
+        color_bar_frame = ttk.Frame(preview_frame)
+        color_bar_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=(5, 0))
+
+        # 색 추출 버튼
+        self.extract_color_btn = ttk.Button(color_bar_frame, text="색 추출", command=self.extract_color)
+        self.extract_color_btn.pack(side=tk.LEFT)
+
+        # 컬러 박스 (수평 스크롤 포함)
+        self.color_canvas = tk.Canvas(color_bar_frame, height=30)
+        self.color_canvas.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        color_scrollbar = ttk.Scrollbar(color_bar_frame, orient=tk.HORIZONTAL, command=self.color_canvas.xview)
+        color_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
+
+        self.color_canvas.configure(xscrollcommand=color_scrollbar.set)
+        self.color_frame = ttk.Frame(self.color_canvas)
+        self.color_canvas.create_window((0, 0), window=self.color_frame, anchor="nw")
+
+        # 스크롤 영역 자동 갱신
+        def update_scroll(event=None):
+            self.color_canvas.configure(scrollregion=self.color_canvas.bbox("all"))
+
+        self.color_frame.bind("<Configure>", update_scroll)
+        # 기본 색상 추가
+        self.add_color("red")
+        self.add_color("green")
+        self.add_color("blue")
+        self.add_color("#ff00ff")
+        self.add_color("#ffffff")
+        self.add_color("red")
+        self.add_color("green")
+        self.add_color("blue")
+        self.add_color("#ff00ff")
+        self.add_color("#ffffff")
+        self.add_color("red")
+        self.add_color("green")
+        self.add_color("blue")
+        self.add_color("#ff00ff")
+        self.add_color("#ffffff")
+        self.add_color("red")
+        self.add_color("green")
+        self.add_color("blue")
+        self.add_color("#ff00ff")
+        self.add_color("#ffffff")
+        self.add_color("red")
+        self.add_color("green")
+        self.add_color("blue")
+        self.add_color("#ff00ff")
+        self.add_color("#ffffff")
+        self.add_color("red")
+        self.add_color("green")
+        self.add_color("blue")
+        self.add_color("#ff00ff")
+        self.add_color("#ffffff")
+        self.add_color("red")
+        self.add_color("green")
+        self.add_color("blue")
+        self.add_color("#ff00ff")
+        self.add_color("#ffffff")
+        
         self.preview_canvas = tk.Canvas(preview_frame, width=300, height=200, bg='lightgray')
         self.preview_canvas.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.preview_canvas.create_text(
@@ -253,6 +314,22 @@ class CaptureAreaPopup(tk.Toplevel):
         except ValueError:
             interval = 2000
         self.after(interval, self._read_loop_main)
+        
+    def extract_color(self):
+        """미리보기 이미지에서 색상 추출하는 기본 동작 (임시 구현)"""
+        messagebox.showinfo("색 추출", "색 추출 기능이 아직 구현되지 않았습니다.", parent=self)
+        
+    def add_color(self, color: str):
+        """지정한 색상으로 컬러 버튼을 수평 리스트에 추가"""
+        btn = tk.Button(
+            self.color_frame,
+            bg=color,
+            width=2,
+            height=1,
+            relief=tk.RAISED,
+            command=lambda: self.select_color(color) if hasattr(self, "select_color") else None
+        )
+        btn.pack(side=tk.LEFT, padx=2, pady=2)
 
     def clear_log(self):
         self.log_text.delete(1.0, tk.END)
