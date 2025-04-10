@@ -5,7 +5,7 @@ import time
 import threading
 from datetime import datetime
 from PIL import Image
-from core.ocr_engine import image_to_text
+from core.ocr_engine import image_to_text, images_to_text_parallel
 
 from zzz.config import LOOP_TEXT_KEYWORD
 from stores.areas import *
@@ -61,6 +61,7 @@ class CaptureManager:
                     self.is_capturing = False
                     break
 
+                images = []
                 for n in range(len(LOOP_TEXT_KEYWORD)):
                     KEY = LOOP_TEXT_KEYWORD[n];
                     
@@ -90,10 +91,11 @@ class CaptureManager:
                         # OCR 실행
                         if img is None:
                             raise ValueError("캡처된 이미지가 None입니다.")
-                        text = image_to_text(img)
-                        del img
-                        import gc; gc.collect()
-                        # test = "" # DEV.. ORC 처리 주석 처리시 사용
+                        # text = image_to_text(img)
+                        # del img
+                        # import gc; gc.collect()
+                        text = "" # DEV.. ORC 처리 주석 처리시 사용
+                        images.append(img)
                     
                         # 디버깅 정보 출력
                         # print(f"인식된 텍스트: {text}")
@@ -107,7 +109,7 @@ class CaptureManager:
                                 logtext += "\n"
                             # self.callback_fn("result", logtext)
                             
-                            Update_Value(KEY, text)
+                            # Update_Value(KEY, text)
 
                     except Exception as e:
                         Update_Value(KEY, "")
@@ -117,6 +119,11 @@ class CaptureManager:
                 
                 # 지정된 간격만큼 대기
                 # print(f"Loop_Interval= {Scanner.Loop_Interval}")
+                # print(images)
+                texts = images_to_text_parallel(images)
+                print(texts)
+                # for item in texts:
+                #     Update_Value("aa", item)
                 time.sleep(Scanner.Loop_Interval)
     
     def capture_full_window(self):

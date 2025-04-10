@@ -130,7 +130,7 @@ def image_to_text(image, lang='kor+eng'):
     gc.collect()
     return text
 
-def images_to_text_parallel(image_list, lang='kor+eng'):
+def images_to_text_parallel_OLD(image_list, lang='kor+eng'):
     """다수의 이미지에 대해 병렬 OCR 처리"""
     preprocessed = [preprocess_image(img) for img in image_list]
     with ProcessPoolExecutor() as executor:
@@ -138,3 +138,33 @@ def images_to_text_parallel(image_list, lang='kor+eng'):
     del preprocessed
     gc.collect()
     return list(results)
+
+def _process_image_with_tesseract(args):
+    """프로세스 풀에서 사용할 헬퍼 함수"""
+    img, lang, tesseract_path = args
+    
+    # 각 프로세스에서 Tesseract 경로 다시 설정
+    pytesseract.pytesseract.tesseract_cmd = tesseract_path
+    
+    return _image_to_text(img, lang)
+
+def images_to_text_parallel(image_list, lang='kor+eng'):
+    """다수의 이미지에 대해 병렬 OCR 처리"""
+    # 현재 Tesseract 경로 가져오기
+    tesseract_path = pytesseract.pytesseract.tesseract_cmd
+    
+    # 이미지 전처리
+    preprocessed = [preprocess_image(img) for img in image_list]
+    
+    # 이미지, 언어, Tesseract 경로를 튜플로 묶기
+    process_args = [(img, lang, tesseract_path) for img in preprocessed]
+    
+    # 병렬 처리 실행
+    with ProcessPoolExecutor() as executor:
+        results = list(executor.map(_process_image_with_tesseract, process_args))
+    
+    # 메모리 정리
+    del preprocessed
+    gc.collect()
+    
+    return results

@@ -8,6 +8,8 @@ Locate_Kind = ""
 Locate_Name = ""
 
 def Update_Value(key, text):
+    print(f"{key}: {text}")
+    return
     text = text.replace("\n", "").replace("\r", "")  # 줄바꿈 제거
     
     match key:
