@@ -5,8 +5,9 @@ import time
 import threading
 from datetime import datetime
 from PIL import Image
-from core.ocr_engine import image_to_text, images_to_text_parallel
+from typing import List, Tuple
 
+from core.ocr_engine import image_to_text, images_to_text_parallel
 from zzz.config import LOOP_TEXT_KEYWORD
 from stores.areas import *
 from stores.def_info import Update_Value
@@ -60,8 +61,8 @@ class CaptureManager:
 
         # 화면 캡처 (스레드 로컬 MSS 인스턴스 사용)
         monitor = {
-            "top": top + y,
             "left": left + x,
+            "top": top + y,
             "width": width,
             "height": height
         }
@@ -70,6 +71,32 @@ class CaptureManager:
         # mss의 결과(원시 픽셀 데이터)를 PIL Image로 변환
         img = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
         return img
+    
+    def _capture_crops(self
+                      , sct: mss.mss
+                      , areas: List[Tuple[int, int, int, int]]
+                      ) -> List[Image.Image]:
+        """
+        영역 목록으로 한번 캡처한 이미지를 잘라내기
+
+        Args:
+            sct (mss.mss): mss 인스턴스 (스크린 캡처 세션)
+            areas (List[Tuple[int, int, int, int]]): 자를 영역들 (x, y, width, height)
+
+        Returns:
+            List[Image.Image]: 잘라낸 이미지 리스트
+        """
+        ret: List[Image.Image] = []
+
+        left, top, right, bottom = self.window_manager.get_window_rect()
+        pil_app = self._capture_crop(sct, 0, 0, right - left, bottom - top)
+
+        for item in areas:
+            x, y, width, height = item
+            item_img = pil_app.crop((x, y, x + width, y + height))
+            ret.append(item_img)
+
+        return ret
     
     def capture_loop(self):
         """캡처 루프 실행"""
@@ -93,6 +120,8 @@ class CaptureManager:
                             continue
 
                         img = self._capture_crop(sct, area['x'], area['y'], area['width'], area['height'])
+                        # imgs = self._capture_crops(sct, [ [area['x'], area['y'], area['width'], area['height']] ])
+                        # img = imgs[0]
 
                         # OCR 실행
                         if img is None:
