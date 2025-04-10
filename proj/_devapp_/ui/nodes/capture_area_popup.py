@@ -79,7 +79,7 @@ class CaptureAreaPopup(tk.Toplevel):
         self.desc_key_text.grid(row=0, column=0, sticky=tk.EW)
         
         keywords_text = f"※ 예약 키워드: {' / '.join(LOOP_TEXT_KEYWORD)}"
-        keywords_text += " / ";
+        keywords_text += " / "
         keywords_text += f"{' / '.join(LOOP_IMAGE_KEYWORD)}"
         self.desc_key_text.insert("1.0", keywords_text)
         
