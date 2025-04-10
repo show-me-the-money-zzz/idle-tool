@@ -142,12 +142,18 @@ class CaptureAreaPopup(tk.Toplevel):
         self.extract_color_btn = ttk.Button(color_bar_frame, text="색 추출", command=self.extract_color)
         self.extract_color_btn.pack(side=tk.LEFT)
 
-        # 컬러 박스 (수평 스크롤 포함)
-        self.color_canvas = tk.Canvas(color_bar_frame, height=30)
-        self.color_canvas.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        # 컬러 캔버스 (박스만 표시, 작고 컴팩트하게)
+        self.color_canvas = tk.Canvas(color_bar_frame, height=18, highlightthickness=0)
+        self.color_canvas.pack(side=tk.TOP, fill=tk.X, expand=True)
 
-        color_scrollbar = ttk.Scrollbar(color_bar_frame, orient=tk.HORIZONTAL, command=self.color_canvas.xview)
-        color_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
+        # 색상 박스 추가 영역
+        self.color_frame = ttk.Frame(self.color_canvas)
+        self.color_canvas.create_window((0, 0), window=self.color_frame, anchor="nw")
+
+        # 스크롤바는 아래쪽에 따로 배치
+        color_scrollbar = ttk.Scrollbar(preview_frame, orient=tk.HORIZONTAL, command=self.color_canvas.xview)
+        color_scrollbar.pack(side=tk.TOP, fill=tk.X, padx=5)
+        self.color_canvas.configure(xscrollcommand=color_scrollbar.set)
 
         self.color_canvas.configure(xscrollcommand=color_scrollbar.set)
         self.color_frame = ttk.Frame(self.color_canvas)
@@ -321,15 +327,24 @@ class CaptureAreaPopup(tk.Toplevel):
         
     def add_color(self, color: str):
         """지정한 색상으로 컬러 버튼을 수평 리스트에 추가"""
+        # btn = tk.Button(
+        #     self.color_frame,
+        #     bg=color,
+        #     width=2,
+        #     height=1,
+        #     relief=tk.RAISED,
+        #     command=lambda: self.select_color(color) if hasattr(self, "select_color") else None
+        # )
+        # btn.pack(side=tk.LEFT, padx=2, pady=2)
         btn = tk.Button(
             self.color_frame,
             bg=color,
-            width=2,
+            width=1,  # 작게
             height=1,
             relief=tk.RAISED,
             command=lambda: self.select_color(color) if hasattr(self, "select_color") else None
         )
-        btn.pack(side=tk.LEFT, padx=2, pady=2)
+        btn.pack(side=tk.LEFT, padx=1, pady=1)
 
     def clear_log(self):
         self.log_text.delete(1.0, tk.END)
