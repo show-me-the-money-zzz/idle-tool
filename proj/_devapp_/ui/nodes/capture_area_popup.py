@@ -11,6 +11,9 @@ from utils.system import Calc_MS
 
 class CaptureAreaPopup(tk.Toplevel):
     """캡처 영역 설정 팝업 창"""
+    
+    READTEXT_BUTTON_START_TEXT = "글자 읽기 ▶"
+    READTEXT_BUTTON_STOP_TEXT = "글자 읽기 ■"
 
     def __init__(self, parent, window_manager, region_selector, capture_manager, status_var, on_close_callback=None):
         super().__init__(parent)
@@ -158,7 +161,7 @@ class CaptureAreaPopup(tk.Toplevel):
         ).pack(side=tk.TOP, pady=2, padx=5, fill=tk.X)
 
         self.read_text_btn = ttk.Button(
-            btn_group1, text="글자 읽기", width=btn_width,
+            btn_group1, text=CaptureAreaPopup.READTEXT_BUTTON_START_TEXT, width=btn_width,
             command=self.toggle_read_text
         )
         self.read_text_btn.pack(side=tk.TOP, pady=2, padx=5, fill=tk.X)
@@ -237,7 +240,7 @@ class CaptureAreaPopup(tk.Toplevel):
 
     def toggle_read_text(self):
         self.reading_text = not self.reading_text
-        self.read_text_btn.config(text="읽기 멈춤" if self.reading_text else "글자 읽기")
+        self.read_text_btn.config(text=CaptureAreaPopup.READTEXT_BUTTON_STOP_TEXT if self.reading_text else CaptureAreaPopup.READTEXT_BUTTON_START_TEXT)
         if self.reading_text:
             self._read_loop_main()
 

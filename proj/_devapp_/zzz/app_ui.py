@@ -21,8 +21,8 @@ from zzz.info_bar import InfoBar
 from stores.def_info import Loop_Interval
 
 class AppUI:
-    RUNNER_BUTTON_START_TEXT  = "스캔 시작"
-    RUNNER_BUTTON_STOP_TEXT  = "스캔 중지"
+    RUNNER_BUTTON_START_TEXT  = "스캔 ▶"
+    RUNNER_BUTTON_STOP_TEXT  = "스캔 ■"
     
     def __init__(self, root, settings_manager):
         self.Test_Lua() # Lua 테스트
