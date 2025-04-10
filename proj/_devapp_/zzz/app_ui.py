@@ -280,7 +280,7 @@ class AppUI:
                 # x, y, width, height, interval = self.capture_settings
                 
                 # 캡처 시작
-                self.capture_manager.start_capture(1.0)
+                self.capture_manager.start_capture()
                 self.capture_btn.config(text=AppUI.RUNNER_BUTTON_STOP_TEXT)
                 self.status_var.set(STATUS_CAPTURING)
                 

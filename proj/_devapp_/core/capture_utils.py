@@ -10,6 +10,7 @@ from core.ocr_engine import image_to_text
 from zzz.config import LOOP_TEXT_KEYWORD
 from stores.areas import *
 from stores.def_info import Update_Value
+import core.sanner as Scanner
 
 class CaptureManager:
     """화면 캡처 관리 클래스 (mss 라이브러리 기반)"""
@@ -18,18 +19,16 @@ class CaptureManager:
         self.window_manager = window_manager
         self.is_capturing = False
         self.capture_thread = None
-        self.capture_interval = 1.0
         self.callback_fn = callback_fn
         # mss 인스턴스 생성
         self.sct = mss.mss()
     
     # , x, y, width, height,
-    def start_capture(self, interval=1.0):
+    def start_capture(self):
         """캡처 시작"""
         if self.is_capturing:
             return False
         
-        self.capture_interval = interval
         self.is_capturing = True
         
         # # 캡처 파라미터 저장
@@ -94,6 +93,7 @@ class CaptureManager:
                         text = image_to_text(img)
                         del img
                         import gc; gc.collect()
+                        # test = "" # DEV.. ORC 처리 주석 처리시 사용
                     
                         # 디버깅 정보 출력
                         # print(f"인식된 텍스트: {text}")
@@ -116,7 +116,8 @@ class CaptureManager:
                         #     self.callback_fn("error", f"오류 발생: {str(e)}")
                 
                 # 지정된 간격만큼 대기
-                time.sleep(self.capture_interval)
+                # print(f"Loop_Interval= {Scanner.Loop_Interval}")
+                time.sleep(Scanner.Loop_Interval)
     
     def capture_full_window(self):
         """연결된 창 전체를 캡처"""
