@@ -11,7 +11,7 @@ Locate_Kind = ""
 Locate_Name = ""
 
 Loop_Interval = DEFAULT_LOOP_INTERVAL
-Loop_Interval_MS = Calc_MS(Loop_Interval)
+def Get_LoopInterval_MS(): return Calc_MS(Loop_Interval)
 
 def Update_Value(key, text):
     text = text.replace("\n", "").replace("\r", "")  # 줄바꿈 제거
