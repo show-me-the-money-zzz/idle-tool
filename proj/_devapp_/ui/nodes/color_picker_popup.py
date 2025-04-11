@@ -112,7 +112,7 @@ class ColorPickerPopup(tk.Toplevel):
         # 스크롤 영역 자동 조정
         def update_scroll_region(event=None):
             self.palette_canvas.configure(scrollregion=self.palette_canvas.bbox("all"))
-            self.palette_canvas.itemconfig(self.color_window, width=self.palette_canvas.winfo_width())
+            # self.palette_canvas.itemconfig(self.color_window, width=self.palette_canvas.winfo_width())
         
         self.color_frame.bind("<Configure>", update_scroll_region)
         self.palette_canvas.bind("<Configure>", lambda e: self.palette_canvas.itemconfig(
@@ -403,72 +403,45 @@ class ColorPickerPopup(tk.Toplevel):
         self.zoom_var.set(f"{self.zoom_factor:.1f}")
     
     def update_bottom_image(self):
-        """하단 이미지 캔버스 업데이트 (선택된 색상만 표시)"""
+        """하단 이미지 캔버스 업데이트 (선택된 색상만 표시, 원본 크기로 출력)"""
         if not hasattr(self, 'original_image'):
             return
-            
-        # 캔버스 크기 가져오기
-        canvas_width = self.bottom_canvas.winfo_width()
-        canvas_height = self.bottom_canvas.winfo_height()
-        
-        if canvas_width <= 1 or canvas_height <= 1:  # 아직 캔버스가 렌더링되지 않은 경우
-            self.bottom_canvas.after(100, self.update_bottom_image)
-            return
-        
+
         # 선택된 색상이 없으면 원본 이미지 표시
         if not self.selected_colors:
             img_to_display = self.original_image
             self.processed_image = self.original_image.copy()
         else:
-            # 원본 이미지를 NumPy 배열로 변환
+            # 선택된 색상만 마스킹
             img_array = np.array(self.original_image)
-            
-            # 마스크 초기화 (모든 픽셀 검은색)
             mask = np.zeros_like(img_array)
-            
-            # 선택된 각 색상에 대해 마스크 업데이트
+
             for color_hex in self.selected_colors:
-                # 16진수 색상을 RGB로 변환
                 r = int(color_hex[1:3], 16)
                 g = int(color_hex[3:5], 16)
                 b = int(color_hex[5:7], 16)
-                
-                # 색상 임계값 설정 (유사한 색상도 포함)
+
                 threshold = 10
                 color_mask = (
-                    (np.abs(img_array[:,:,0] - r) <= threshold) &
-                    (np.abs(img_array[:,:,1] - g) <= threshold) &
-                    (np.abs(img_array[:,:,2] - b) <= threshold)
+                    (np.abs(img_array[:, :, 0] - r) <= threshold) &
+                    (np.abs(img_array[:, :, 1] - g) <= threshold) &
+                    (np.abs(img_array[:, :, 2] - b) <= threshold)
                 )
-                
-                # 마스크 업데이트 (해당 색상 부분만 원본 이미지 값 사용)
+
                 mask[color_mask] = img_array[color_mask]
-            
-            # NumPy 배열을 PIL Image로 변환
+
             img_to_display = Image.fromarray(mask)
             self.processed_image = img_to_display
-        
-        # 이미지 리사이징 (항상 원본 크기 x1 비율로 표시)
-        img_width, img_height = img_to_display.size
-        
-        # 캔버스에 맞게 이미지를 표시하기 위한 스케일 계산
-        scale = min(canvas_width / img_width, canvas_height / img_height)
-        new_width = int(img_width * scale)
-        new_height = int(img_height * scale)
-        
-        resized_img = img_to_display.resize((new_width, new_height), Image.LANCZOS)
-        
-        # 이미지를 캔버스에 표시
-        self.bottom_photo = ImageTk.PhotoImage(resized_img)
-        
-        # 이전 이미지 삭제하고 새 이미지 표시
+
+        # 원본 해상도 그대로 출력
+        self.bottom_photo = ImageTk.PhotoImage(img_to_display)
+
         self.bottom_canvas.delete("all")
-        
-        # 이미지 중앙 배치
-        x = (canvas_width - new_width) // 2
-        y = (canvas_height - new_height) // 2
-        
-        self.bottom_canvas.create_image(x, y, image=self.bottom_photo, anchor=tk.NW)
+        self.bottom_canvas.create_image(0, 0, image=self.bottom_photo, anchor=tk.NW)
+
+        # 캔버스 스크롤 가능하도록 scrollregion 지정
+        img_width, img_height = img_to_display.size
+        self.bottom_canvas.config(scrollregion=(0, 0, img_width, img_height))
 
     def reset_image_position(self):
         """이미지 위치를 초기 상태로 리셋"""
