@@ -15,6 +15,8 @@ class ColorPickerPopup(tk.Toplevel):
     PIPETTE_ON_TEXT = "⌛"
     PIPETTE_ON_COLOR_BG = "#ff6347"
     PIPETTE_ON_COLOR_TEXT = "white"
+    
+    DEFAULT_ZOOM = 1.5
 
     def __init__(self, parent, image, callback=None):
         super().__init__(parent)
@@ -52,7 +54,7 @@ class ColorPickerPopup(tk.Toplevel):
         # 상태 변수
         self.is_picking = False  # 색상 추출 모드 상태
         self.selected_colors = []  # 선택된 색상 목록
-        self.zoom_factor = 1.5    # 확대/축소 비율
+        self.zoom_factor = ColorPickerPopup.DEFAULT_ZOOM    # 확대/축소 비율
         self.image_position = [0, 0]  # 이미지 드래그 위치
         self.drag_start = None    # 드래그 시작 위치
         self.show_grid = False     # 그리드 표시 여부
@@ -131,7 +133,7 @@ class ColorPickerPopup(tk.Toplevel):
         self.zoom_in_btn = ttk.Button(zoom_control, text="+", width=2, command=self.zoom_in)
         self.zoom_in_btn.pack(side=tk.TOP, pady=(0, 2))
         
-        self.zoom_var = tk.StringVar(value="1.0")
+        self.zoom_var = tk.StringVar(value=str(ColorPickerPopup.DEFAULT_ZOOM))
         zoom_entry = ttk.Entry(zoom_control, textvariable=self.zoom_var, width=4)
         zoom_entry.pack(side=tk.TOP, pady=2)
         zoom_entry.bind("<Return>", self.update_zoom_from_entry)
