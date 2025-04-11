@@ -4,6 +4,8 @@ from PIL import Image, ImageTk, ImageGrab, ImageDraw
 import numpy as np
 import os
 
+from zzz.config import COLOR_EXTRACT_MODE_SWAP_KEY
+
 class ColorPickerPopup(tk.Toplevel):
     """색상 선택 팝업 창"""
     
@@ -15,56 +17,61 @@ class ColorPickerPopup(tk.Toplevel):
     PIPETTE_ON_COLOR_TEXT = "white"
 
     def __init__(self, parent, image, callback=None):
-      super().__init__(parent)
-      self.title("색상 추출")
-      self.geometry("800x700")
-      self.transient(parent)
-      self.grab_set()  # 모달 창으로 설정
-      self.protocol("WM_DELETE_WINDOW", self.cancel)
+        super().__init__(parent)
+        self.title("색상 추출")
+        self.geometry("800x700")
+        self.transient(parent)
+        self.grab_set()  # 모달 창으로 설정
+        self.protocol("WM_DELETE_WINDOW", self.cancel)
 
-      self.parent = parent
-      self.callback = callback
+        self.parent = parent
+        self.callback = callback
         
-      self.parent = parent
-      self.callback = callback
+        self.parent = parent
+        self.callback = callback
 
-      # 이미지 로드 (PIL Image 직접 사용)
-      if isinstance(image, str):
-         # 파일 경로인 경우
-         if os.path.exists(image):
-               self.original_image = Image.open(image)
-         else:
-               messagebox.showerror("오류", "이미지 파일을 찾을 수 없습니다.")
-               self.destroy()
-               return
-      elif isinstance(image, Image.Image):
-         # PIL Image 객체인 경우
-         self.original_image = image.copy()
-      else:
-         messagebox.showerror("오류", "지원되지 않는 이미지 형식입니다.")
-         self.destroy()
-         return
+        # 이미지 로드 (PIL Image 직접 사용)
+        if isinstance(image, str):
+            # 파일 경로인 경우
+            if os.path.exists(image):
+                self.original_image = Image.open(image)
+            else:
+                messagebox.showerror("오류", "이미지 파일을 찾을 수 없습니다.")
+                self.destroy()
+                return
+        elif isinstance(image, Image.Image):
+            # PIL Image 객체인 경우
+            self.original_image = image.copy()
+        else:
+            messagebox.showerror("오류", "지원되지 않는 이미지 형식입니다.")
+            self.destroy()
+            return
 
-      self.processed_image = self.original_image.copy()
+        self.processed_image = self.original_image.copy()
 
-      # 상태 변수
-      self.is_picking = False  # 색상 추출 모드 상태
-      self.selected_colors = []  # 선택된 색상 목록
-      self.zoom_factor = 1.0    # 확대/축소 비율
-      self.image_position = [0, 0]  # 이미지 드래그 위치
-      self.drag_start = None    # 드래그 시작 위치
-      self.show_grid = True     # 그리드 표시 여부
+        # 상태 변수
+        self.is_picking = False  # 색상 추출 모드 상태
+        self.selected_colors = []  # 선택된 색상 목록
+        self.zoom_factor = 1.5    # 확대/축소 비율
+        self.image_position = [0, 0]  # 이미지 드래그 위치
+        self.drag_start = None    # 드래그 시작 위치
+        self.show_grid = False     # 그리드 표시 여부
 
-      # UI 컴포넌트
-      self._setup_ui()
+        # UI 컴포넌트
+        self._setup_ui()
 
-      # 키 이벤트 바인딩
-      self.bind("<Escape>", self.cancel_picking)
-      self.bind("<Configure>", self.on_resize)
+        # 키 이벤트 바인딩
+        SHORTCUT_KEYKEY = COLOR_EXTRACT_MODE_SWAP_KEY
+        self.bind("<Escape>", self.cancel_picking)
+        self.bind("<Configure>", self.on_resize)
 
-      # 처음 이미지 로드
-      self.update_top_image()
-      self.update_bottom_image()
+        # 처음 이미지 로드
+        self.update_top_image()
+        self.update_bottom_image()
+
+        # # 스타일 정의 (init 메서드에 추가)
+        # style = ttk.Style()
+        # style.configure("Bold.TCheckbutton", font=("TkDefaultFont", 9, "bold"))
     
     def _setup_ui(self):
         """UI 구성요소 초기화"""
@@ -133,13 +140,14 @@ class ColorPickerPopup(tk.Toplevel):
         self.zoom_out_btn = ttk.Button(zoom_control, text="-", width=2, command=self.zoom_out)
         self.zoom_out_btn.pack(side=tk.TOP, pady=(2, 0))
         
-        # 그리드 표시 체크박스
-        self.grid_var = tk.BooleanVar(value=True)
+        # 그리드 표시 체크박스. 선 굵기 때문에 x1 에서는 이미지가 다 덮여서 안 보임
+        self.grid_var = tk.BooleanVar(value=False)
         grid_check = ttk.Checkbutton(
             zoom_control, 
             text="Grid", 
             variable=self.grid_var,
-            command=self.toggle_grid
+            command=self.toggle_grid,
+            style="Bold.TCheckbutton"  # 굵은 스타일 사용 (스타일 정의 필요)
         )
         grid_check.pack(side=tk.TOP, pady=(10, 0))
         
@@ -154,7 +162,7 @@ class ColorPickerPopup(tk.Toplevel):
         self.top_canvas.bind("<ButtonRelease-1>", self.stop_drag)
         
         # 안내 메시지
-        self.info_label = ttk.Label(main_frame, text="색상을 선택하려면 스포이드 버튼을 클릭한 후 이미지를 클릭하세요. 색상 박스를 클릭하면 삭제됩니다.")
+        self.info_label = ttk.Label(main_frame, text="<Z> 키로 모드를 변경할 수 있습니다. 그리드는 1.5 이상부터 보입니다. 이미지 드래그는 모드 OFF 에만 가능합니다.")
         self.info_label.pack(fill=tk.X, pady=(0, 10))
         
         # 하단 이미지 캔버스
@@ -330,15 +338,17 @@ class ColorPickerPopup(tk.Toplevel):
                 # 픽셀 그리기
                 draw.rectangle([x1, y1, x2-1, y2-1], fill=color)
         
-        # 그리드 표시 (zoom_factor가 5 이상일 때만)
-        if self.show_grid and self.zoom_factor >= 5:
+        if self.show_grid and self.zoom_factor >= 1.5:
+            grid_color = (100, 100, 100)
+            grid_width = max(1, int(self.zoom_factor / 10))  # 확대율에 따라 선 굵기만 유동
+
             for y in range(self.original_image.height + 1):
                 y_pos = int(y * self.zoom_factor)
-                draw.line([(0, y_pos), (img_width, y_pos)], fill=(200, 200, 200), width=1)
-            
+                draw.line([(0, y_pos), (img_width, y_pos)], fill=grid_color, width=grid_width)
+
             for x in range(self.original_image.width + 1):
                 x_pos = int(x * self.zoom_factor)
-                draw.line([(x_pos, 0), (x_pos, img_height)], fill=(200, 200, 200), width=1)
+                draw.line([(x_pos, 0), (x_pos, img_height)], fill=grid_color, width=grid_width)
         
         # 이미지를 캔버스에 표시
         self.top_photo = ImageTk.PhotoImage(resized_img)
