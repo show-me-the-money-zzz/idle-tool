@@ -6,8 +6,9 @@ from datetime import datetime
 
 from zzz.config import *
 from stores import areas
-
 from utils.system import Calc_MS
+
+from ui.nodes.color_picker_popup import ColorPickerPopup
 
 class CaptureAreaPopup(tk.Toplevel):
     """캡처 영역 설정 팝업 창"""
@@ -292,7 +293,24 @@ class CaptureAreaPopup(tk.Toplevel):
         
     def extract_color(self):
         """미리보기 이미지에서 색상 추출하는 기본 동작 (임시 구현)"""
-        messagebox.showinfo("색 추출", "색 추출 기능이 아직 구현되지 않았습니다.", parent=self)
+        # messagebox.showinfo("색 추출", "색 추출 기능이 아직 구현되지 않았습니다.", parent=self)
+
+        # 색상 선택기 팝업 표시
+        picker = ColorPickerPopup(self, "./data/potion-test.png", callback=self.Callback_PickColor)
+
+    def Callback_PickColor(selected_colors, processed_image):
+        # 여기서 선택된 색상과 처리된 이미지를 활용하는 코드 작성
+        # 예: 선택된 색상을 저장하거나, 처리된 이미지를 사용
+        print(f"사용자가 선택한 색상: {selected_colors}")
+        
+        # # 색상 파일 저장 예시
+        # with open("selected_colors.txt", "w") as f:
+        #     for color in selected_colors:
+        #         f.write(f"{color}\n")
+        
+        # # 처리된 이미지 저장 예시
+        # if processed_image:
+        #     processed_image.save("filtered_image.png")
         
     def add_color(self, color: str):
         """지정한 색상으로 컬러 버튼을 수평 리스트에 추가"""
