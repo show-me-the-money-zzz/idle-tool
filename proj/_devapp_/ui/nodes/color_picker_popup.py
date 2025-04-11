@@ -141,7 +141,7 @@ class ColorPickerPopup(tk.Toplevel):
             textvariable=self.zoom_var, 
             width=4, 
             from_=1.0,
-            to=10.0, 
+            to=15.0, 
             increment=0.5,
             command=self.update_zoom_from_spinbox
         )
