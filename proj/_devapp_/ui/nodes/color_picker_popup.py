@@ -28,9 +28,6 @@ class ColorPickerPopup(tk.Toplevel):
 
         self.parent = parent
         self.callback = callback
-        
-        self.parent = parent
-        self.callback = callback
 
         # 이미지 로드 (PIL Image 직접 사용)
         if isinstance(image, str):
@@ -191,8 +188,8 @@ class ColorPickerPopup(tk.Toplevel):
         # Spinbox에 Z 키가 입력되지 않도록 추가 바인딩
         self.zoom_spinbox.bind("<Key>", self.filter_spinbox_key)
         
-        # 하단 이미지 캔버스
-        self.bottom_canvas = tk.Canvas(main_frame, bg="lightgray", highlightthickness=1, highlightbackground="gray")
+        # 하단 이미지 캔버스 - 흰색 테두리로 변경
+        self.bottom_canvas = tk.Canvas(main_frame, bg="lightgray", highlightthickness=1, highlightbackground="white")
         self.bottom_canvas.pack(fill=tk.BOTH, expand=True)
         
         # 버튼 프레임
@@ -235,8 +232,6 @@ class ColorPickerPopup(tk.Toplevel):
         """그리드 표시 토글"""
         self.show_grid = self.grid_var.get()
         self.update_top_image()
-
-    # Esc 키로 모드 해제 기능 삭제
     
     def on_canvas_click(self, event):
         # print("on_canvas_click")
@@ -281,8 +276,9 @@ class ColorPickerPopup(tk.Toplevel):
     
     def add_color(self, color_hex):
         """색상 팔레트에 색상 추가"""
+        # 동일한 색상이 이미 있으면 추가하지 않음
         if color_hex in self.selected_colors:
-            return  # 이미 있는 색상이면 추가하지 않음
+            return
         
         # 색상을 목록에 추가
         self.selected_colors.append(color_hex)
@@ -300,12 +296,13 @@ class ColorPickerPopup(tk.Toplevel):
         # 버튼에 색상 정보 저장
         color_btn.color = color_hex
         
-        # 컬러 정보 표시
+        # RGB 값 추출
         r = int(color_hex[1:3], 16)
         g = int(color_hex[3:5], 16)
         b = int(color_hex[5:7], 16)
-        # color_info = ttk.Label(self.color_frame, text=f"RGB({r},{g},{b})")
-        # color_info.pack(side=tk.LEFT, padx=(0, 10))
+        
+        # 하단 캔버스 테두리 색상을 흰색으로 변경
+        self.bottom_canvas.config(highlightbackground="white")
     
     def remove_color(self, color_hex):
         """색상 팔레트에서 색상 제거"""
@@ -326,6 +323,10 @@ class ColorPickerPopup(tk.Toplevel):
             
             for widget in to_remove:
                 widget.destroy()
+            
+            # 선택된 색상이 없으면 테두리 색상을 원래대로 변경
+            if not self.selected_colors:
+                self.bottom_canvas.config(highlightbackground="gray")
             
             # 하단 이미지 업데이트
             self.update_bottom_image()
@@ -403,46 +404,9 @@ class ColorPickerPopup(tk.Toplevel):
     
     def update_bottom_image(self):
         """하단 이미지 캔버스 업데이트 (선택된 색상만 표시)"""
-        if not hasattr(self, 'original_image') or not self.selected_colors:
-            # 선택된 색상이 없으면 빈 이미지 표시
-            self.bottom_canvas.delete("all")
-            self.bottom_canvas.create_text(
-                self.bottom_canvas.winfo_width() // 2,
-                self.bottom_canvas.winfo_height() // 2,
-                text="영역을 선택하면\n미리보기가 표시됩니다",
-                fill="darkgray",
-                justify=tk.CENTER
-            )
+        if not hasattr(self, 'original_image'):
             return
-        
-        # 원본 이미지를 NumPy 배열로 변환
-        img_array = np.array(self.original_image)
-        
-        # 마스크 초기화 (모든 픽셀 검은색)
-        mask = np.zeros_like(img_array)
-        
-        # 선택된 각 색상에 대해 마스크 업데이트
-        for color_hex in self.selected_colors:
-            # 16진수 색상을 RGB로 변환
-            r = int(color_hex[1:3], 16)
-            g = int(color_hex[3:5], 16)
-            b = int(color_hex[5:7], 16)
             
-            # 색상 임계값 설정 (유사한 색상도 포함)
-            threshold = 10
-            color_mask = (
-                (np.abs(img_array[:,:,0] - r) <= threshold) &
-                (np.abs(img_array[:,:,1] - g) <= threshold) &
-                (np.abs(img_array[:,:,2] - b) <= threshold)
-            )
-            
-            # 마스크 업데이트 (해당 색상 부분만 원본 이미지 값 사용)
-            mask[color_mask] = img_array[color_mask]
-        
-        # NumPy 배열을 PIL Image로 변환
-        processed_img = Image.fromarray(mask)
-        self.processed_image = processed_img
-        
         # 캔버스 크기 가져오기
         canvas_width = self.bottom_canvas.winfo_width()
         canvas_height = self.bottom_canvas.winfo_height()
@@ -451,13 +415,48 @@ class ColorPickerPopup(tk.Toplevel):
             self.bottom_canvas.after(100, self.update_bottom_image)
             return
         
-        # 이미지 리사이징 (1:1 비율 유지하며 캔버스에 맞추기)
-        img_width, img_height = processed_img.size
+        # 선택된 색상이 없으면 원본 이미지 표시
+        if not self.selected_colors:
+            img_to_display = self.original_image
+            self.processed_image = self.original_image.copy()
+        else:
+            # 원본 이미지를 NumPy 배열로 변환
+            img_array = np.array(self.original_image)
+            
+            # 마스크 초기화 (모든 픽셀 검은색)
+            mask = np.zeros_like(img_array)
+            
+            # 선택된 각 색상에 대해 마스크 업데이트
+            for color_hex in self.selected_colors:
+                # 16진수 색상을 RGB로 변환
+                r = int(color_hex[1:3], 16)
+                g = int(color_hex[3:5], 16)
+                b = int(color_hex[5:7], 16)
+                
+                # 색상 임계값 설정 (유사한 색상도 포함)
+                threshold = 10
+                color_mask = (
+                    (np.abs(img_array[:,:,0] - r) <= threshold) &
+                    (np.abs(img_array[:,:,1] - g) <= threshold) &
+                    (np.abs(img_array[:,:,2] - b) <= threshold)
+                )
+                
+                # 마스크 업데이트 (해당 색상 부분만 원본 이미지 값 사용)
+                mask[color_mask] = img_array[color_mask]
+            
+            # NumPy 배열을 PIL Image로 변환
+            img_to_display = Image.fromarray(mask)
+            self.processed_image = img_to_display
+        
+        # 이미지 리사이징 (항상 원본 크기 x1 비율로 표시)
+        img_width, img_height = img_to_display.size
+        
+        # 캔버스에 맞게 이미지를 표시하기 위한 스케일 계산
         scale = min(canvas_width / img_width, canvas_height / img_height)
         new_width = int(img_width * scale)
         new_height = int(img_height * scale)
         
-        resized_img = processed_img.resize((new_width, new_height), Image.LANCZOS)
+        resized_img = img_to_display.resize((new_width, new_height), Image.LANCZOS)
         
         # 이미지를 캔버스에 표시
         self.bottom_photo = ImageTk.PhotoImage(resized_img)
@@ -496,8 +495,6 @@ class ColorPickerPopup(tk.Toplevel):
     # 새로운 핸들러 함수 추가
     def handle_canvas_press(self, event):
         """캔버스 클릭 이벤트 통합 처리"""
-        # print("handle_canvas_press")
-        
         # 색상 추출 모드일 때
         if self.is_picking:
             self.on_canvas_click(event)
