@@ -143,9 +143,17 @@ class AppUI:
         interval_frame.pack(side=tk.LEFT)
         
         # 간격 입력 필드 + 라벨
-        self.interval_var = tk.StringVar(value=Scanner.Loop_Interval)
+        self.interval_var = tk.DoubleVar(value=Scanner.Loop_Interval)
         ttk.Label(interval_frame, text="간격(초)").pack(side=tk.LEFT)
-        ttk.Entry(interval_frame, textvariable=self.interval_var, width=6).pack(side=tk.LEFT, padx=(3, 0))
+        tk.Spinbox(
+            interval_frame,
+            from_=0.0,
+            to=3.0,
+            increment=0.1,
+            format="%.1f",
+            textvariable=self.interval_var,
+            width=5
+        ).pack(side=tk.LEFT, padx=(3, 0))
 
         # 간격 적용 버튼
         ttk.Button(
@@ -293,7 +301,7 @@ class AppUI:
                 
     def apply_interval(self):
         try:
-            new_value = float(self.interval_var.get())
+            new_value = self.interval_var.get()
             Scanner.Loop_Interval = new_value
             self.status_var.set(f"Loop 간격이 {new_value:.2f}초로 적용되었습니다.")
         except ValueError:

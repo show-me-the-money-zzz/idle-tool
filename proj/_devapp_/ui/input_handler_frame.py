@@ -34,10 +34,13 @@ class InputHandlerFrame(ttk.LabelFrame):
         self.esc_btn = ttk.Button(key_frame, text="ESC 키 입력", command=self.press_esc_key)
         self.esc_btn.pack(side=tk.LEFT, padx=5)
         
+        From_Spinbox = 0
+        To_Spinbox = 99999
+        
         # 마우스 좌표 입력 필드 (상대적)
         ttk.Label(self, text="클릭 X (창 내부):").grid(row=1, column=0, sticky=tk.W, pady=2)
-        self.click_x_var = tk.StringVar(value=DEFAULT_CLICK_X)
-        click_x_entry = ttk.Entry(self, textvariable=self.click_x_var, width=10)
+        self.click_x_var = tk.IntVar(value=int(DEFAULT_CLICK_X))
+        click_x_entry = tk.Spinbox(self, from_=From_Spinbox, to=To_Spinbox, textvariable=self.click_x_var, width=8)
         click_x_entry.grid(row=1, column=1, sticky=tk.W, pady=2)
         
         # 마우스 클릭 버튼
@@ -45,8 +48,8 @@ class InputHandlerFrame(ttk.LabelFrame):
         self.click_btn.grid(row=1, column=2, padx=5, pady=2)
         
         ttk.Label(self, text="클릭 Y (창 내부):").grid(row=2, column=0, sticky=tk.W, pady=2)
-        self.click_y_var = tk.StringVar(value=DEFAULT_CLICK_Y)
-        click_y_entry = ttk.Entry(self, textvariable=self.click_y_var, width=10)
+        self.click_y_var = tk.IntVar(value=int(DEFAULT_CLICK_Y))
+        click_y_entry = tk.Spinbox(self, from_=From_Spinbox, to=To_Spinbox, textvariable=self.click_y_var, width=8)
         click_y_entry.grid(row=2, column=1, sticky=tk.W, pady=2)
         
         # 탭 순서 설정 - 클릭 X에서 클릭 Y로 이동하도록
@@ -107,8 +110,8 @@ class InputHandlerFrame(ttk.LabelFrame):
             
             # 클릭 좌표 계산
             if self.click_x_var.get() and self.click_y_var.get():
-                rel_x = int(self.click_x_var.get())
-                rel_y = int(self.click_y_var.get())
+                rel_x = self.click_x_var.get()
+                rel_y = self.click_y_var.get()
                 
                 # 상태 표시 업데이트
                 self.status_var.set(f"클릭 중... (X={rel_x}, Y={rel_y})")

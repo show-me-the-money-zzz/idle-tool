@@ -101,22 +101,25 @@ class CaptureAreaPopup(tk.Toplevel):
         controls_frame = ttk.Frame(coords_frame)
         controls_frame.pack(fill=tk.X, pady=(0, 5))
         
-        # 균등한 간격으로 4개 컨트롤 배치
+        # 숫자만 입력 가능한 Spinbox 사용
+        From_Spinbox = 0
+        To_Spinbox = 99999
+
         ttk.Label(controls_frame, text="X 좌표:").grid(row=0, column=0, sticky=tk.W, padx=(0, 2))
-        self.x_var = tk.StringVar(value=DEFAULT_CAPTURE_X)
-        ttk.Entry(controls_frame, textvariable=self.x_var, width=8).grid(row=0, column=1, sticky=tk.W, padx=(0, 5))
-        
+        self.x_var = tk.IntVar(value=int(DEFAULT_CAPTURE_X))
+        tk.Spinbox(controls_frame, from_=From_Spinbox, to=To_Spinbox, textvariable=self.x_var, width=5).grid(row=0, column=1, sticky=tk.W, padx=(0, 5))
+
         ttk.Label(controls_frame, text="Y 좌표:").grid(row=0, column=2, sticky=tk.W, padx=(5, 2))
-        self.y_var = tk.StringVar(value=DEFAULT_CAPTURE_Y)
-        ttk.Entry(controls_frame, textvariable=self.y_var, width=8).grid(row=0, column=3, sticky=tk.W, padx=(0, 5))
-        
+        self.y_var = tk.IntVar(value=int(DEFAULT_CAPTURE_Y))
+        tk.Spinbox(controls_frame, from_=From_Spinbox, to=To_Spinbox, textvariable=self.y_var, width=5).grid(row=0, column=3, sticky=tk.W, padx=(0, 5))
+
         ttk.Label(controls_frame, text="너비:").grid(row=0, column=4, sticky=tk.W, padx=(5, 2))
-        self.width_var = tk.StringVar(value=DEFAULT_CAPTURE_WIDTH)
-        ttk.Entry(controls_frame, textvariable=self.width_var, width=8).grid(row=0, column=5, sticky=tk.W, padx=(0, 5))
-        
+        self.width_var = tk.IntVar(value=int(DEFAULT_CAPTURE_WIDTH))
+        tk.Spinbox(controls_frame, from_=From_Spinbox, to=To_Spinbox, textvariable=self.width_var, width=5).grid(row=0, column=5, sticky=tk.W, padx=(0, 5))
+
         ttk.Label(controls_frame, text="높이:").grid(row=0, column=6, sticky=tk.W, padx=(5, 2))
-        self.height_var = tk.StringVar(value=DEFAULT_CAPTURE_HEIGHT)
-        ttk.Entry(controls_frame, textvariable=self.height_var, width=8).grid(row=0, column=7, sticky=tk.W, padx=(0, 5))
+        self.height_var = tk.IntVar(value=int(DEFAULT_CAPTURE_HEIGHT))
+        tk.Spinbox(controls_frame, from_=From_Spinbox, to=To_Spinbox, textvariable=self.height_var, width=5).grid(row=0, column=7, sticky=tk.W, padx=(0, 5))
         
         # 간격 및 창 내부 선택 옵션
         options_frame = ttk.Frame(coords_frame)
