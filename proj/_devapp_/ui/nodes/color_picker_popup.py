@@ -304,8 +304,8 @@ class ColorPickerPopup(tk.Toplevel):
         r = int(color_hex[1:3], 16)
         g = int(color_hex[3:5], 16)
         b = int(color_hex[5:7], 16)
-        color_info = ttk.Label(self.color_frame, text=f"RGB({r},{g},{b})")
-        color_info.pack(side=tk.LEFT, padx=(0, 10))
+        # color_info = ttk.Label(self.color_frame, text=f"RGB({r},{g},{b})")
+        # color_info.pack(side=tk.LEFT, padx=(0, 10))
     
     def remove_color(self, color_hex):
         """색상 팔레트에서 색상 제거"""
