@@ -1,6 +1,7 @@
 @echo off
 
-set EXE_NAME=RUNNER-[도~~오~~ㄴ]
+@REM Eric + Scanner
+set EXE_NAME=Ricanner-[ZZXX]
 @REM set PUBLISH_NAME=%EXE_NAME%
 set PUBLISH_NAME=%EXE_NAME%_d
 
