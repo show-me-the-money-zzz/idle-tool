@@ -220,7 +220,10 @@ class ColorPickerPopup(tk.Toplevel):
                 bg=ColorPickerPopup.PIPETTE_ON_COLOR_BG,
                 fg=ColorPickerPopup.PIPETTE_ON_COLOR_TEXT
             )
-            self.top_canvas.config(cursor="crosshair")  # 십자 커서로 변경
+            CURSOR = "crosshair"    # 십자
+            # CURSOR = "target"    # 과녁형
+            # CURSOR = "spraycan"    # 분무기
+            self.top_canvas.config(cursor=CURSOR)
         else:
             self.eyedropper_btn.config(
                 text=ColorPickerPopup.PIPETTE_OFF_TEXT,
