@@ -522,8 +522,8 @@ class ColorPickerPopup(tk.Toplevel):
     
     def filter_spinbox_key(self, event):
         """Spinbox에 특정 키 입력 필터링"""
-        # Z 키 입력 막기
         if event.char.lower() == COLOR_EXTRACT_MODE_SWAP_KEY.lower():
+            self.toggle_picking_mode()
             return "break"
         return None
         
