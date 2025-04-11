@@ -7,45 +7,57 @@ import os
 class ColorPickerPopup(tk.Toplevel):
     """색상 선택 팝업 창"""
     
-    def __init__(self, parent, image_path, callback=None):
-        super().__init__(parent)
-        self.title("색상 추출")
-        self.geometry("800x700")
-        self.transient(parent)
-        self.grab_set()  # 모달 창으로 설정
-        self.protocol("WM_DELETE_WINDOW", self.cancel)
+    def __init__(self, parent, image, callback=None):
+      super().__init__(parent)
+      self.title("색상 추출")
+      self.geometry("800x700")
+      self.transient(parent)
+      self.grab_set()  # 모달 창으로 설정
+      self.protocol("WM_DELETE_WINDOW", self.cancel)
+
+      self.parent = parent
+      self.callback = callback
         
-        self.parent = parent
-        self.callback = callback
-        
-        # 이미지 로드
-        if os.path.exists(image_path):
-            self.original_image = Image.open(image_path)
-        else:
-            messagebox.showerror("오류", "이미지 파일을 찾을 수 없습니다.")
-            self.destroy()
-            return
-            
-        self.processed_image = self.original_image.copy()
-        
-        # 상태 변수
-        self.is_picking = False  # 색상 추출 모드 상태
-        self.selected_colors = []  # 선택된 색상 목록
-        self.zoom_factor = 1.0    # 확대/축소 비율
-        self.image_position = [0, 0]  # 이미지 드래그 위치
-        self.drag_start = None    # 드래그 시작 위치
-        self.show_grid = True     # 그리드 표시 여부
-        
-        # UI 컴포넌트
-        self._setup_ui()
-        
-        # 키 이벤트 바인딩
-        self.bind("<Escape>", self.cancel_picking)
-        self.bind("<Configure>", self.on_resize)
-        
-        # 처음 이미지 로드
-        self.update_top_image()
-        self.update_bottom_image()
+      self.parent = parent
+      self.callback = callback
+
+      # 이미지 로드 (PIL Image 직접 사용)
+      if isinstance(image, str):
+         # 파일 경로인 경우
+         if os.path.exists(image):
+               self.original_image = Image.open(image)
+         else:
+               messagebox.showerror("오류", "이미지 파일을 찾을 수 없습니다.")
+               self.destroy()
+               return
+      elif isinstance(image, Image.Image):
+         # PIL Image 객체인 경우
+         self.original_image = image.copy()
+      else:
+         messagebox.showerror("오류", "지원되지 않는 이미지 형식입니다.")
+         self.destroy()
+         return
+
+      self.processed_image = self.original_image.copy()
+
+      # 상태 변수
+      self.is_picking = False  # 색상 추출 모드 상태
+      self.selected_colors = []  # 선택된 색상 목록
+      self.zoom_factor = 1.0    # 확대/축소 비율
+      self.image_position = [0, 0]  # 이미지 드래그 위치
+      self.drag_start = None    # 드래그 시작 위치
+      self.show_grid = True     # 그리드 표시 여부
+
+      # UI 컴포넌트
+      self._setup_ui()
+
+      # 키 이벤트 바인딩
+      self.bind("<Escape>", self.cancel_picking)
+      self.bind("<Configure>", self.on_resize)
+
+      # 처음 이미지 로드
+      self.update_top_image()
+      self.update_bottom_image()
     
     def _setup_ui(self):
         """UI 구성요소 초기화"""

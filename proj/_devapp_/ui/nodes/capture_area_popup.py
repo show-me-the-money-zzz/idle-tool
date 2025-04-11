@@ -297,14 +297,20 @@ class CaptureAreaPopup(tk.Toplevel):
             return
         
         # 색상 선택 팝업 열기
-        from ui.nodes.color_picker_popup import ColorPickerPopup  # 별도 파일로 분리 가정
+        from ui.nodes.color_picker_popup import ColorPickerPopup
         
-        # 이미지 임시 저장
-        temp_img_path = "./temp_preview.png"
-        self.preview_image.save(temp_img_path)
+        # 색상 선택 결과 처리 콜백
+        def handle_color_selection(selected_colors, processed_image):
+            if selected_colors:
+                # 선택된 색상 리스트를 데이터에 저장
+                color_hex = selected_colors[0] if selected_colors else "#000000"
+                self.selected_color = color_hex
+                
+                # 상태 업데이트
+                self.status_var.set(f"색상이 선택되었습니다: {color_hex}")
         
-        # 색상 선택 팝업 생성 및 표시
-        picker = ColorPickerPopup(self, temp_img_path, callback=self.Callback_PickColor)
+        # 이미지 객체를 직접 전달
+        picker = ColorPickerPopup(self, self.preview_image, callback=handle_color_selection)
 
     def Callback_PickColor(selected_colors, processed_image):
         # 여기서 선택된 색상과 처리된 이미지를 활용하는 코드 작성
@@ -331,15 +337,6 @@ class CaptureAreaPopup(tk.Toplevel):
         
     def add_color(self, color: str):
         """지정한 색상으로 컬러 버튼을 수평 리스트에 추가"""
-        # btn = tk.Button(
-        #     self.color_frame,
-        #     bg=color,
-        #     width=2,
-        #     height=1,
-        #     relief=tk.RAISED,
-        #     command=lambda: self.select_color(color) if hasattr(self, "select_color") else None
-        # )
-        # btn.pack(side=tk.LEFT, padx=2, pady=2)
         btn = tk.Button(
             self.color_frame,
             bg=color,
@@ -518,7 +515,7 @@ class CaptureAreaPopup(tk.Toplevel):
             
             # 기본 파일명
             # default_filename = f"{key}_{timestamp}.png"
-            default_filename = key;
+            default_filename = key
             
             # 기본 저장 경로 가져오기
             from utils import finder
