@@ -176,8 +176,7 @@ class ColorPickerPopup(tk.Toplevel):
         self.top_canvas.pack(fill=tk.BOTH, expand=True)
         
         # 캔버스 이벤트 바인딩
-        self.top_canvas.bind("<Button-1>", self.on_canvas_click)
-        self.top_canvas.bind("<ButtonPress-1>", self.start_drag)
+        self.top_canvas.bind("<ButtonPress-1>", self.handle_canvas_press)
         self.top_canvas.bind("<B1-Motion>", self.drag_image)
         self.top_canvas.bind("<ButtonRelease-1>", self.stop_drag)
         
@@ -240,6 +239,8 @@ class ColorPickerPopup(tk.Toplevel):
     # Esc 키로 모드 해제 기능 삭제
     
     def on_canvas_click(self, event):
+        # print("on_canvas_click")
+
         """캔버스 클릭 이벤트 처리"""
         if self.is_picking:
             # 클릭한 위치의 픽셀 색상 가져오기
@@ -262,14 +263,14 @@ class ColorPickerPopup(tk.Toplevel):
                 # 하단 이미지 업데이트
                 self.update_bottom_image()
                 
-                # 자동으로 색상 추출 모드 해제
-                self.is_picking = False
-                self.eyedropper_btn.config(
-                    text=ColorPickerPopup.PIPETTE_OFF_TEXT,
-                    bg=ColorPickerPopup.PIPETTE_OFF_COLOR_BG,
-                    fg=ColorPickerPopup.PIPETTE_OFF_COLOR_TEXT
-                )
-                self.top_canvas.config(cursor="")
+                # # 자동으로 색상 추출 모드 해제
+                # self.is_picking = False
+                # self.eyedropper_btn.config(
+                #     text=ColorPickerPopup.PIPETTE_OFF_TEXT,
+                #     bg=ColorPickerPopup.PIPETTE_OFF_COLOR_BG,
+                #     fg=ColorPickerPopup.PIPETTE_OFF_COLOR_TEXT
+                # )
+                # self.top_canvas.config(cursor="")
     
     def get_image_coordinates(self, canvas_x, canvas_y):
         """캔버스 좌표를 이미지 좌표로 변환"""
@@ -491,6 +492,18 @@ class ColorPickerPopup(tk.Toplevel):
         """이미지 드래그 시작"""
         if not self.is_picking:  # 색상 추출 모드가 아닐 때만 드래그 가능
             self.drag_start = (event.x, event.y)
+
+    # 새로운 핸들러 함수 추가
+    def handle_canvas_press(self, event):
+        """캔버스 클릭 이벤트 통합 처리"""
+        # print("handle_canvas_press")
+        
+        # 색상 추출 모드일 때
+        if self.is_picking:
+            self.on_canvas_click(event)
+        # 일반 모드일 때
+        else:
+            self.start_drag(event)
     
     def drag_image(self, event):
         """이미지 드래그 중"""
