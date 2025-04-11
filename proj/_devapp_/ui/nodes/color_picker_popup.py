@@ -7,6 +7,13 @@ import os
 class ColorPickerPopup(tk.Toplevel):
     """색상 선택 팝업 창"""
     
+    PIPETTE_OFF_TEXT = "💉"
+    PIPETTE_OFF_COLOR_BG = "#f0f0f0"
+    PIPETTE_OFF_COLOR_TEXT = "black"
+    PIPETTE_ON_TEXT = "⌛"
+    PIPETTE_ON_COLOR_BG = "#ff6347"
+    PIPETTE_ON_COLOR_TEXT = "white"
+
     def __init__(self, parent, image, callback=None):
       super().__init__(parent)
       self.title("색상 추출")
@@ -68,19 +75,16 @@ class ColorPickerPopup(tk.Toplevel):
         control_frame = ttk.Frame(main_frame)
         control_frame.pack(fill=tk.X, pady=(0, 10))
         
-        # 스포이드 버튼 (왼쪽)
-        eyedropper_frame = ttk.Frame(control_frame, width=30, height=30)
-        eyedropper_frame.pack(side=tk.LEFT, padx=(0, 5))
-        eyedropper_frame.pack_propagate(False)  # 프레임 크기 고정
-        
-        # 스포이드 버튼 - 아이콘으로 표시
-        self.eyedropper_btn = ttk.Button(
-            eyedropper_frame, 
-            text="🔍", 
-            width=3,
+        # 스포이드 버튼 (왼쪽) - 기본 tk.Button 사용하여 색상 지정
+        self.eyedropper_btn = tk.Button(
+            control_frame, 
+            text=ColorPickerPopup.PIPETTE_OFF_TEXT,  # 기본 상태: 주사기 아이콘
+            width=2,    # +/- 버튼과 동일한 너비
+            bg=ColorPickerPopup.PIPETTE_OFF_COLOR_BG,  # 기본 배경색
+            fg=ColorPickerPopup.PIPETTE_OFF_COLOR_TEXT,    # 기본 글자색
             command=self.toggle_picking_mode
         )
-        self.eyedropper_btn.pack(fill=tk.BOTH, expand=True)
+        self.eyedropper_btn.pack(side=tk.LEFT, padx=(0, 5))
         
         # 색상 팔레트 프레임 (중앙)
         palette_frame = ttk.Frame(control_frame)
@@ -107,9 +111,7 @@ class ColorPickerPopup(tk.Toplevel):
         self.palette_canvas.bind("<Configure>", lambda e: self.palette_canvas.itemconfig(
             self.color_window, width=self.palette_canvas.winfo_width()))
         
-        # 상태 레이블 (Esc 키 안내)
-        self.status_label = ttk.Label(control_frame, text="Esc 키 OFF")
-        self.status_label.pack(side=tk.RIGHT)
+        # "Esc 키 OFF" 레이블 제거됨
         
         # 상단 이미지 프레임
         top_image_frame = ttk.Frame(main_frame)
@@ -170,25 +172,34 @@ class ColorPickerPopup(tk.Toplevel):
         """색상 추출 모드 토글"""
         self.is_picking = not self.is_picking
         if self.is_picking:
-            self.status_label.config(text="Esc 키 ON")
-            self.eyedropper_btn.config(style="Accent.TButton")  # 강조 스타일 적용 (ttk 테마에 따라 다름)
+            self.eyedropper_btn.config(
+                text=ColorPickerPopup.PIPETTE_ON_TEXT,
+                bg=ColorPickerPopup.PIPETTE_ON_COLOR_BG,
+                fg=ColorPickerPopup.PIPETTE_ON_COLOR_TEXT
+            )
             self.top_canvas.config(cursor="crosshair")  # 십자 커서로 변경
         else:
-            self.status_label.config(text="Esc 키 OFF")
-            self.eyedropper_btn.config(style="")  # 기본 스타일로 복원
+            self.eyedropper_btn.config(
+                text=ColorPickerPopup.PIPETTE_OFF_TEXT,
+                bg=ColorPickerPopup.PIPETTE_OFF_COLOR_BG,
+                fg=ColorPickerPopup.PIPETTE_OFF_COLOR_TEXT
+            )
             self.top_canvas.config(cursor="")  # 기본 커서로 복원
     
     def toggle_grid(self):
         """그리드 표시 토글"""
         self.show_grid = self.grid_var.get()
         self.update_top_image()
-    
+
     def cancel_picking(self, event=None):
         """Esc 키를 눌러 색상 추출 모드 취소"""
         if self.is_picking:
             self.is_picking = False
-            self.status_label.config(text="Esc 키 OFF")
-            self.eyedropper_btn.config(style="")
+            self.eyedropper_btn.config(
+                text=ColorPickerPopup.PIPETTE_OFF_TEXT,
+                bg=ColorPickerPopup.PIPETTE_OFF_COLOR_BG,
+                fg=ColorPickerPopup.PIPETTE_OFF_COLOR_TEXT
+            )
             self.top_canvas.config(cursor="")
     
     def on_canvas_click(self, event):
