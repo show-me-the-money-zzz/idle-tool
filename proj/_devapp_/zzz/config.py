@@ -66,5 +66,7 @@ ERROR_CONNECTION = "연결 중 오류가 발생했습니다"
 ERROR_FINDING = "검색 중 오류가 발생했습니다"
 ERROR_OCR_CONFIG = "Tesseract OCR 경로 설정이 필요합니다"
 
+COLOR_EXTRACT_MODE_SWAP_KEY = "Z"   # 색상 추출 모드 스왑
+
 # 설정 관련 상수
 SETTINGS_FILE = "lordnine_settings.ini"

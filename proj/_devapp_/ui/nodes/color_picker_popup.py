@@ -63,9 +63,10 @@ class ColorPickerPopup(tk.Toplevel):
         self._setup_ui()
 
         # 키 이벤트 바인딩
-        SHORTCUT_KEYKEY = COLOR_EXTRACT_MODE_SWAP_KEY
-        self.bind("<Escape>", self.cancel_picking)
         self.bind("<Configure>", self.on_resize)
+        # Z 키를 바인딩하여 색상 추출 모드 토글 (전체 창에 바인딩)
+        self.bind_all(f"<{COLOR_EXTRACT_MODE_SWAP_KEY}>", self.toggle_picking_mode_key)
+        self.bind_all(f"<{COLOR_EXTRACT_MODE_SWAP_KEY.lower()}>", self.toggle_picking_mode_key)
 
         # 처음 이미지 로드
         self.update_top_image()
@@ -139,7 +140,7 @@ class ColorPickerPopup(tk.Toplevel):
             zoom_control, 
             textvariable=self.zoom_var, 
             width=4, 
-            from_=0.5, 
+            from_=1.0,
             to=10.0, 
             increment=0.5,
             command=self.update_zoom_from_spinbox
@@ -180,9 +181,16 @@ class ColorPickerPopup(tk.Toplevel):
         self.top_canvas.bind("<B1-Motion>", self.drag_image)
         self.top_canvas.bind("<ButtonRelease-1>", self.stop_drag)
         
-        # 안내 메시지
-        self.info_label = ttk.Label(main_frame, text="<Z> 키로 모드를 변경할 수 있습니다. 그리드는 1.5 이상부터 보입니다. 이미지 드래그는 모드 OFF 에만 가능합니다. 드래그 한 이미지의 위치를 초기화 하려면 📌")
-        self.info_label.pack(fill=tk.X, pady=(0, 10))
+        # 안내 메시지 - 여러 줄로 나누어 표시하여 잘리지 않게 함
+        info_frame = ttk.Frame(main_frame)
+        info_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        info_text = f"<{COLOR_EXTRACT_MODE_SWAP_KEY}> 키로 모드를 변경할 수 있습니다. 그리드는 1.5 이상부터 보입니다.\n이미지 드래그는 모드 OFF 에만 가능합니다. 드래그 한 이미지의 위치를 초기화 하려면 📌 버튼을 누르세요."
+        self.info_label = ttk.Label(info_frame, text=info_text, wraplength=850)
+        self.info_label.pack(fill=tk.X)
+        
+        # Spinbox에 Z 키가 입력되지 않도록 추가 바인딩
+        self.zoom_spinbox.bind("<Key>", self.filter_spinbox_key)
         
         # 하단 이미지 캔버스
         self.bottom_canvas = tk.Canvas(main_frame, bg="lightgray", highlightthickness=1, highlightbackground="gray")
@@ -194,6 +202,14 @@ class ColorPickerPopup(tk.Toplevel):
         
         ttk.Button(button_frame, text="취소", command=self.cancel).pack(side=tk.RIGHT, padx=(5, 0))
         ttk.Button(button_frame, text="적용", command=self.apply).pack(side=tk.RIGHT)
+    
+    def toggle_picking_mode_key(self, event=None):
+        """Z 키로 색상 추출 모드 토글"""
+        # 이벤트가 Spinbox에서 발생했으면 무시 (Spinbox에 Z가 입력되지 않도록)
+        if event and event.widget == self.zoom_spinbox:
+            return "break"
+        self.toggle_picking_mode()
+        return "break"  # 이벤트 전파 중지
     
     def toggle_picking_mode(self):
         """색상 추출 모드 토글"""
@@ -218,16 +234,7 @@ class ColorPickerPopup(tk.Toplevel):
         self.show_grid = self.grid_var.get()
         self.update_top_image()
 
-    def cancel_picking(self, event=None):
-        """Esc 키를 눌러 색상 추출 모드 취소"""
-        if self.is_picking:
-            self.is_picking = False
-            self.eyedropper_btn.config(
-                text=ColorPickerPopup.PIPETTE_OFF_TEXT,
-                bg=ColorPickerPopup.PIPETTE_OFF_COLOR_BG,
-                fg=ColorPickerPopup.PIPETTE_OFF_COLOR_TEXT
-            )
-            self.top_canvas.config(cursor="")
+    # Esc 키로 모드 해제 기능 삭제
     
     def on_canvas_click(self, event):
         """캔버스 클릭 이벤트 처리"""
@@ -253,7 +260,13 @@ class ColorPickerPopup(tk.Toplevel):
                 self.update_bottom_image()
                 
                 # 자동으로 색상 추출 모드 해제
-                self.cancel_picking()
+                self.is_picking = False
+                self.eyedropper_btn.config(
+                    text=ColorPickerPopup.PIPETTE_OFF_TEXT,
+                    bg=ColorPickerPopup.PIPETTE_OFF_COLOR_BG,
+                    fg=ColorPickerPopup.PIPETTE_OFF_COLOR_TEXT
+                )
+                self.top_canvas.config(cursor="")
     
     def get_image_coordinates(self, canvas_x, canvas_y):
         """캔버스 좌표를 이미지 좌표로 변환"""
@@ -471,18 +484,6 @@ class ColorPickerPopup(tk.Toplevel):
         except ValueError:
             self.zoom_var.set(f"{self.zoom_factor:.1f}")  # 숫자가 아닌 경우 원래 값으로 복원
     
-    def update_zoom_from_entry(self, event=None):
-        """입력 필드에서 확대/축소 값 업데이트"""
-        try:
-            value = float(self.zoom_var.get())
-            if value >= 0.5:  # 최소 0.5 이상
-                self.zoom_factor = value
-                self.update_top_image()
-            else:
-                self.zoom_var.set(f"{self.zoom_factor:.1f}")  # 원래 값으로 복원
-        except ValueError:
-            self.zoom_var.set(f"{self.zoom_factor:.1f}")  # 숫자가 아닌 경우 원래 값으로 복원
-    
     def start_drag(self, event):
         """이미지 드래그 시작"""
         if not self.is_picking:  # 색상 추출 모드가 아닐 때만 드래그 가능
@@ -519,6 +520,13 @@ class ColorPickerPopup(tk.Toplevel):
         """취소 버튼 클릭 처리"""
         self.destroy()
     
+    def filter_spinbox_key(self, event):
+        """Spinbox에 특정 키 입력 필터링"""
+        # Z 키 입력 막기
+        if event.char.lower() == COLOR_EXTRACT_MODE_SWAP_KEY.lower():
+            return "break"
+        return None
+        
     def apply(self):
         """적용 버튼 클릭 처리"""
         # 콜백 함수 호출
