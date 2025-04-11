@@ -8,8 +8,6 @@ from zzz.config import *
 from stores import areas
 from utils.system import Calc_MS
 
-from ui.nodes.color_picker_popup import ColorPickerPopup
-
 class CaptureAreaPopup(tk.Toplevel):
     """캡처 영역 설정 팝업 창"""
     
@@ -292,11 +290,21 @@ class CaptureAreaPopup(tk.Toplevel):
         self.after(interval, self._read_loop_main)
         
     def extract_color(self):
-        """미리보기 이미지에서 색상 추출하는 기본 동작 (임시 구현)"""
-        # messagebox.showinfo("색 추출", "색 추출 기능이 아직 구현되지 않았습니다.", parent=self)
-
-        # 색상 선택기 팝업 표시
-        picker = ColorPickerPopup(self, "./data/potion-test.png", callback=self.Callback_PickColor)
+        """색상 선택 팝업 표시"""
+        # 캡처 영역 미리보기가 있을 때만 색상 추출 가능
+        if not hasattr(self, 'preview_image') or self.preview_image is None:
+            messagebox.showinfo("알림", "먼저 영역을 선택하고 미리보기를 업데이트해주세요.", parent=self)
+            return
+        
+        # 색상 선택 팝업 열기
+        from ui.nodes.color_picker_popup import ColorPickerPopup  # 별도 파일로 분리 가정
+        
+        # 이미지 임시 저장
+        temp_img_path = "./temp_preview.png"
+        self.preview_image.save(temp_img_path)
+        
+        # 색상 선택 팝업 생성 및 표시
+        picker = ColorPickerPopup(self, temp_img_path, callback=self.Callback_PickColor)
 
     def Callback_PickColor(selected_colors, processed_image):
         # 여기서 선택된 색상과 처리된 이미지를 활용하는 코드 작성
@@ -311,6 +319,15 @@ class CaptureAreaPopup(tk.Toplevel):
         # # 처리된 이미지 저장 예시
         # if processed_image:
         #     processed_image.save("filtered_image.png")
+    # # 색상 선택 결과 처리 콜백
+    # def handle_color_selection(selected_colors, processed_image):
+    #     if selected_colors:
+    #         # 선택된 색상 리스트를 데이터에 저장
+    #         color_hex = selected_colors[0] if selected_colors else "#000000"
+    #         self.selected_color = color_hex
+            
+    #         # 상태 업데이트
+    #         self.status_var.set(f"색상이 선택되었습니다: {color_hex}")
         
     def add_color(self, color: str):
         """지정한 색상으로 컬러 버튼을 수평 리스트에 추가"""

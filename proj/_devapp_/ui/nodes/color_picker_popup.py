@@ -1,9 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from PIL import Image, ImageTk, ImageGrab
-import cv2
+from PIL import Image, ImageTk, ImageGrab, ImageDraw
 import numpy as np
-import sys
+import os
 
 class ColorPickerPopup(tk.Toplevel):
     """색상 선택 팝업 창"""
@@ -14,10 +13,19 @@ class ColorPickerPopup(tk.Toplevel):
         self.geometry("800x700")
         self.transient(parent)
         self.grab_set()  # 모달 창으로 설정
+        self.protocol("WM_DELETE_WINDOW", self.cancel)
         
         self.parent = parent
         self.callback = callback
-        self.original_image = Image.open(image_path)
+        
+        # 이미지 로드
+        if os.path.exists(image_path):
+            self.original_image = Image.open(image_path)
+        else:
+            messagebox.showerror("오류", "이미지 파일을 찾을 수 없습니다.")
+            self.destroy()
+            return
+            
         self.processed_image = self.original_image.copy()
         
         # 상태 변수
@@ -26,6 +34,7 @@ class ColorPickerPopup(tk.Toplevel):
         self.zoom_factor = 1.0    # 확대/축소 비율
         self.image_position = [0, 0]  # 이미지 드래그 위치
         self.drag_start = None    # 드래그 시작 위치
+        self.show_grid = True     # 그리드 표시 여부
         
         # UI 컴포넌트
         self._setup_ui()
@@ -48,39 +57,43 @@ class ColorPickerPopup(tk.Toplevel):
         control_frame.pack(fill=tk.X, pady=(0, 10))
         
         # 스포이드 버튼 (왼쪽)
-        # 실제 앱에서는 이미지로 대체할 것
+        eyedropper_frame = ttk.Frame(control_frame, width=30, height=30)
+        eyedropper_frame.pack(side=tk.LEFT, padx=(0, 5))
+        eyedropper_frame.pack_propagate(False)  # 프레임 크기 고정
+        
+        # 스포이드 버튼 - 아이콘으로 표시
         self.eyedropper_btn = ttk.Button(
-            control_frame, 
+            eyedropper_frame, 
             text="🔍", 
             width=3,
             command=self.toggle_picking_mode
         )
-        self.eyedropper_btn.pack(side=tk.LEFT, padx=(0, 5))
+        self.eyedropper_btn.pack(fill=tk.BOTH, expand=True)
         
         # 색상 팔레트 프레임 (중앙)
         palette_frame = ttk.Frame(control_frame)
         palette_frame.pack(side=tk.LEFT, fill=tk.X, expand=True)
         
         # 색상 스크롤 영역
-        palette_canvas = tk.Canvas(palette_frame, height=30, highlightthickness=0)
-        palette_canvas.pack(side=tk.TOP, fill=tk.X)
+        self.palette_canvas = tk.Canvas(palette_frame, height=30, highlightthickness=0)
+        self.palette_canvas.pack(side=tk.TOP, fill=tk.X)
         
-        scrollbar = ttk.Scrollbar(palette_frame, orient=tk.HORIZONTAL, command=palette_canvas.xview)
+        scrollbar = ttk.Scrollbar(palette_frame, orient=tk.HORIZONTAL, command=self.palette_canvas.xview)
         scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
         
-        palette_canvas.configure(xscrollcommand=scrollbar.set)
+        self.palette_canvas.configure(xscrollcommand=scrollbar.set)
         
-        self.color_frame = ttk.Frame(palette_canvas)
-        self.color_window = palette_canvas.create_window((0, 0), window=self.color_frame, anchor=tk.NW)
+        self.color_frame = ttk.Frame(self.palette_canvas)
+        self.color_window = self.palette_canvas.create_window((0, 0), window=self.color_frame, anchor=tk.NW)
         
         # 스크롤 영역 자동 조정
         def update_scroll_region(event=None):
-            palette_canvas.configure(scrollregion=palette_canvas.bbox("all"))
-            palette_canvas.itemconfig(self.color_window, width=palette_canvas.winfo_width())
+            self.palette_canvas.configure(scrollregion=self.palette_canvas.bbox("all"))
+            self.palette_canvas.itemconfig(self.color_window, width=self.palette_canvas.winfo_width())
         
         self.color_frame.bind("<Configure>", update_scroll_region)
-        palette_canvas.bind("<Configure>", lambda e: palette_canvas.itemconfig(
-            self.color_window, width=palette_canvas.winfo_width()))
+        self.palette_canvas.bind("<Configure>", lambda e: self.palette_canvas.itemconfig(
+            self.color_window, width=self.palette_canvas.winfo_width()))
         
         # 상태 레이블 (Esc 키 안내)
         self.status_label = ttk.Label(control_frame, text="Esc 키 OFF")
@@ -106,9 +119,21 @@ class ColorPickerPopup(tk.Toplevel):
         self.zoom_out_btn = ttk.Button(zoom_control, text="-", width=2, command=self.zoom_out)
         self.zoom_out_btn.pack(side=tk.TOP, pady=(2, 0))
         
+        # 그리드 표시 체크박스
+        self.grid_var = tk.BooleanVar(value=True)
+        grid_check = ttk.Checkbutton(
+            zoom_control, 
+            text="Grid", 
+            variable=self.grid_var,
+            command=self.toggle_grid
+        )
+        grid_check.pack(side=tk.TOP, pady=(10, 0))
+        
         # 상단 이미지 캔버스
         self.top_canvas = tk.Canvas(top_image_frame, bg="lightgray", highlightthickness=1, highlightbackground="gray")
         self.top_canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # 캔버스 이벤트 바인딩
         self.top_canvas.bind("<Button-1>", self.on_canvas_click)
         self.top_canvas.bind("<ButtonPress-1>", self.start_drag)
         self.top_canvas.bind("<B1-Motion>", self.drag_image)
@@ -141,6 +166,11 @@ class ColorPickerPopup(tk.Toplevel):
             self.eyedropper_btn.config(style="")  # 기본 스타일로 복원
             self.top_canvas.config(cursor="")  # 기본 커서로 복원
     
+    def toggle_grid(self):
+        """그리드 표시 토글"""
+        self.show_grid = self.grid_var.get()
+        self.update_top_image()
+    
     def cancel_picking(self, event=None):
         """Esc 키를 눌러 색상 추출 모드 취소"""
         if self.is_picking:
@@ -171,6 +201,9 @@ class ColorPickerPopup(tk.Toplevel):
                 
                 # 하단 이미지 업데이트
                 self.update_bottom_image()
+                
+                # 자동으로 색상 추출 모드 해제
+                self.cancel_picking()
     
     def get_image_coordinates(self, canvas_x, canvas_y):
         """캔버스 좌표를 이미지 좌표로 변환"""
@@ -199,23 +232,39 @@ class ColorPickerPopup(tk.Toplevel):
         
         # 버튼에 색상 정보 저장
         color_btn.color = color_hex
+        
+        # 컬러 정보 표시
+        r = int(color_hex[1:3], 16)
+        g = int(color_hex[3:5], 16)
+        b = int(color_hex[5:7], 16)
+        color_info = ttk.Label(self.color_frame, text=f"RGB({r},{g},{b})")
+        color_info.pack(side=tk.LEFT, padx=(0, 10))
     
     def remove_color(self, color_hex):
         """색상 팔레트에서 색상 제거"""
         if color_hex in self.selected_colors:
             self.selected_colors.remove(color_hex)
             
-            # 해당 색상 버튼 제거
+            # 해당 색상 버튼과 라벨 제거
+            to_remove = []
+            found_btn = False
+            
             for child in self.color_frame.winfo_children():
                 if hasattr(child, 'color') and child.color == color_hex:
-                    child.destroy()
-                    break
+                    to_remove.append(child)
+                    found_btn = True
+                elif found_btn and isinstance(child, ttk.Label):
+                    to_remove.append(child)
+                    found_btn = False
+            
+            for widget in to_remove:
+                widget.destroy()
             
             # 하단 이미지 업데이트
             self.update_bottom_image()
     
     def update_top_image(self):
-        """상단 이미지 캔버스 업데이트"""
+        """상단 이미지 캔버스 업데이트 (픽셀 확대 지원)"""
         if not hasattr(self, 'original_image'):
             return
         
@@ -230,7 +279,43 @@ class ColorPickerPopup(tk.Toplevel):
         # 원본 이미지 리사이징 (확대/축소 비율 적용)
         img_width = int(self.original_image.width * self.zoom_factor)
         img_height = int(self.original_image.height * self.zoom_factor)
-        resized_img = self.original_image.resize((img_width, img_height), Image.LANCZOS)
+        
+        # 픽셀 단위로 확대하기 위해 새 이미지 생성
+        resized_img = Image.new('RGB', (img_width, img_height), color='white')
+        draw = ImageDraw.Draw(resized_img)
+        
+        # 원본 이미지의 각 픽셀을 확대하여 그리기
+        for y in range(self.original_image.height):
+            for x in range(self.original_image.width):
+                # 원본 픽셀 색상 가져오기
+                pixel = self.original_image.getpixel((x, y))
+                
+                # RGB 또는 RGBA 포맷 처리
+                if isinstance(pixel, int):  # 그레이스케일
+                    color = (pixel, pixel, pixel)
+                elif len(pixel) >= 3:  # RGB 또는 RGBA
+                    color = pixel[:3]
+                else:
+                    color = (0, 0, 0)  # 기본값
+                
+                # 확대된 픽셀 좌표 계산
+                x1 = int(x * self.zoom_factor)
+                y1 = int(y * self.zoom_factor)
+                x2 = int((x + 1) * self.zoom_factor)
+                y2 = int((y + 1) * self.zoom_factor)
+                
+                # 픽셀 그리기
+                draw.rectangle([x1, y1, x2-1, y2-1], fill=color)
+        
+        # 그리드 표시 (zoom_factor가 5 이상일 때만)
+        if self.show_grid and self.zoom_factor >= 5:
+            for y in range(self.original_image.height + 1):
+                y_pos = int(y * self.zoom_factor)
+                draw.line([(0, y_pos), (img_width, y_pos)], fill=(200, 200, 200), width=1)
+            
+            for x in range(self.original_image.width + 1):
+                x_pos = int(x * self.zoom_factor)
+                draw.line([(x_pos, 0), (x_pos, img_height)], fill=(200, 200, 200), width=1)
         
         # 이미지를 캔버스에 표시
         self.top_photo = ImageTk.PhotoImage(resized_img)
@@ -243,6 +328,9 @@ class ColorPickerPopup(tk.Toplevel):
             anchor=tk.NW,
             tags=("image",)
         )
+        
+        # 확대 비율 업데이트
+        self.zoom_var.set(f"{self.zoom_factor:.1f}")
     
     def update_bottom_image(self):
         """하단 이미지 캔버스 업데이트 (선택된 색상만 표시)"""
@@ -317,14 +405,12 @@ class ColorPickerPopup(tk.Toplevel):
     def zoom_in(self):
         """확대 (+0.5)"""
         self.zoom_factor += 0.5
-        self.zoom_var.set(f"{self.zoom_factor:.1f}")
         self.update_top_image()
     
     def zoom_out(self):
         """축소 (-0.5)"""
         if self.zoom_factor > 0.5:
             self.zoom_factor -= 0.5
-            self.zoom_var.set(f"{self.zoom_factor:.1f}")
             self.update_top_image()
     
     def update_zoom_from_entry(self, event=None):
