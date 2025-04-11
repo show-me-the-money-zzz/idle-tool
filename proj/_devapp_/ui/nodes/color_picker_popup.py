@@ -12,7 +12,7 @@ class ColorPickerPopup(tk.Toplevel):
     PIPETTE_OFF_TEXT = "💉"
     PIPETTE_OFF_COLOR_BG = "#f0f0f0"
     PIPETTE_OFF_COLOR_TEXT = "black"
-    PIPETTE_ON_TEXT = "⌛"
+    PIPETTE_ON_TEXT = "💢"
     PIPETTE_ON_COLOR_BG = "#ff6347"
     PIPETTE_ON_COLOR_TEXT = "white"
     
@@ -21,7 +21,7 @@ class ColorPickerPopup(tk.Toplevel):
     def __init__(self, parent, image, callback=None):
         super().__init__(parent)
         self.title("색상 추출")
-        self.geometry("800x700")
+        self.geometry("900x800")  # 창 크기를 900x800으로 변경
         self.transient(parent)
         self.grab_set()  # 모달 창으로 설정
         self.protocol("WM_DELETE_WINDOW", self.cancel)
@@ -88,7 +88,7 @@ class ColorPickerPopup(tk.Toplevel):
         self.eyedropper_btn = tk.Button(
             control_frame, 
             text=ColorPickerPopup.PIPETTE_OFF_TEXT,  # 기본 상태: 주사기 아이콘
-            width=2,    # +/- 버튼과 동일한 너비
+            width=2,    # 버튼 너비
             bg=ColorPickerPopup.PIPETTE_OFF_COLOR_BG,  # 기본 배경색
             fg=ColorPickerPopup.PIPETTE_OFF_COLOR_TEXT,    # 기본 글자색
             command=self.toggle_picking_mode
@@ -130,17 +130,23 @@ class ColorPickerPopup(tk.Toplevel):
         zoom_control = ttk.Frame(top_image_frame)
         zoom_control.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 5))
         
-        self.zoom_in_btn = ttk.Button(zoom_control, text="+", width=2, command=self.zoom_in)
-        self.zoom_in_btn.pack(side=tk.TOP, pady=(0, 2))
-        
+        # Entry 대신 Spinbox로 변경
+        ttk.Label(zoom_control, text="확대율").pack(side=tk.TOP, pady=(0, 2))
         self.zoom_var = tk.StringVar(value=str(ColorPickerPopup.DEFAULT_ZOOM))
-        zoom_entry = ttk.Entry(zoom_control, textvariable=self.zoom_var, width=4)
-        zoom_entry.pack(side=tk.TOP, pady=2)
-        zoom_entry.bind("<Return>", self.update_zoom_from_entry)
-        zoom_entry.bind("<FocusOut>", self.update_zoom_from_entry)
         
-        self.zoom_out_btn = ttk.Button(zoom_control, text="-", width=2, command=self.zoom_out)
-        self.zoom_out_btn.pack(side=tk.TOP, pady=(2, 0))
+        # Spinbox 설정
+        self.zoom_spinbox = ttk.Spinbox(
+            zoom_control, 
+            textvariable=self.zoom_var, 
+            width=4, 
+            from_=0.5, 
+            to=10.0, 
+            increment=0.5,
+            command=self.update_zoom_from_spinbox
+        )
+        self.zoom_spinbox.pack(side=tk.TOP, pady=2)
+        self.zoom_spinbox.bind("<Return>", self.update_zoom_from_spinbox)
+        self.zoom_spinbox.bind("<FocusOut>", self.update_zoom_from_spinbox)
         
         # 그리드 표시 체크박스. 선 굵기 때문에 x1 에서는 이미지가 다 덮여서 안 보임
         self.grid_var = tk.BooleanVar(value=False)
@@ -149,9 +155,20 @@ class ColorPickerPopup(tk.Toplevel):
             text="Grid", 
             variable=self.grid_var,
             command=self.toggle_grid,
-            style="Bold.TCheckbutton"  # 굵은 스타일 사용 (스타일 정의 필요)
+            style="Bold.TCheckbutton"
         )
-        grid_check.pack(side=tk.TOP, pady=(10, 0))
+        grid_check.pack(side=tk.TOP, pady=(10, 5))
+
+        # 이미지 초기 위치로 리셋 버튼
+        reset_pos_btn = tk.Button(
+            zoom_control,
+            text="📌",
+            width=2,
+            command=self.reset_image_position,
+            bg="#f0f0f0",
+            fg="black"
+        )
+        reset_pos_btn.pack(side=tk.TOP, pady=(0, 5))
         
         # 상단 이미지 캔버스
         self.top_canvas = tk.Canvas(top_image_frame, bg="lightgray", highlightthickness=1, highlightbackground="gray")
@@ -164,7 +181,7 @@ class ColorPickerPopup(tk.Toplevel):
         self.top_canvas.bind("<ButtonRelease-1>", self.stop_drag)
         
         # 안내 메시지
-        self.info_label = ttk.Label(main_frame, text="<Z> 키로 모드를 변경할 수 있습니다. 그리드는 1.5 이상부터 보입니다. 이미지 드래그는 모드 OFF 에만 가능합니다.")
+        self.info_label = ttk.Label(main_frame, text="<Z> 키로 모드를 변경할 수 있습니다. 그리드는 1.5 이상부터 보입니다. 이미지 드래그는 모드 OFF 에만 가능합니다. 드래그 한 이미지의 위치를 초기화 하려면 📌")
         self.info_label.pack(fill=tk.X, pady=(0, 10))
         
         # 하단 이미지 캔버스
@@ -436,17 +453,23 @@ class ColorPickerPopup(tk.Toplevel):
         y = (canvas_height - new_height) // 2
         
         self.bottom_canvas.create_image(x, y, image=self.bottom_photo, anchor=tk.NW)
-    
-    def zoom_in(self):
-        """확대 (+0.5)"""
-        self.zoom_factor += 0.5
+
+    def reset_image_position(self):
+        """이미지 위치를 초기 상태로 리셋"""
+        self.image_position = [0, 0]
         self.update_top_image()
-    
-    def zoom_out(self):
-        """축소 (-0.5)"""
-        if self.zoom_factor > 0.5:
-            self.zoom_factor -= 0.5
-            self.update_top_image()
+
+    def update_zoom_from_spinbox(self, event=None):
+        """Spinbox에서 확대/축소 값 업데이트"""
+        try:
+            value = float(self.zoom_var.get())
+            if value >= 0.5:  # 최소 0.5 이상
+                self.zoom_factor = value
+                self.update_top_image()
+            else:
+                self.zoom_var.set(f"{self.zoom_factor:.1f}")  # 원래 값으로 복원
+        except ValueError:
+            self.zoom_var.set(f"{self.zoom_factor:.1f}")  # 숫자가 아닌 경우 원래 값으로 복원
     
     def update_zoom_from_entry(self, event=None):
         """입력 필드에서 확대/축소 값 업데이트"""
