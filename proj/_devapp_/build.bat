@@ -1,7 +1,7 @@
 @echo off
 
-@REM Eric + Scanner
-set EXE_NAME=Ricanner-[ZZXX]
+@REM grinder | miner
+set EXE_NAME=DiaMiner-[ZZXX]
 @REM set PUBLISH_NAME=%EXE_NAME%
 set PUBLISH_NAME=%EXE_NAME%_d
 
