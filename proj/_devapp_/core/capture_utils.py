@@ -7,10 +7,10 @@ from datetime import datetime
 from PIL import Image
 from typing import List, Tuple
 
-from core.ocr_engine import image_to_text, images_to_text_parallel
+import core.ocr_engine as OcrEngine
 from zzz.config import LOOP_TEXT_KEYWORD
 from stores.areas import *
-from stores.def_info import Update_Value
+import stores.def_info as DefInfo
 import core.sanner as Scanner
 
 class CaptureManager:
@@ -126,7 +126,7 @@ class CaptureManager:
                         # OCR 실행
                         if img is None:
                             raise ValueError("캡처된 이미지가 None입니다.")
-                        text = image_to_text(img)
+                        text = OcrEngine.image_to_text(img)
                         del img
                         import gc; gc.collect()
                         # text = "" # DEV.. ORC 처리 주석 처리시 사용
@@ -144,18 +144,18 @@ class CaptureManager:
                                 logtext += "\n"
                             # self.callback_fn("result", logtext)
                             
-                            Update_Value(KEY, text)
+                            DefInfo.Update_Value(KEY, text)
 
                     except Exception as e:
-                        Update_Value(KEY, "")
+                        DefInfo.Update_Value(KEY, "")
                         # print(f"[캡처 오류] {type(e).__name__}: {str(e)}")
                         # if self.callback_fn:
                         #     self.callback_fn("error", f"오류 발생: {str(e)}")
                 
-                # texts = images_to_text_parallel(images)
+                # texts = OcrEngine.images_to_text_parallel(images)
                 # print(texts)
                 # for item in texts:
-                #     Update_Value("aa", item)
+                #     DefInfo.Update_Value("aa", item)
 
                 # 지정된 간격만큼 대기
                 time.sleep(Scanner.Loop_Interval)
