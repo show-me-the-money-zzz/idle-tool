@@ -5,6 +5,8 @@ from paddleocr import PaddleOCR
 import cv2
 import re
 
+import logging
+logging.getLogger('ppocr').setLevel(logging.ERROR)
 # OCR 객체 초기화(객체 생성) (다국어 지원, 회전 보정 포함)
 ocr = PaddleOCR(use_angle_cls=True, lang='korean')
 
@@ -55,9 +57,11 @@ def extract_text_from_image(image_path):
     return texts
 
 def read_ocr(path, results):
-    print(f"\n[인식 결과 ({path})]")
-    for text, conf in results:
-        print(f"- {text} (정확도: {conf:.2f})")
+    # print(f"\n[인식 결과 ({path})]")
+    # for text, conf in results:
+    #     print(f"- {text} (정확도: {conf:.2f})")
+
+    print(f"[인식 결과 ({path})] {results}")
 
 def Process(path):
     output = extract_text_from_image(path)
