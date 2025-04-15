@@ -33,11 +33,26 @@ def normalize_ocr_text(text):
 def extract_text_from_image_obj(image):
     """
     PaddleOCR을 사용한 이미지 객체 텍스트 추출 + 후처리
-    :param image: OpenCV 이미지 (numpy.ndarray)
+    :param image: OpenCV 이미지 또는 PIL.Image (자동 변환)
     :return: [(text, confidence), ...]
     """
-    processed = enhance_image_obj(image)
-    result = ocr.ocr(processed, cls=True)
+    # PIL.Image인 경우 numpy로 변환
+    if not isinstance(image, np.ndarray):
+        try:
+            import PIL.Image
+            if isinstance(image, PIL.Image.Image):
+                image = np.array(image)
+            else:
+                raise ValueError("지원되지 않는 이미지 타입입니다.")
+        except ImportError:
+            raise ValueError("PIL 이미지 변환을 위해 Pillow가 필요합니다.")
+
+    try:
+        processed = enhance_image_obj(image)
+        result = ocr.ocr(processed, cls=True)
+    except Exception as e:
+        print(f"[OCR 오류]: {e}")
+        return []
 
     if not result or result[0] is None:
         return []
