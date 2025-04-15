@@ -7,7 +7,7 @@ import configparser
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from zzz.config import SETTINGS_FILE
-from utils import finder
+from grinder_utils import finder
 
 class SettingsManager:
     """설정 관리 클래스"""

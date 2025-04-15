@@ -2,7 +2,7 @@ import os
 import sys
 import json
 # from pathlib import Path
-from utils import finder
+from grinder_utils import finder
 
 class AreaStore:
     def __init__(self, name, filename):

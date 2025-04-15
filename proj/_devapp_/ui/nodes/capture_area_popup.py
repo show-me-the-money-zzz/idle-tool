@@ -6,7 +6,7 @@ from datetime import datetime
 
 from zzz.config import *
 from stores import areas
-from utils.system import Calc_MS
+from grinder_utils.system import Calc_MS
 
 class CaptureAreaPopup(tk.Toplevel):
     """캡처 영역 설정 팝업 창"""
@@ -518,7 +518,7 @@ class CaptureAreaPopup(tk.Toplevel):
             default_filename = key
             
             # 기본 저장 경로 가져오기
-            from utils import finder
+            from grinder_utils import finder
             default_dir = finder.Get_DataPath()
             
             # 파일 저장 다이얼로그 표시

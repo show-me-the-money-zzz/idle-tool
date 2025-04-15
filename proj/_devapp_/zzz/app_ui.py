@@ -25,7 +25,7 @@ class AppUI:
     RUNNER_BUTTON_STOP_TEXT  = "스캔 ■"
     
     def __init__(self, root, settings_manager):
-        import utils.lua_processor as LuaProcessor
+        import grinder_utils.lua_processor as LuaProcessor
         LuaProcessor.Test_Lua() # Lua 테스트
 
         # 메인 윈도우 설정
