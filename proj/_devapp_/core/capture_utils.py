@@ -8,7 +8,7 @@ from PIL import Image
 from typing import List, Tuple
 
 import core.ocr_engine as OcrEngine
-import core.ocr_engine_paddle as PaddleOCREngine
+# import core.ocr_engine_paddle as PaddleOCREngine
 from zzz.config import LOOP_TEXT_KEYWORD
 from stores.areas import *
 import stores.def_info as DefInfo
@@ -112,8 +112,8 @@ class CaptureManager:
                         # OCR 실행
                         if img is None:
                             raise ValueError("캡처된 이미지가 None입니다.")
-                        # text = OcrEngine.image_to_text(img)
-                        textlist = PaddleOCREngine.extract_text_list_from_image(img)
+                        text = OcrEngine.image_to_text(img)
+                        # textlist = PaddleOCREngine.extract_text_list_from_image(img)
                         # print(textlist)
                         del img
                         import gc; gc.collect()
@@ -132,8 +132,8 @@ class CaptureManager:
                             #     logtext += "\n"
                             # # self.callback_fn("result", logtext)
                             
-                            # DefInfo.Update_Value(KEY, text)
-                            DefInfo.Update_Values(KEY, textlist)
+                            DefInfo.Update_Value(KEY, text)
+                            # DefInfo.Update_Values(KEY, textlist)
 
                     except Exception as e:
                         DefInfo.Update_Value(KEY, "")

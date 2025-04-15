@@ -6,7 +6,6 @@ filename = os.environ.get("PUBLISH_NAME", "파일명")
 use_console = os.environ.get("USE_CONSOLE", "False").lower() in ("True", "true", "1")
 
 # Analysis.datas
-
 datalist_paddleocr = [
     ('D:/language/Python/Python310/lib/site-packages/paddleocr/tools', 'paddleocr/tools'),
     ('D:/language/Python/Python310/lib/site-packages/paddleocr/ppocr', 'paddleocr/ppocr'),
@@ -36,8 +35,8 @@ binarylist_paddle = [
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=binarylist_lupa + binarylist_paddle,
-    datas=datalist_paddleocr,
+    binaries=[],
+    datas=[],
     hiddenimports = [
         'shapely.geometry',
         'pyclipper',
