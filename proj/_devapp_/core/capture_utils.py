@@ -13,15 +13,16 @@ from zzz.config import LOOP_TEXT_KEYWORD
 from stores.areas import *
 import stores.def_info as DefInfo
 import core.sanner as Scanner
+from core.window_utils import WindowUtil
 
 class CaptureManager:
     """화면 캡처 관리 클래스 (mss 라이브러리 기반)"""
     
-    def __init__(self, window_manager, callback_fn=None):
-        self.window_manager = window_manager
+    def __init__(self, callback_fn=None):
         self.is_capturing = False
         self.capture_thread = None
         self.callback_fn = callback_fn
+        self.sct = mss.mss()
     
     # , x, y, width, height,
     def start_capture(self):
@@ -54,7 +55,7 @@ class CaptureManager:
                     , x: int, y: int, width: int, height: int
                     ) -> np.ndarray:
         """단일 영역을 캡처하여 OpenCV 이미지로 반환"""
-        left, top, _, _ = self.window_manager.get_window_rect()
+        left, top, _, _ = WindowUtil.get_window_rect()
 
         monitor = {
             "left": left + x,
@@ -79,7 +80,7 @@ class CaptureManager:
         """다중 영역을 한 번의 전체 창 캡처 후 잘라서 OpenCV 이미지 리스트로 반환"""
         ret: List[np.ndarray] = []
 
-        left, top, right, bottom = self.window_manager.get_window_rect()
+        left, top, right, bottom = WindowUtil.get_window_rect()
         full = self._capture_crop(sct, 0, 0, right - left, bottom - top)
         
         if None == full: return None
@@ -96,7 +97,7 @@ class CaptureManager:
         with mss.mss() as sct:
             while self.is_capturing:
                 # 창이 여전히 존재하는지 확인
-                if not self.window_manager.update_window_info():
+                if not WindowUtil.update_window_info():
                     if self.callback_fn:
                         self.callback_fn("error", "창이 닫혔습니다.")
                     self.is_capturing = False
@@ -157,14 +158,14 @@ class CaptureManager:
     
     def capture_full_window(self):
         """연결된 창 전체를 캡처"""
-        if not self.window_manager.is_window_valid():
+        if not WindowUtil.is_window_valid():
             return None
         
         # 창 활성화
-        self.window_manager.activate_window()
+        WindowUtil.activate_window()
         
         # 창 위치와 크기 가져오기
-        left, top, right, bottom = self.window_manager.get_window_rect()
+        left, top, right, bottom = WindowUtil.get_window_rect()
         width = right - left
         height = bottom - top
         

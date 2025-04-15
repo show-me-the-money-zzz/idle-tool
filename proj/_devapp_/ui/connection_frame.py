@@ -142,7 +142,7 @@ class ConnectionFrame(ttk.LabelFrame):
                 return
 
             from core.capture_utils import CaptureManager
-            capture_manager = CaptureManager(WindowUtil, None)
+            capture_manager = CaptureManager(None)
             screenshot = capture_manager.capture_full_window()
 
             if not screenshot:
