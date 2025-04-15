@@ -169,3 +169,5 @@ class WindowManager:
 
         left, top, _, _ = self.window_rect
         return abs_x - left, abs_y - top
+
+WindowUtil = WindowManager()
