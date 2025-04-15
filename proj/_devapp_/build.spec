@@ -6,26 +6,47 @@ filename = os.environ.get("PUBLISH_NAME", "파일명")
 use_console = os.environ.get("USE_CONSOLE", "False").lower() in ("True", "true", "1")
 
 # Analysis.datas
-datalist = [
-    ('scripts', 'scripts')
+
+datalist_paddleocr = [
+    ('D:/language/Python/Python310/lib/site-packages/paddleocr/tools', 'paddleocr/tools'),
+    ('D:/language/Python/Python310/lib/site-packages/paddleocr/ppocr', 'paddleocr/ppocr'),
+    ('D:/language/Python/Python310/lib/site-packages/paddleocr/ppstructure', 'paddleocr/ppstructure'),
+]
+datalist_scripts = [
+    ('scripts', 'scripts'),
 ]
 
 # Analysis.binaries
-binarylist = [
-    ('C:\\\\Users\\\\ZV\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\site-packages\\\\lupa\\\\lua51.cp312-win_amd64.pyd', 'lupa'),
-    ('C:\\\\Users\\\\ZV\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\site-packages\\\\lupa\\\\lua52.cp312-win_amd64.pyd', 'lupa'),
-    ('C:\\\\Users\\\\ZV\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\site-packages\\\\lupa\\\\lua53.cp312-win_amd64.pyd', 'lupa'),
-    ('C:\\\\Users\\\\ZV\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\site-packages\\\\lupa\\\\lua54.cp312-win_amd64.pyd', 'lupa'),
-    ('C:\\\\Users\\\\ZV\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\site-packages\\\\lupa\\\\luajit20.cp312-win_amd64.pyd', 'lupa'),
-    ('C:\\\\Users\\\\ZV\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\Lib\\\\site-packages\\\\lupa\\\\luajit21.cp312-win_amd64.pyd', 'lupa')
+binarylist_lupa = [
+    ('D:\\\\language\\\\Python\\\\Python310\\\\lib\\\\site-packages\\\\lupa\\\\lua51.cp310-win_amd64.pyd', 'lupa'),
+    ('D:\\\\language\\\\Python\\\\Python310\\\\lib\\\\site-packages\\\\lupa\\\\lua52.cp310-win_amd64.pyd', 'lupa'),
+    ('D:\\\\language\\\\Python\\\\Python310\\\\lib\\\\site-packages\\\\lupa\\\\lua53.cp310-win_amd64.pyd', 'lupa'),
+    ('D:\\\\language\\\\Python\\\\Python310\\\\lib\\\\site-packages\\\\lupa\\\\lua54.cp310-win_amd64.pyd', 'lupa'),
+    ('D:\\\\language\\\\Python\\\\Python310\\\\lib\\\\site-packages\\\\lupa\\\\luajit20.cp310-win_amd64.pyd', 'lupa'),
+    ('D:\\\\language\\\\Python\\\\Python310\\\\lib\\\\site-packages\\\\lupa\\\\luajit21.cp310-win_amd64.pyd', 'lupa'),
+]
+dll_names_paddle = [
+    "mkldnn.dll", "mkml.dll", "libomp5md.dll", "libgfortran-3.dll"
+]
+binarylist_paddle = [
+    ('D:\\\\language\\\\Python\\\\Python310\\\\lib\\\\site-packages\\\\paddle\\\\libs\\\\' + name, 'paddle/libs')
+    for name in dll_names_paddle
 ]
 
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=binarylist,
-    datas=[],
-    hiddenimports=[],
+    binaries=binarylist_lupa + binarylist_paddle,
+    datas=datalist_paddleocr,
+    hiddenimports = [
+        'shapely.geometry',
+        'pyclipper',
+        'imghdr',
+        'skimage', 'skimage.morphology', 'skimage.morphology._skeletonize',
+        'imgaug', 'imgaug.augmenters',
+        'scipy.io', 'scipy.special', 'scipy.spatial',
+        'lmdb',
+        ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
