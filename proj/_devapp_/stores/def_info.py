@@ -28,6 +28,16 @@ def Update_Value(key, text):
             Locate_Name = text
             # print(f"Locate_Name= {Locate_Name}")
 
+def Update_Values(key, textlist):
+    text = ""
+    if "스탯:피통" == key or "스탯:마나통" == key:
+        text = textlist[0]
+    else:
+        text = " ".join(textlist)
+        
+    Update_Value(key, text)
+
+
 def _Set_HP(text):
     global HP
     HP = _Parse_Vital("HP", text)
