@@ -14,6 +14,9 @@ from zzz.config import *
 
 def main():
     """메인 함수"""
+
+    # import grinder_utils.system as SystemUtil
+    # SystemUtil.Print_LibPath()
     
     Load_Stores()
     
