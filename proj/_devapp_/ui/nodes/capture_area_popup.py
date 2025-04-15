@@ -7,6 +7,7 @@ from datetime import datetime
 from zzz.config import *
 from stores import areas
 from grinder_utils.system import Calc_MS
+from core.window_utils import WindowUtil
 
 class CaptureAreaPopup(tk.Toplevel):
     """캡처 영역 설정 팝업 창"""
@@ -14,7 +15,7 @@ class CaptureAreaPopup(tk.Toplevel):
     READTEXT_BUTTON_START_TEXT = "글자 읽기 ▶"
     READTEXT_BUTTON_STOP_TEXT = "글자 읽기 ■"
 
-    def __init__(self, parent, window_manager, region_selector, capture_manager, status_var, on_close_callback=None):
+    def __init__(self, parent, region_selector, capture_manager, status_var, on_close_callback=None):
         super().__init__(parent)
         self.title("캡처 영역 설정")
         self.geometry("700x640")
@@ -23,7 +24,6 @@ class CaptureAreaPopup(tk.Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
         self.parent = parent
-        self.window_manager = window_manager
         self.region_selector = region_selector
         self.capture_manager = capture_manager
         self.status_var = status_var
@@ -401,7 +401,7 @@ class CaptureAreaPopup(tk.Toplevel):
 
     def read_text_from_area(self):
         try:
-            if not self.window_manager.is_window_valid():
+            if not WindowUtil.is_window_valid():
                 return
             x, y, width, height = int(self.x_var.get()), int(self.y_var.get()), int(self.width_var.get()), int(self.height_var.get())
             if width <= 0 or height <= 0:
@@ -426,9 +426,9 @@ class CaptureAreaPopup(tk.Toplevel):
     def select_capture_area(self):
         """드래그로 캡처 영역 선택"""
         # 창이 연결되어 있고 '창 내부만 선택' 옵션이 활성화된 경우에만 창 내부로 제한
-        target_window_only = self.window_only_var.get() and self.window_manager.is_window_valid()
+        target_window_only = self.window_only_var.get() and WindowUtil.is_window_valid()
         
-        if target_window_only and not self.window_manager.is_window_valid():
+        if target_window_only and not WindowUtil.is_window_valid():
             messagebox.showerror("오류", "창 내부 선택을 위해서는 먼저 창에 연결해주세요.")
             return
         
@@ -502,7 +502,7 @@ class CaptureAreaPopup(tk.Toplevel):
             x, y, width, height, _ = capture_info
             
             # 창이 유효한지 확인
-            if not self.window_manager.is_window_valid():
+            if not WindowUtil.is_window_valid():
                 messagebox.showerror("오류", "창이 연결되지 않았습니다.", parent=self)
                 return
             
@@ -676,7 +676,7 @@ class CaptureAreaPopup(tk.Toplevel):
         """캡처 영역 미리보기 업데이트"""
         try:
             # 창이 연결되어 있는지 확인
-            if not self.window_manager.is_window_valid():
+            if not WindowUtil.is_window_valid():
                 messagebox.showerror("오류", ERROR_NO_WINDOW, parent=self)
                 return
             
