@@ -8,12 +8,12 @@ import mss
 import mss.tools
 import keyboard  # 키보드 입력 감지를 위한 모듈
 from zzz.config import *  # 설정 상수 불러오기
+from core.window_utils import WindowUtil
 
 class RegionSelector:
     """마우스 드래그로 영역을 선택하는 도구"""
     
-    def __init__(self, window_manager=None):
-        self.window_manager = window_manager
+    def __init__(self):
         self.root = None
         self.canvas = None
         self.start_x = None
@@ -54,9 +54,9 @@ class RegionSelector:
         # mss 인스턴스 생성
         with mss.mss() as sct:
             # 타겟 윈도우가 있고, 해당 윈도우만 캡처하는 모드라면
-            if target_window_only and self.window_manager and self.window_manager.is_window_valid():
+            if target_window_only and WindowUtil and WindowUtil.is_window_valid():
                 # 창 위치 가져오기
-                self.window_rect = self.window_manager.get_window_rect()
+                self.window_rect = WindowUtil.get_window_rect()
                 left, top, right, bottom = self.window_rect
                 width = right - left
                 height = bottom - top
@@ -72,7 +72,7 @@ class RegionSelector:
                 self.window_rect = (0, 0, self.screenshot.width, self.screenshot.height)
         
         # 크기 설정
-        if target_window_only and self.window_manager and self.window_manager.is_window_valid():
+        if target_window_only and WindowUtil and WindowUtil.is_window_valid():
             left, top, right, bottom = self.window_rect
             width = right - left
             height = bottom - top
@@ -504,7 +504,7 @@ class RegionSelector:
         height = y2 - y1
         
         # 창 기준 상대 좌표로 변환
-        if self.target_window_only and self.window_manager and self.window_manager.is_window_valid():
+        if self.target_window_only and WindowUtil and WindowUtil.is_window_valid():
             # 이미 타겟 윈도우 기준 좌표
             rel_x1, rel_y1, rel_x2, rel_y2 = x1, y1, x2, y2
             left, top, _, _ = self.window_rect
@@ -515,8 +515,8 @@ class RegionSelector:
             abs_x1, abs_y1, abs_x2, abs_y2 = x1, y1, x2, y2
             
             # 창 기준 상대 좌표로 변환
-            if self.window_manager and self.window_manager.is_window_valid():
-                left, top, _, _ = self.window_manager.get_window_rect()
+            if WindowUtil and WindowUtil.is_window_valid():
+                left, top, _, _ = WindowUtil.get_window_rect()
                 rel_x1, rel_y1 = abs_x1 - left, abs_y1 - top
                 rel_x2, rel_y2 = abs_x2 - left, abs_y2 - top
             else:
