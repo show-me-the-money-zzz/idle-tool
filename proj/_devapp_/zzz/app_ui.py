@@ -3,7 +3,7 @@ from tkinter import ttk
 import time
 import os
 
-from core.window_utils import WindowManager
+from core.window_utils import WindowUtil
 from core.capture_utils import CaptureManager
 from core.ocr_engine import setup_tesseract
 from zzz.config import *
@@ -13,7 +13,7 @@ from core.region_selector import RegionSelector
 from zzz.menu_bar import MenuBar
 from zzz.status_bar import StatusBar
 from ui.connection_frame import ConnectionFrame
-from ui.capture_area_frame import CaptureAreaFrame
+# from ui.capture_area_frame import CaptureAreaFrame
 from ui.log_frame import LogFrame
 from ui.input_handler_frame import InputHandlerFrame
 
@@ -58,9 +58,9 @@ class AppUI:
         )
 
         # 기본 매니저 객체 생성
-        self.window_manager = WindowManager()
-        self.capture_manager = CaptureManager(self.window_manager, self.handle_capture_callback)
-        self.region_selector = RegionSelector(self.window_manager)
+        winman = WindowUtil #초기화를 위한
+        self.capture_manager = CaptureManager(self.handle_capture_callback)
+        self.region_selector = RegionSelector()
 
         # UI 컴포넌트 생성
         self.setup_ui()
@@ -121,8 +121,7 @@ class AppUI:
         
         # 1. 프로그램 연결 프레임
         self.connection_frame = ConnectionFrame(
-            main_frame, 
-            self.window_manager,
+            main_frame,
             self.status_var
         )
         self.connection_frame.pack(fill=tk.X, pady=5)
@@ -181,7 +180,6 @@ class AppUI:
         # 4. 입력 처리 프레임
         self.input_handler_frame = InputHandlerFrame(
             main_frame,
-            self.window_manager,
             self.status_var
         )
         self.input_handler_frame.pack(fill=tk.X, pady=5)
@@ -209,7 +207,7 @@ class AppUI:
                 
     def open_capture_area_popup(self):
         """캡처 영역 설정 팝업 열기"""
-        if not self.window_manager.is_window_valid():
+        if not WindowUtil.is_window_valid():
             from tkinter import messagebox
             messagebox.showerror("오류", "먼저 창에 연결해주세요.")
             return
@@ -224,7 +222,6 @@ class AppUI:
             # 팝업 창 생성
             popup = CaptureAreaPopup(
                 self.root, 
-                self.window_manager, 
                 self.region_selector, 
                 self.capture_manager, 
                 self.status_var,
@@ -273,7 +270,7 @@ class AppUI:
                         return
                 
                 # 타겟 윈도우 확인
-                if not self.window_manager.is_window_valid():
+                if not WindowUtil.is_window_valid():
                     from tkinter import messagebox
                     messagebox.showerror("오류", ERROR_NO_WINDOW)
                     return
