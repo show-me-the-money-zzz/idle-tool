@@ -52,15 +52,12 @@ class CaptureManager:
         return True
     
     def _capture_crop(self
-                      , sct: mss.mss
-                      , x: int, y: int, width: int, height: int
-                      ) -> np.ndarray:
-        # 윈도우 위치 가져오기
-        # left, top, _, _ = self.window_manager.get_window_rect()
-        left, top, right, bottom = self.window_manager.get_window_rect()
-        # print(f"_capture_crop(): app= {left}, {top} - {right - left} x {bottom - top} ({right} | {bottom})")
+                    , sct: mss.mss
+                    , x: int, y: int, width: int, height: int
+                    ) -> np.ndarray:
+        """단일 영역을 캡처하여 OpenCV 이미지로 반환"""
+        left, top, _, _ = self.window_manager.get_window_rect()
 
-        # 화면 캡처 (스레드 로컬 MSS 인스턴스 사용)
         monitor = {
             "left": left + x,
             "top": top + y,
@@ -68,33 +65,22 @@ class CaptureManager:
             "height": height
         }
         screenshot = sct.grab(monitor)
-
         img = np.array(screenshot)[:, :, :3]  # BGRA → BGR
         return img
-    
+
     def _capture_crops(self
                       , sct: mss.mss
                       , areas: List[Tuple[int, int, int, int]]
-                      ) -> List[Image.Image]:
-        """
-        영역 목록으로 한번 캡처한 이미지를 잘라내기
-
-        Args:
-            sct (mss.mss): mss 인스턴스 (스크린 캡처 세션)
-            areas (List[Tuple[int, int, int, int]]): 자를 영역들 (x, y, width, height)
-
-        Returns:
-            List[Image.Image]: 잘라낸 이미지 리스트
-        """
-        ret: List[Image.Image] = []
+                      ) -> List[np.ndarray]:
+        """다중 영역을 한 번의 전체 창 캡처 후 잘라서 OpenCV 이미지 리스트로 반환"""
+        ret: List[np.ndarray] = []
 
         left, top, right, bottom = self.window_manager.get_window_rect()
-        pil_app = self._capture_crop(sct, 0, 0, right - left, bottom - top)
+        full = self._capture_crop(sct, 0, 0, right - left, bottom - top)
 
-        for item in areas:
-            x, y, width, height = item
-            item_img = pil_app.crop((x, y, x + width, y + height))
-            ret.append(item_img)
+        for x, y, width, height in areas:
+            cropped = full[y:y+height, x:x+width].copy()
+            ret.append(cropped)
 
         return ret
     
