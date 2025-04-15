@@ -5,14 +5,14 @@ from PIL import Image, ImageTk
 
 from zzz.config import *
 import core.sanner as Scanner
+from core.window_utils import WindowUtil
 
 class CaptureAreaFrame(ttk.LabelFrame):
     """캡처 영역 설정 프레임"""
     
-    def __init__(self, parent, window_manager, region_selector, capture_manager, status_var):
+    def __init__(self, parent, region_selector, capture_manager, status_var):
         super().__init__(parent, text="캡처 영역 설정 (창 내부 좌표)", padding="10")
         
-        self.window_manager = window_manager
         self.region_selector = region_selector
         self.capture_manager = capture_manager
         self.status_var = status_var
@@ -95,9 +95,9 @@ class CaptureAreaFrame(ttk.LabelFrame):
     def select_capture_area(self):
         """드래그로 캡처 영역 선택"""
         # 창이 연결되어 있고 '창 내부만 선택' 옵션이 활성화된 경우에만 창 내부로 제한
-        target_window_only = self.window_only_var.get() and self.window_manager.is_window_valid()
+        target_window_only = self.window_only_var.get() and WindowUtil.is_window_valid()
         
-        if target_window_only and not self.window_manager.is_window_valid():
+        if target_window_only and not WindowUtil.is_window_valid():
             messagebox.showerror("오류", "창 내부 선택을 위해서는 먼저 창에 연결해주세요.")
             return
         
@@ -143,7 +143,7 @@ class CaptureAreaFrame(ttk.LabelFrame):
         """캡처 영역 미리보기 업데이트"""
         try:
             # 창이 연결되어 있는지 확인
-            if not self.window_manager.is_window_valid():
+            if not WindowUtil.is_window_valid():
                 messagebox.showerror("오류", ERROR_NO_WINDOW)
                 return
             
