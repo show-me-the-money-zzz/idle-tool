@@ -54,7 +54,7 @@ class CaptureManager:
     def _capture_crop(self
                       , sct: mss.mss
                       , x: int, y: int, width: int, height: int
-                      ) -> Image.Image:
+                      ) -> np.ndarray:
         # 윈도우 위치 가져오기
         # left, top, _, _ = self.window_manager.get_window_rect()
         left, top, right, bottom = self.window_manager.get_window_rect()
@@ -69,8 +69,7 @@ class CaptureManager:
         }
         screenshot = sct.grab(monitor)
 
-        # mss의 결과(원시 픽셀 데이터)를 PIL Image로 변환
-        img = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
+        img = np.array(screenshot)[:, :, :3]  # BGRA → BGR
         return img
     
     def _capture_crops(self
@@ -129,7 +128,7 @@ class CaptureManager:
                             raise ValueError("캡처된 이미지가 None입니다.")
                         # text = OcrEngine.image_to_text(img)
                         textlist = PaddleOCREngine.extract_text_list_from_image(img)
-                        print(textlist)
+                        # print(textlist)
                         del img
                         import gc; gc.collect()
                         # text = "" # DEV.. ORC 처리 주석 처리시 사용
