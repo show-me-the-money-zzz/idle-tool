@@ -56,16 +56,25 @@ def extract_text_from_image(image_path):
         texts.append((fixed_text, confidence))
     return texts
 
-def read_ocr(path, results):
+def read_ocr_old(path, results):
     # print(f"\n[인식 결과 ({path})]")
     # for text, conf in results:
     #     print(f"- {text} (정확도: {conf:.2f})")
-
     print(f"[인식 결과 ({path})] {results}")
+
+def read_ocr(results):
+    """
+    OCR 결과 리스트에서 텍스트만 추출하여 반환
+    :param results: [(text, confidence), ...] 형태의 OCR 결과 리스트
+    :return: [text1, text2, ...] 형태의 텍스트 리스트
+    """
+    return [text for text, _ in results]
+
 
 def Process(path):
     output = extract_text_from_image(path)
-    read_ocr(path, output)
+    textlist = read_ocr(output)
+    print(f"[{path}] {textlist}")
 
 if __name__ == "__main__":
     Process("hp.png")
