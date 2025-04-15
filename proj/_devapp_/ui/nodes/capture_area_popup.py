@@ -152,7 +152,9 @@ class CaptureAreaPopup(tk.Toplevel):
         color_bar_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=(5, 0))
 
         # 색 추출 버튼 (좌측 상단 고정)
-        self.extract_color_btn = ttk.Button(color_bar_frame, text="색 추출", command=self.extract_color, state=tk.DISABLED)
+        self.extract_color_btn = ttk.Button(color_bar_frame, text="색 추출", command=self.extract_color
+                                            , state=tk.DISABLED
+                                            )
         self.extract_color_btn.pack(side=tk.LEFT, anchor="n", padx=(0, 10))
 
         # 컬러 캔버스를 감싸는 프레임 (버튼 오른쪽 상단)
