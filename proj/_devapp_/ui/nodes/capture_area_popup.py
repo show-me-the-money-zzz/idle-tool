@@ -56,6 +56,17 @@ class CaptureAreaPopup(tk.Toplevel):
         key_frame = ttk.Frame(coords_frame)
         key_frame.pack(fill=tk.X, pady=(0, 5))
         
+        # 캡처 방식 선택: 텍스트 / 이미지 / 빈영역
+        self.capture_type_var = tk.StringVar(value="이미지")
+        ttk.Combobox(
+            key_frame,
+            textvariable=self.capture_type_var,
+            values=[ "이미지", "빈영역", "텍스트", ],
+            state="readonly",
+            width=7
+        ).pack(side=tk.LEFT, padx=(0, 5))
+
+        # KEY 입력
         ttk.Label(key_frame, text="KEY").pack(side=tk.LEFT, padx=(0, 5))
         self.key_var = tk.StringVar(value="")
         ttk.Entry(key_frame, textvariable=self.key_var, width=20).pack(side=tk.LEFT, fill=tk.X, expand=True)
@@ -221,17 +232,17 @@ class CaptureAreaPopup(tk.Toplevel):
         )
         save_btn.pack(side=tk.TOP, pady=(2, 1), fill=tk.X)  # 상단 패딩만 2, 하단 패딩은 1로 설정
 
-        # 이미지로 저장 버튼 - 저장 버튼과 가까이 배치
-        save_image_btn = tk.Button(
-            top_buttons, text="이미지로 저장", width=btn_width,
-            command=lambda: self.save_as_image(),  # 이 함수는 구현해야 함
-            bg="#3498db",  # 파란색 배경
-            fg="white",    # 흰색 텍스트
-            activebackground="#2980b9",  # 클릭 시 약간 더 어두운 파란색
-            activeforeground="white",    # 클릭 시 흰색 텍스트 유지
-            font=("TkDefaultFont", 9, "bold")  # 약간 더 굵은 폰트
-        )
-        save_image_btn.pack(side=tk.TOP, pady=1, fill=tk.X)
+        # # 이미지로 저장 버튼 - 저장 버튼과 가까이 배치
+        # save_image_btn = tk.Button(
+        #     top_buttons, text="이미지로 저장", width=btn_width,
+        #     command=lambda: self.save_as_image(),  # 이 함수는 구현해야 함
+        #     bg="#3498db",  # 파란색 배경
+        #     fg="white",    # 흰색 텍스트
+        #     activebackground="#2980b9",  # 클릭 시 약간 더 어두운 파란색
+        #     activeforeground="white",    # 클릭 시 흰색 텍스트 유지
+        #     font=("TkDefaultFont", 9, "bold")  # 약간 더 굵은 폰트
+        # )
+        # save_image_btn.pack(side=tk.TOP, pady=1, fill=tk.X)
 
         # 하단 버튼 영역 - 취소 버튼을 최하단에 배치하기 위한 프레임
         bottom_frame = ttk.Frame(btn_group2)
@@ -439,6 +450,14 @@ class CaptureAreaPopup(tk.Toplevel):
         self.deiconify()
     
     def apply_settings(self):
+        mode = self.capture_type_var.get()
+        print(mode)
+        
+        if "이미지" == mode: self.save_as_image()
+        elif "빈영역" == mode: print("빈 영역을 저장해라")
+        elif "텍스트" == mode: self.save_as_text()
+    
+    def save_as_text(self):
         """설정 적용 및 저장"""
         try:
             # 설정값 검증
@@ -469,7 +488,7 @@ class CaptureAreaPopup(tk.Toplevel):
             
         except Exception as e:
             messagebox.showerror("설정 오류", f"설정을 적용하는 중 오류가 발생했습니다: {str(e)}", parent=self)
-            
+
     def save_as_image(self):
         """현재 캡처된 영역을 이미지 파일로 저장"""
         try:
