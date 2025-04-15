@@ -6,14 +6,14 @@ import os
 from tkinter import filedialog
 
 from zzz.config import *
+from core.window_utils import WindowUtil
 
 class ConnectionFrame(ttk.LabelFrame):
     """프로그램 연결 프레임"""
 
-    def __init__(self, parent, window_manager, status_var):
+    def __init__(self, parent, status_var):
         super().__init__(parent, text="프로그램 연결", padding="10")
 
-        self.window_manager = window_manager
         self.status_var = status_var
 
         self._setup_ui()
@@ -63,14 +63,14 @@ class ConnectionFrame(ttk.LabelFrame):
             if not pid:
                 raise ValueError("PID가 입력되지 않았습니다.")
 
-            window_info = self.window_manager.find_window_by_pid(pid)
+            window_info = WindowUtil.find_window_by_pid(pid)
             if not window_info:
                 messagebox.showerror("오류", f"PID {pid}에 해당하는 창을 찾을 수 없습니다.")
                 return
 
             hwnd, title = window_info
-            self.window_manager.set_target_window(hwnd)
-            self.window_manager.activate_window()
+            WindowUtil.set_target_window(hwnd)
+            WindowUtil.activate_window()
 
             self.window_info_var.set(f"연결됨: '{title}' (HWND: {hwnd})")
             self.status_var.set(f"PID {pid}에 연결되었습니다. 창이 활성화되었습니다.")
@@ -89,7 +89,7 @@ class ConnectionFrame(ttk.LabelFrame):
             if not app_name:
                 raise ValueError("앱 이름이 입력되지 않았습니다.")
 
-            windows = self.window_manager.find_windows_by_name(app_name)
+            windows = WindowUtil.find_windows_by_name(app_name)
 
             if not windows:
                 messagebox.showinfo("검색 결과", "일치하는 창을 찾을 수 없습니다.")
@@ -123,8 +123,8 @@ class ConnectionFrame(ttk.LabelFrame):
                 messagebox.showerror("오류", "선택한 창이 존재하지 않습니다.")
                 return
 
-            self.window_manager.set_target_window(hwnd)
-            self.window_manager.activate_window()
+            WindowUtil.set_target_window(hwnd)
+            WindowUtil.activate_window()
 
             self.window_info_var.set(f"연결됨: '{title}' (PID: {pid}, {proc_name})")
             self.status_var.set(f"창 '{title}'에 연결되었습니다. 창이 활성화되었습니다.")
@@ -137,12 +137,12 @@ class ConnectionFrame(ttk.LabelFrame):
 
     def capture_full_window(self):
         try:
-            if not self.window_manager.is_window_valid():
+            if not WindowUtil.is_window_valid():
                 messagebox.showerror("오류", ERROR_NO_WINDOW)
                 return
 
             from core.capture_utils import CaptureManager
-            capture_manager = CaptureManager(self.window_manager, None)
+            capture_manager = CaptureManager(WindowUtil, None)
             screenshot = capture_manager.capture_full_window()
 
             if not screenshot:
@@ -171,11 +171,11 @@ class ConnectionFrame(ttk.LabelFrame):
 
     def activate_connected_window(self):
         try:
-            if not self.window_manager.is_window_valid():
+            if not WindowUtil.is_window_valid():
                 messagebox.showerror("오류", ERROR_NO_WINDOW)
                 return
 
-            if self.window_manager.activate_window():
+            if WindowUtil.activate_window():
                 self.status_var.set("연결된 창이 활성화되었습니다.")
             else:
                 messagebox.showerror("오류", "창 활성화에 실패했습니다.")
