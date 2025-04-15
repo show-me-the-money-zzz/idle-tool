@@ -17,7 +17,7 @@ APP_THEME = 'classic'
 # aqua: macOS의 기본
 
 # 기본 입력값
-DEFAULT_APP_NAME = "LORDNINE"  # 기본 검색할 앱 이름
+DEFAULT_APP_NAME = "RF 온라인 넥스트"  # 기본 검색할 앱 이름
 DEFAULT_PID = ""             # 기본 PID (비워두기)
 DEFAULT_CAPTURE_X = "0"      # 기본 캡처 X 좌표
 DEFAULT_CAPTURE_Y = "0"      # 기본 캡처 Y 좌표
