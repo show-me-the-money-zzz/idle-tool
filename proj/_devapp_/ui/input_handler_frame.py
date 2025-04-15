@@ -3,14 +3,14 @@ from tkinter import messagebox, ttk
 import pyautogui
 
 from zzz.config import *
+from core.window_utils import WindowUtil
 
 class InputHandlerFrame(ttk.LabelFrame):
     """입력 처리 프레임 (이전의 자동화 영역)"""
     
-    def __init__(self, parent, window_manager, status_var):
+    def __init__(self, parent, status_var):
         super().__init__(parent, text="입력 처리", padding="10")
         
-        self.window_manager = window_manager
         self.status_var = status_var
         
         self._setup_ui()
@@ -66,7 +66,7 @@ class InputHandlerFrame(ttk.LabelFrame):
     def press_key(self):
         """사용자가 지정한 키 입력"""
         try:
-            if not self.window_manager.is_window_valid():
+            if not WindowUtil.is_window_valid():
                 messagebox.showerror("오류", ERROR_NO_WINDOW)
                 return
             
@@ -77,7 +77,7 @@ class InputHandlerFrame(ttk.LabelFrame):
                 return
             
             # 키 입력
-            if self.window_manager.send_key(key):
+            if WindowUtil.send_key(key):
                 self.status_var.set(f"'{key}' 키가 입력되었습니다.")
             else:
                 messagebox.showerror("오류", "키 입력에 실패했습니다.")
@@ -88,12 +88,12 @@ class InputHandlerFrame(ttk.LabelFrame):
     def press_esc_key(self):
         """ESC 키 입력"""
         try:
-            if not self.window_manager.is_window_valid():
+            if not WindowUtil.is_window_valid():
                 messagebox.showerror("오류", ERROR_NO_WINDOW)
                 return
             
             # ESC 키 입력
-            if self.window_manager.send_key('esc'):
+            if WindowUtil.send_key('esc'):
                 self.status_var.set("'ESC' 키가 입력되었습니다.")
             else:
                 messagebox.showerror("오류", "ESC 키 입력에 실패했습니다.")
@@ -104,7 +104,7 @@ class InputHandlerFrame(ttk.LabelFrame):
     def mouse_click(self):
         """마우스 클릭"""
         try:
-            if not self.window_manager.is_window_valid():
+            if not WindowUtil.is_window_valid():
                 messagebox.showerror("오류", ERROR_NO_WINDOW)
                 return
             
@@ -118,7 +118,7 @@ class InputHandlerFrame(ttk.LabelFrame):
                 self.update()  # UI 업데이트
                 
                 # 상대 좌표 위치 클릭
-                if self.window_manager.click_at_position(rel_x, rel_y):
+                if WindowUtil.click_at_position(rel_x, rel_y):
                     self.status_var.set(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
                 else:
                     messagebox.showerror("오류", "클릭 작업에 실패했습니다.")
@@ -130,7 +130,7 @@ class InputHandlerFrame(ttk.LabelFrame):
     
     def copy_current_mouse_position(self):
         """현재 마우스 위치를 클릭 좌표에 복사"""
-        if not self.window_manager.is_window_valid():
+        if not WindowUtil.is_window_valid():
             messagebox.showerror("오류", "먼저 창에 연결해주세요.")
             return
         
@@ -138,7 +138,7 @@ class InputHandlerFrame(ttk.LabelFrame):
         x, y = pyautogui.position()
         
         # 상대 좌표 계산
-        rel_x, rel_y = self.window_manager.get_relative_position(x, y)
+        rel_x, rel_y = WindowUtil.get_relative_position(x, y)
         
         # 클릭 좌표에 복사
         self.click_x_var.set(str(rel_x))
@@ -152,7 +152,7 @@ class InputHandlerFrame(ttk.LabelFrame):
         rel_x, rel_y = x, y
         
         # 연결된 창이 있으면 상대 좌표 계산
-        if self.window_manager.is_window_valid():
-            rel_x, rel_y = self.window_manager.get_relative_position(x, y)
+        if WindowUtil.is_window_valid():
+            rel_x, rel_y = WindowUtil.get_relative_position(x, y)
         
         self.mouse_pos_label.config(text=f"마우스 위치: 절대(X={x}, Y={y}) / 상대(X={rel_x}, Y={rel_y})")
