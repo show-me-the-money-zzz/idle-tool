@@ -454,7 +454,7 @@ class CaptureAreaPopup(tk.Toplevel):
         print(mode)
         
         if "이미지" == mode: self.save_as_image()
-        elif "빈영역" == mode: print("빈 영역을 저장해라")
+        elif "빈영역" == mode: self.save_as_zone()
         elif "텍스트" == mode: self.save_as_text()
     
     def save_as_text(self):
@@ -480,7 +480,7 @@ class CaptureAreaPopup(tk.Toplevel):
             self.capture_settings = capture_info
             
             # 메인 창에 성공 메시지 표시
-            self.status_var.set("캡처 영역 설정이 저장되었습니다.")
+            self.status_var.set("텍스트가 저장되었습니다.")
             
             messagebox.showinfo("알림", f"{KEY} 텍스트 데이터를 추가하였습니다.", parent=self)
             # 창 닫기
@@ -589,6 +589,37 @@ class CaptureAreaPopup(tk.Toplevel):
             
         except Exception as e:
             messagebox.showerror("이미지 저장 오류", f"이미지 저장 중 오류가 발생했습니다: {str(e)}", parent=self)
+    
+    def save_as_zone(self):
+        try:
+            # 설정값 검증
+            capture_info = self.get_capture_info()
+            if not capture_info:
+                return
+            
+            x, y, width, height, interval_dummy = capture_info
+            # print(f"{x}, {y}, {width}, {height}")
+            KEY = self.key_var.get()
+            if not KEY:
+                messagebox.showerror("오류", "KEY 를 입력하세요.", parent=self)
+                return
+ 
+            areas.Add_ZoneArea(KEY, { "x": x, "y": y, "width": width, "height": height }
+                            #   , save=True
+                              )
+                
+            # 설정 저장
+            self.capture_settings = capture_info
+            
+            # 메인 창에 성공 메시지 표시
+            self.status_var.set("빈영역이 저장되었습니다.")
+            
+            messagebox.showinfo("알림", f"{KEY} 빈영역 데이터를 추가하였습니다.", parent=self)
+            # 창 닫기
+            self.on_close()
+            
+        except Exception as e:
+            messagebox.showerror("설정 오류", f"설정을 적용하는 중 오류가 발생했습니다: {str(e)}", parent=self)
     
     def set_capture_info(self, x, y, width, height, interval):
         """캡처 정보 설정"""
