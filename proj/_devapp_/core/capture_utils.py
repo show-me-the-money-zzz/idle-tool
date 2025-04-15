@@ -22,8 +22,6 @@ class CaptureManager:
         self.is_capturing = False
         self.capture_thread = None
         self.callback_fn = callback_fn
-        # mss 인스턴스 생성
-        self.sct = mss.mss()
     
     # , x, y, width, height,
     def start_capture(self):
@@ -64,7 +62,13 @@ class CaptureManager:
             "width": width,
             "height": height
         }
-        screenshot = sct.grab(monitor)
+        
+        try:
+            screenshot = sct.grab(monitor)
+        except Exception as e:
+            print(f"[캡처 실패] {type(e).__name__}: {e} (monitor: {monitor})")
+            return None
+        
         img = np.array(screenshot)[:, :, :3]  # BGRA → BGR
         return img
 
@@ -77,6 +81,8 @@ class CaptureManager:
 
         left, top, right, bottom = self.window_manager.get_window_rect()
         full = self._capture_crop(sct, 0, 0, right - left, bottom - top)
+        
+        if None == full: return None
 
         for x, y, width, height in areas:
             cropped = full[y:y+height, x:x+width].copy()
