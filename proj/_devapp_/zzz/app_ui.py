@@ -25,7 +25,8 @@ class AppUI:
     RUNNER_BUTTON_STOP_TEXT  = "스캔 ■"
     
     def __init__(self, root, settings_manager):
-        self.Test_Lua() # Lua 테스트
+        import utils.lua_processor as LuaProcessor
+        LuaProcessor.Test_Lua() # Lua 테스트
 
         # 메인 윈도우 설정
         self.root = root
@@ -307,21 +308,3 @@ class AppUI:
         except ValueError:
             from tkinter import messagebox
             messagebox.showerror("입력 오류", "간격은 숫자 형식으로 입력해주세요.")
-        
-    def Test_Lua(self):
-        # import lupa
-        # print(lupa.__file__)
-        # # --add-binary 에 포함시킬 .pyd 경로 확인
-        
-        script_path = os.path.join(os.path.dirname(__file__), "scripts", "logger.lua")
-        
-        from lupa import LuaRuntime
-        lua = LuaRuntime(unpack_returned_tuples=True)
-        
-        with open("./scripts/logger.lua", "r", encoding="utf-8") as f:
-            logger = f.read()
-            
-        lua.execute(logger)
-        
-        run_print = lua.eval("Print_Lua")
-        run_print("하하호호즐겁다")
