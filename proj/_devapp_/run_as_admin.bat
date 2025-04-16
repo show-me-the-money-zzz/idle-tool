@@ -11,4 +11,5 @@ REM 또는 프로젝트 구조에 따라 적절히 조정
 REM set PYTHON_SCRIPT=proj\python\main.py
 
 powershell -Command "Start-Process python -ArgumentList '%PYTHON_SCRIPT%' -Verb RunAs -Wait"
+
 @REM pause

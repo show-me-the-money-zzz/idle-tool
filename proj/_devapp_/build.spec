@@ -32,20 +32,22 @@ binarylist_paddle = [
     for name in dll_names_paddle
 ]
 
+hiddens = [
+    'shapely.geometry',
+    'pyclipper',
+    'imghdr',
+    'skimage', 'skimage.morphology', 'skimage.morphology._skeletonize',
+    'imgaug', 'imgaug.augmenters',
+    'scipy.io', 'scipy.special', 'scipy.spatial',
+    'lmdb',
+]
+
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
     datas=[],
-    hiddenimports = [
-        'shapely.geometry',
-        'pyclipper',
-        'imghdr',
-        'skimage', 'skimage.morphology', 'skimage.morphology._skeletonize',
-        'imgaug', 'imgaug.augmenters',
-        'scipy.io', 'scipy.special', 'scipy.spatial',
-        'lmdb',
-        ],
+    hiddenimports = [],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

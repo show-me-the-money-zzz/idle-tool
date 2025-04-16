@@ -4,9 +4,8 @@
 
 import os
 import configparser
-import tkinter as tk
-from tkinter import filedialog, messagebox
-from zzz.config import SETTINGS_FILE
+from PySide6.QtWidgets import QFileDialog, QMessageBox
+from zzz.config import SETTINGS_FILE, DEFAULT_TESSERACT_EXEFILENAME
 from grinder_utils import finder
 
 class SettingsManager:
@@ -121,7 +120,7 @@ class SettingsManager:
         테서렉트 OCR 경로 사용자 입력 요청
         
         Args:
-            parent: 부모 윈도우 (tkinter)
+            parent: 부모 윈도우 (QWidget)
             
         Returns:
             str: 선택된 테서렉트 경로 또는 None (취소 시)
@@ -130,11 +129,11 @@ class SettingsManager:
         current_path = self.get('Tesseract', 'Path', '')
         
         # 파일 선택 다이얼로그
-        file_path = filedialog.askopenfilename(
-            title="Tesseract OCR 실행 파일 선택",
-            filetypes=[("실행 파일", "*.exe"), ("모든 파일", "*.*")],
-            initialfile="tesseract.exe",
-            parent=parent
+        file_path, _ = QFileDialog.getOpenFileName(
+            parent,
+            "Tesseract OCR 실행 파일 선택",
+            DEFAULT_TESSERACT_EXEFILENAME,
+            "실행 파일 (*.exe);;모든 파일 (*.*)"
         )
         
         if file_path:
@@ -145,12 +144,25 @@ class SettingsManager:
         
         return None
     
+    def ask_tesseract_path(self, parent=None):
+        """
+        테서렉트 OCR 경로를 사용자에게 직접 물어보는 함수
+        (PySide6에서 initialize_ocr_with_path에서 호출되는 함수)
+        
+        Args:
+            parent: 부모 윈도우 (QWidget)
+            
+        Returns:
+            str: 선택된 테서렉트 경로 또는 None (취소 시)
+        """
+        return self.prompt_tesseract_path(parent)
+    
     def check_tesseract_path(self, parent=None):
         """
         테서렉트 OCR 경로 확인 및 없으면 사용자 입력 요청
         
         Args:
-            parent: 부모 윈도우 (tkinter)
+            parent: 부모 윈도우 (QWidget)
             
         Returns:
             str: 테서렉트 경로 또는 None (취소 시)
@@ -161,24 +173,24 @@ class SettingsManager:
         # 경로가 없거나 파일이 존재하지 않으면 사용자에게 요청
         if not tesseract_path or not os.path.exists(tesseract_path):
             # 안내 메시지 표시
-            messagebox.showinfo(
+            QMessageBox.information(
+                parent,
                 "Tesseract OCR 설정",
                 "Tesseract OCR 실행 파일을 선택해주세요.\n"
                 "(Tesseract-OCR 설치 디렉토리 내의 tesseract.exe)\n\n"
                 "아직 설치하지 않았다면 다음 링크에서 설치할 수 있습니다:\n"
-                "https://github.com/UB-Mannheim/tesseract/wiki",
-                parent=parent
+                "https://github.com/UB-Mannheim/tesseract/wiki"
             )
             
             # 파일 선택 다이얼로그
             tesseract_path = self.prompt_tesseract_path(parent)
             
             if not tesseract_path:
-                messagebox.showwarning(
+                QMessageBox.warning(
+                    parent,
                     "경고",
                     "Tesseract OCR 경로가 설정되지 않았습니다.\n"
-                    "OCR 기능을 사용하려면 설정이 필요합니다.",
-                    parent=parent
+                    "OCR 기능을 사용하려면 설정이 필요합니다."
                 )
                 return None
         

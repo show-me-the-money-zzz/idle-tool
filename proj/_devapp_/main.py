@@ -1,5 +1,5 @@
-import tkinter as tk
-from tkinter import ttk
+from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QDir, Qt
 import sys
 import os
 
@@ -14,32 +14,36 @@ from zzz.config import *
 
 def main():
     """메인 함수"""
-
+    
     # import grinder_utils.system as SystemUtil
     # SystemUtil.Print_LibPath()
     
     Load_Stores()
     
+    # DPI 스케일링 활성화 (이 부분 추가)
+    # QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+    # QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+
+    # Qt 6에서는 아래와 같이 사용 (필요한 경우)
+    from PySide6.QtGui import QGuiApplication
+    QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
+        Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+    )
+    
     # 설정 관리자 생성
     settings_manager = SettingsManager()
     
-    # 기본 tkinter 윈도우 생성
-    root = tk.Tk()
+    # QApplication 생성
+    app = QApplication(sys.argv)
     
-    # 테마 설정 - Windows 테마
-    try:
-        style = ttk.Style()
-        
-        style.theme_use(APP_THEME)  # Windows 10 테마
-        # print(style.theme_names())  # 사용 가능한 모든 테마 이름 출력
-    except:
-        pass  # 테마 적용 실패 시 기본값 사용
+    app.setStyle(APP_THEME)
     
     # 메인 애플리케이션 UI 생성
-    app = AppUI(root, settings_manager)
+    main_window = AppUI(settings_manager)
+    main_window.show()
     
     # 메인 이벤트 루프 실행
-    root.mainloop()
+    sys.exit(app.exec())
     
 def Load_Stores():
     from stores import areas

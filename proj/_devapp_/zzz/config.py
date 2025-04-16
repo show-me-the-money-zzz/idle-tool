@@ -11,10 +11,14 @@ APP_TITLE = "쌀먹툴: [ZZXX]" # 연결하려는 앱의 타이틀이 포함되�
 # APP_TITLE = "쌀먹 - [게임]" # 연결하려는 앱의 타이틀이 포함되면 안됨
 APP_WIDTH = 600
 APP_HEIGHT = 1060
-APP_THEME = 'classic'
+APP_THEME_TkInter = 'classic'
 # clam: 단순 깔끔 / alt: 대체 스타일 / default: 기본 / classic: 클래식(기본 tk 스타일과 유사)
 # vista: Windows Vista/7 / winnative: 원래의 Windows 네이티브 / xpnative: Windows XP 네이티브
 # aqua: macOS의 기본
+APP_THEME = 'Windows'
+# 배포는 'Macintosh' / 개발은 "Windows"
+# "Fusion", "Windows", "WindowsVista", "Macintosh", "macos"
+# 스타일 설정 (PySide6에서는 QApplication 스타일 시트 또는 Fusion 스타일 사용)
 
 # 기본 입력값
 DEFAULT_APP_NAME = "RF 온라인 넥스트"  # 기본 검색할 앱 이름
@@ -39,7 +43,8 @@ LOOP_IMAGE_KEYWORD = [
 DRAG_ZOOM_FACTOR = 4 # 영역 드래그 미리보기 ZOOM 확대 배율
 
 # OCR 설정 - 기본값 (설정 파일이 없을 경우 사용)
-DEFAULT_TESSERACT_PATH = r"D:\tool\Tesseract-OCR\tesseract.exe"  # Tesseract OCR 기본 경로
+DEFAULT_TESSERACT_EXEFILENAME="tesseract.exe"
+DEFAULT_TESSERACT_PATH = rf"D:\tool\Tesseract-OCR\{DEFAULT_TESSERACT_EXEFILENAME}"  # Tesseract OCR 기본 경로
 OCR_LANGUAGE = "kor+eng"     # OCR 인식 언어
 
 # 드래그 관련 단축키 설정

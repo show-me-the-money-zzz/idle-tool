@@ -3,8 +3,7 @@ import win32process
 import win32con
 import psutil
 import time
-from tkinter import messagebox
-import win32api
+# import win32api
 from ctypes import windll, Structure, c_ulong, POINTER, sizeof, byref, c_long
 
 from pynput.keyboard import Key, Controller

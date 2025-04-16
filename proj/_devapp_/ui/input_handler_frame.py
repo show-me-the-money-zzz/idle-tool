@@ -1,137 +1,152 @@
-import tkinter as tk
-from tkinter import messagebox, ttk
+from PySide6.QtWidgets import (QGroupBox, QLabel, QLineEdit, QPushButton, 
+                            QSpinBox, QGridLayout, QHBoxLayout, QMessageBox, QWidget)
+from PySide6.QtCore import Qt, Signal, Slot
 import pyautogui
 
 from zzz.config import *
 from core.window_utils import WindowUtil
 
-class InputHandlerFrame(ttk.LabelFrame):
+class InputHandlerFrame(QGroupBox):
     """입력 처리 프레임 (이전의 자동화 영역)"""
     
-    def __init__(self, parent, status_var):
-        super().__init__(parent, text="입력 처리", padding="10")
+    def __init__(self, parent, status_signal):
+        super().__init__("입력 처리", parent)
         
-        self.status_var = status_var
+        self.status_signal = status_signal
         
         self._setup_ui()
     
     def _setup_ui(self):
         """UI 구성요소 초기화"""
+        # 메인 레이아웃
+        main_layout = QGridLayout(self)
+        main_layout.setContentsMargins(10, 10, 10, 10)
+
         # 키 입력 관련 프레임
-        key_frame = ttk.Frame(self)
-        key_frame.grid(row=0, column=0, columnspan=3, sticky=tk.W, pady=5)
-        
+        key_frame = QWidget(self)
+        key_layout = QHBoxLayout(key_frame)
+        key_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.addWidget(key_frame, 0, 0, 1, 3)
+
         # 키 입력 필드
-        ttk.Label(key_frame, text="입력 키:").pack(side=tk.LEFT, padx=(0, 5))
-        self.input_key_var = tk.StringVar(value="m")
-        ttk.Entry(key_frame, textvariable=self.input_key_var, width=5).pack(side=tk.LEFT, padx=(0, 10))
-        
+        key_layout.addWidget(QLabel("입력 키:"))
+        self.input_key_edit = QLineEdit("m")
+        self.input_key_edit.setMaximumWidth(50)
+        key_layout.addWidget(self.input_key_edit)
+        key_layout.addSpacing(10)
+
         # 키 입력 버튼
-        self.key_btn = ttk.Button(key_frame, text="키보드 입력", command=self.press_key)
-        self.key_btn.pack(side=tk.LEFT, padx=5)
-        
+        self.key_btn = QPushButton("키보드 입력")
+        self.key_btn.clicked.connect(self.press_key)
+        key_layout.addWidget(self.key_btn)
+
         # ESC 키 입력 버튼
-        self.esc_btn = ttk.Button(key_frame, text="ESC 키 입력", command=self.press_esc_key)
-        self.esc_btn.pack(side=tk.LEFT, padx=5)
-        
-        From_Spinbox = 0
-        To_Spinbox = 99999
-        
+        self.esc_btn = QPushButton("ESC 키 입력")
+        self.esc_btn.clicked.connect(self.press_esc_key)
+        key_layout.addWidget(self.esc_btn)
+
+        key_layout.addStretch(1)  # 우측 여백
+
         # 마우스 좌표 입력 필드 (상대적)
-        ttk.Label(self, text="클릭 X (창 내부):").grid(row=1, column=0, sticky=tk.W, pady=2)
-        self.click_x_var = tk.IntVar(value=int(DEFAULT_CLICK_X))
-        click_x_entry = tk.Spinbox(self, from_=From_Spinbox, to=To_Spinbox, textvariable=self.click_x_var, width=8)
-        click_x_entry.grid(row=1, column=1, sticky=tk.W, pady=2)
-        
-        # 마우스 클릭 버튼
-        self.click_btn = ttk.Button(self, text="마우스 클릭", command=self.mouse_click)
-        self.click_btn.grid(row=1, column=2, padx=5, pady=2)
-        
-        ttk.Label(self, text="클릭 Y (창 내부):").grid(row=2, column=0, sticky=tk.W, pady=2)
-        self.click_y_var = tk.IntVar(value=int(DEFAULT_CLICK_Y))
-        click_y_entry = tk.Spinbox(self, from_=From_Spinbox, to=To_Spinbox, textvariable=self.click_y_var, width=8)
-        click_y_entry.grid(row=2, column=1, sticky=tk.W, pady=2)
-        
-        # 탭 순서 설정 - 클릭 X에서 클릭 Y로 이동하도록
-        click_x_entry.bind('<Tab>', lambda e: click_y_entry.focus_set() or 'break')
-        
-        # 현재 마우스 위치 표시 레이블 (절대 좌표와 상대 좌표)
-        self.mouse_pos_label = ttk.Label(self, text="마우스 위치: 절대(X=0, Y=0) / 상대(X=0, Y=0)")
-        self.mouse_pos_label.grid(row=3, column=0, columnspan=3, sticky=tk.W, pady=5)
-        
-        # 마우스 위치 복사 버튼
-        copy_pos_btn = ttk.Button(self, text="현재 위치 복사", command=self.copy_current_mouse_position)
-        copy_pos_btn.grid(row=4, column=0, columnspan=3, sticky=tk.W, pady=5)
+        main_layout.addWidget(QLabel("클릭 X (창 내부):"), 1, 0, Qt.AlignLeft)
+        self.click_x_spin = QSpinBox(self)
+        self.click_x_spin.setRange(0, 99999)
+        self.click_x_spin.setValue(int(DEFAULT_CLICK_X))
+        self.click_x_spin.setMinimumWidth(80)
+        main_layout.addWidget(self.click_x_spin, 1, 1, Qt.AlignLeft)
+
+        main_layout.addWidget(QLabel("클릭 Y (창 내부):"), 2, 0, Qt.AlignLeft)
+        self.click_y_spin = QSpinBox(self)
+        self.click_y_spin.setRange(0, 99999)
+        self.click_y_spin.setValue(int(DEFAULT_CLICK_Y))
+        self.click_y_spin.setMinimumWidth(80)
+        main_layout.addWidget(self.click_y_spin, 2, 1, Qt.AlignLeft)
+
+        # 3행에 "마우스 클릭"과 "현재 위치 복사" 버튼 좌우 배치
+        self.click_btn = QPushButton("마우스 클릭")
+        self.click_btn.clicked.connect(self.mouse_click)
+        main_layout.addWidget(self.click_btn, 3, 0, Qt.AlignLeft)
+
+        copy_pos_btn = QPushButton("현재 위치 복사")
+        copy_pos_btn.clicked.connect(self.copy_current_mouse_position)
+        main_layout.addWidget(copy_pos_btn, 3, 2, Qt.AlignRight)
+
+        # 4행에 마우스 위치 표시 레이블을 우측 정렬로 배치
+        self.mouse_pos_label = QLabel("마우스 위치: 절대(X=0, Y=0) / 상대(X=0, Y=0)")
+        main_layout.addWidget(self.mouse_pos_label, 4, 0, 1, 3, Qt.AlignRight)
     
+    @Slot()
     def press_key(self):
         """사용자가 지정한 키 입력"""
         try:
             if not WindowUtil.is_window_valid():
-                messagebox.showerror("오류", ERROR_NO_WINDOW)
+                QMessageBox.critical(self, "오류", ERROR_NO_WINDOW)
                 return
             
             # 사용자가 입력한 키 가져오기
-            key = self.input_key_var.get()
+            key = self.input_key_edit.text()
             if not key:
-                messagebox.showinfo("알림", "입력할 키를 지정해주세요.")
+                QMessageBox.information(self, "알림", "입력할 키를 지정해주세요.")
                 return
             
             # 키 입력
             if WindowUtil.send_key(key):
-                self.status_var.set(f"'{key}' 키가 입력되었습니다.")
+                self.status_signal.emit(f"'{key}' 키가 입력되었습니다.")
             else:
-                messagebox.showerror("오류", "키 입력에 실패했습니다.")
+                QMessageBox.critical(self, "오류", "키 입력에 실패했습니다.")
                 
         except Exception as e:
-            messagebox.showerror("키 입력 오류", f"키 입력 중 오류가 발생했습니다: {str(e)}")
+            QMessageBox.critical(self, "키 입력 오류", f"키 입력 중 오류가 발생했습니다: {str(e)}")
 
+    @Slot()
     def press_esc_key(self):
         """ESC 키 입력"""
         try:
             if not WindowUtil.is_window_valid():
-                messagebox.showerror("오류", ERROR_NO_WINDOW)
+                QMessageBox.critical(self, "오류", ERROR_NO_WINDOW)
                 return
             
             # ESC 키 입력
             if WindowUtil.send_key('esc'):
-                self.status_var.set("'ESC' 키가 입력되었습니다.")
+                self.status_signal.emit("'ESC' 키가 입력되었습니다.")
             else:
-                messagebox.showerror("오류", "ESC 키 입력에 실패했습니다.")
+                QMessageBox.critical(self, "오류", "ESC 키 입력에 실패했습니다.")
                 
         except Exception as e:
-            messagebox.showerror("키 입력 오류", f"ESC 키 입력 중 오류가 발생했습니다: {str(e)}")
+            QMessageBox.critical(self, "키 입력 오류", f"ESC 키 입력 중 오류가 발생했습니다: {str(e)}")
 
+    @Slot()
     def mouse_click(self):
         """마우스 클릭"""
         try:
             if not WindowUtil.is_window_valid():
-                messagebox.showerror("오류", ERROR_NO_WINDOW)
+                QMessageBox.critical(self, "오류", ERROR_NO_WINDOW)
                 return
             
             # 클릭 좌표 계산
-            if self.click_x_var.get() and self.click_y_var.get():
-                rel_x = self.click_x_var.get()
-                rel_y = self.click_y_var.get()
-                
+            rel_x = self.click_x_spin.value()
+            rel_y = self.click_y_spin.value()
+            
+            if rel_x > 0 and rel_y > 0:
                 # 상태 표시 업데이트
-                self.status_var.set(f"클릭 중... (X={rel_x}, Y={rel_y})")
-                self.update()  # UI 업데이트
+                self.status_signal.emit(f"클릭 중... (X={rel_x}, Y={rel_y})")
                 
                 # 상대 좌표 위치 클릭
                 if WindowUtil.click_at_position(rel_x, rel_y):
-                    self.status_var.set(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+                    self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
                 else:
-                    messagebox.showerror("오류", "클릭 작업에 실패했습니다.")
+                    QMessageBox.critical(self, "오류", "클릭 작업에 실패했습니다.")
             else:
-                messagebox.showinfo("알림", "클릭할 좌표를 설정해주세요.")
+                QMessageBox.information(self, "알림", "클릭할 좌표를 설정해주세요.")
                 
         except Exception as e:
-            messagebox.showerror("마우스 클릭 오류", f"마우스 클릭 중 오류가 발생했습니다: {str(e)}")
+            QMessageBox.critical(self, "마우스 클릭 오류", f"마우스 클릭 중 오류가 발생했습니다: {str(e)}")
     
+    @Slot()
     def copy_current_mouse_position(self):
         """현재 마우스 위치를 클릭 좌표에 복사"""
         if not WindowUtil.is_window_valid():
-            messagebox.showerror("오류", "먼저 창에 연결해주세요.")
+            QMessageBox.critical(self, "오류", "먼저 창에 연결해주세요.")
             return
         
         # 현재 마우스 위치
@@ -141,10 +156,10 @@ class InputHandlerFrame(ttk.LabelFrame):
         rel_x, rel_y = WindowUtil.get_relative_position(x, y)
         
         # 클릭 좌표에 복사
-        self.click_x_var.set(str(rel_x))
-        self.click_y_var.set(str(rel_y))
+        self.click_x_spin.setValue(rel_x)
+        self.click_y_spin.setValue(rel_y)
         
-        self.status_var.set(f"현재 마우스 위치가 복사되었습니다: X={rel_x}, Y={rel_y}")
+        self.status_signal.emit(f"현재 마우스 위치가 복사되었습니다: X={rel_x}, Y={rel_y}")
     
     def update_mouse_position(self):
         """마우스 위치 업데이트"""
@@ -155,4 +170,4 @@ class InputHandlerFrame(ttk.LabelFrame):
         if WindowUtil.is_window_valid():
             rel_x, rel_y = WindowUtil.get_relative_position(x, y)
         
-        self.mouse_pos_label.config(text=f"마우스 위치: 절대(X={x}, Y={y}) / 상대(X={rel_x}, Y={rel_y})")
+        self.mouse_pos_label.setText(f"마우스 위치: 절대(X={x}, Y={y}) / 상대(X={rel_x}, Y={rel_y})")

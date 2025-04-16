@@ -1,112 +1,140 @@
-import tkinter as tk
-from tkinter import messagebox, ttk
+from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, 
+                             QLineEdit, QPushButton, QCheckBox, QMessageBox, QSizePolicy)
+from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtGui import QPixmap, QPainter
+
 import time
-from PIL import Image, ImageTk
+from PIL import Image, ImageQt
 
 from zzz.config import *
 import core.sanner as Scanner
 from core.window_utils import WindowUtil
 
-class CaptureAreaFrame(ttk.LabelFrame):
+class CaptureAreaFrame(QFrame):
     """캡처 영역 설정 프레임"""
     
-    def __init__(self, parent, region_selector, capture_manager, status_var):
-        super().__init__(parent, text="캡처 영역 설정 (창 내부 좌표)", padding="10")
+    def __init__(self, parent, region_selector, capture_manager, status_signal):
+        super().__init__(parent)
         
         self.region_selector = region_selector
         self.capture_manager = capture_manager
-        self.status_var = status_var
+        self.status_signal = status_signal
         
         # 미리보기 이미지 저장 변수
         self.preview_image = None
-        self.preview_photo = None
-        self.preview_image_id = None
+        self.preview_pixmap = None
         
         self._setup_ui()
     
     def _setup_ui(self):
         """UI 구성요소 초기화"""
+        # 메인 레이아웃
+        main_layout = QVBoxLayout(self)
+        self.setLayout(main_layout)
+        self.setFrameStyle(QFrame.Box | QFrame.Raised)
+        
+        # 타이틀 설정
+        title_label = QLabel("캡처 영역 설정 (창 내부 좌표)")
+        title_label.setStyleSheet("font-weight: bold;")
+        main_layout.addWidget(title_label)
+        
         # 왼쪽(설정) 및 오른쪽(미리보기) 영역을 나누기 위한 프레임
-        main_frame = ttk.Frame(self)
-        main_frame.pack(fill=tk.X, expand=True)
+        content_layout = QHBoxLayout()
+        main_layout.addLayout(content_layout)
         
         # 좌측 입력 프레임
-        input_frame = ttk.Frame(main_frame)
-        input_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
+        input_frame = QFrame()
+        input_layout = QGridLayout(input_frame)
+        content_layout.addWidget(input_frame)
         
         # X 좌표 (상대적)
-        ttk.Label(input_frame, text="X 좌표:").grid(row=0, column=0, sticky=tk.W, pady=2)
-        self.x_var = tk.StringVar(value=DEFAULT_CAPTURE_X)
-        ttk.Entry(input_frame, textvariable=self.x_var, width=10).grid(row=0, column=1, sticky=tk.W, pady=2)
+        input_layout.addWidget(QLabel("X 좌표:"), 0, 0, Qt.AlignLeft)
+        self.x_edit = QLineEdit(str(DEFAULT_CAPTURE_X))
+        self.x_edit.setFixedWidth(80)
+        input_layout.addWidget(self.x_edit, 0, 1, Qt.AlignLeft)
         
         # Y 좌표 (상대적)
-        ttk.Label(input_frame, text="Y 좌표:").grid(row=0, column=2, sticky=tk.W, pady=2, padx=(10, 0))
-        self.y_var = tk.StringVar(value=DEFAULT_CAPTURE_Y)
-        ttk.Entry(input_frame, textvariable=self.y_var, width=10).grid(row=0, column=3, sticky=tk.W, pady=2)
+        input_layout.addWidget(QLabel("Y 좌표:"), 0, 2, Qt.AlignLeft)
+        self.y_edit = QLineEdit(str(DEFAULT_CAPTURE_Y))
+        self.y_edit.setFixedWidth(80)
+        input_layout.addWidget(self.y_edit, 0, 3, Qt.AlignLeft)
         
         # 너비
-        ttk.Label(input_frame, text="너비:").grid(row=1, column=0, sticky=tk.W, pady=2)
-        self.width_var = tk.StringVar(value=DEFAULT_CAPTURE_WIDTH)
-        ttk.Entry(input_frame, textvariable=self.width_var, width=10).grid(row=1, column=1, sticky=tk.W, pady=2)
+        input_layout.addWidget(QLabel("너비:"), 1, 0, Qt.AlignLeft)
+        self.width_edit = QLineEdit(str(DEFAULT_CAPTURE_WIDTH))
+        self.width_edit.setFixedWidth(80)
+        input_layout.addWidget(self.width_edit, 1, 1, Qt.AlignLeft)
         
         # 높이
-        ttk.Label(input_frame, text="높이:").grid(row=1, column=2, sticky=tk.W, pady=2, padx=(10, 0))
-        self.height_var = tk.StringVar(value=DEFAULT_CAPTURE_HEIGHT)
-        ttk.Entry(input_frame, textvariable=self.height_var, width=10).grid(row=1, column=3, sticky=tk.W, pady=2)
+        input_layout.addWidget(QLabel("높이:"), 1, 2, Qt.AlignLeft)
+        self.height_edit = QLineEdit(str(DEFAULT_CAPTURE_HEIGHT))
+        self.height_edit.setFixedWidth(80)
+        input_layout.addWidget(self.height_edit, 1, 3, Qt.AlignLeft)
         
         # 캡처 간격 설정
-        ttk.Label(input_frame, text="캡처 간격(초):").grid(row=2, column=0, sticky=tk.W, pady=2)
-        self.interval_var = tk.StringVar(value=Scanner.Loop_Interval)
-        ttk.Entry(input_frame, textvariable=self.interval_var, width=10).grid(row=2, column=1, sticky=tk.W, pady=2)
+        input_layout.addWidget(QLabel("캡처 간격(초):"), 2, 0, Qt.AlignLeft)
+        self.interval_edit = QLineEdit(str(Scanner.Loop_Interval))
+        self.interval_edit.setFixedWidth(80)
+        input_layout.addWidget(self.interval_edit, 2, 1, Qt.AlignLeft)
+        
+        # 버튼 프레임
+        button_layout = QHBoxLayout()
+        input_layout.addLayout(button_layout, 3, 0, 1, 4)
         
         # 영역 선택 버튼 (드래그로 영역 선택)
-        select_area_btn = ttk.Button(input_frame, text="드래그로 영역 선택", command=self.select_capture_area)
-        select_area_btn.grid(row=3, column=0, columnspan=2, sticky=tk.W, pady=10)
+        select_area_btn = QPushButton("드래그로 영역 선택")
+        select_area_btn.clicked.connect(self.select_capture_area)
+        button_layout.addWidget(select_area_btn)
         
         # 캡처 미리보기 업데이트 버튼
-        preview_btn = ttk.Button(input_frame, text="미리보기 갱신", command=self.update_area_preview)
-        preview_btn.grid(row=3, column=2, columnspan=2, sticky=tk.W, pady=10)
+        preview_btn = QPushButton("미리보기 갱신")
+        preview_btn.clicked.connect(self.update_area_preview)
+        button_layout.addWidget(preview_btn)
         
         # 창 내 영역만 선택 체크박스
-        self.window_only_var = tk.BooleanVar(value=True)
-        window_only_check = ttk.Checkbutton(
-            input_frame, 
-            text="창 내부만 선택", 
-            variable=self.window_only_var
-        )
-        window_only_check.grid(row=4, column=0, columnspan=4, sticky=tk.W, pady=2)
+        self.window_only_check = QCheckBox("창 내부만 선택")
+        self.window_only_check.setChecked(True)
+        input_layout.addWidget(self.window_only_check, 4, 0, 1, 4, Qt.AlignLeft)
         
         # 우측 미리보기 프레임
-        preview_frame = ttk.LabelFrame(main_frame, text="영역 미리보기")
-        preview_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        preview_frame = QFrame()
+        preview_frame.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        preview_layout = QVBoxLayout(preview_frame)
+        content_layout.addWidget(preview_frame, 1)  # 미리보기가 더 많은 공간을 차지하도록
         
-        # 미리보기 캔버스 (이미지 표시용)
-        self.preview_canvas = tk.Canvas(preview_frame, width=200, height=150, bg='lightgray')
-        self.preview_canvas.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        # 미리보기 제목
+        preview_title = QLabel("영역 미리보기")
+        preview_title.setAlignment(Qt.AlignCenter)
+        preview_layout.addWidget(preview_title)
         
-        # 미리보기 없음 텍스트
-        self.preview_canvas.create_text(
-            100, 75, 
-            text="영역을 선택하면\n미리보기가 표시됩니다", 
-            fill="darkgray", 
-            justify=tk.CENTER
-        )
+        # 미리보기 레이블 (이미지 표시용)
+        self.preview_label = QLabel()
+        self.preview_label.setMinimumSize(200, 150)
+        self.preview_label.setAlignment(Qt.AlignCenter)
+        self.preview_label.setStyleSheet("background-color: lightgray;")
+        self.preview_label.setText("영역을 선택하면\n미리보기가 표시됩니다")
+        preview_layout.addWidget(self.preview_label, 1)
+        
+        # 미리보기 정보 레이블
+        self.info_label = QLabel()
+        self.info_label.setAlignment(Qt.AlignCenter)
+        self.info_label.setStyleSheet("color: navy; font-size: 8pt;")
+        preview_layout.addWidget(self.info_label)
     
     def select_capture_area(self):
         """드래그로 캡처 영역 선택"""
         # 창이 연결되어 있고 '창 내부만 선택' 옵션이 활성화된 경우에만 창 내부로 제한
-        target_window_only = self.window_only_var.get() and WindowUtil.is_window_valid()
+        target_window_only = self.window_only_check.isChecked() and WindowUtil.is_window_valid()
         
         if target_window_only and not WindowUtil.is_window_valid():
-            messagebox.showerror("오류", "창 내부 선택을 위해서는 먼저 창에 연결해주세요.")
+            QMessageBox.critical(self, "오류", "창 내부 선택을 위해서는 먼저 창에 연결해주세요.")
             return
         
         # 선택 임시 중단을 알림
-        self.status_var.set("영역 선택 중... (ESC 키를 누르면 취소)")
-        self.update()
+        self.status_signal.emit("영역 선택 중... (ESC 키를 누르면 취소)")
         
         # 창 최소화 (선택 화면이 가려지지 않도록)
-        self.winfo_toplevel().iconify()
+        self.window().showMinimized()
         time.sleep(0.5)  # 창이 최소화될 시간 확보
         
         # 영역 선택 시작
@@ -116,12 +144,12 @@ class CaptureAreaFrame(ttk.LabelFrame):
         )
         
         # 창 복원
-        self.winfo_toplevel().deiconify()
+        self.window().showNormal()
     
     def handle_region_selection(self, region_info):
         """영역 선택 결과 처리"""
         if not region_info:
-            self.status_var.set("영역 선택이 취소되었습니다.")
+            self.status_signal.emit("영역 선택이 취소되었습니다.")
             return
         
         # 선택된 영역 정보를 UI에 업데이트
@@ -129,12 +157,12 @@ class CaptureAreaFrame(ttk.LabelFrame):
         width = region_info["width"]
         height = region_info["height"]
         
-        self.x_var.set(str(rel_x1))
-        self.y_var.set(str(rel_y1))
-        self.width_var.set(str(width))
-        self.height_var.set(str(height))
+        self.x_edit.setText(str(rel_x1))
+        self.y_edit.setText(str(rel_y1))
+        self.width_edit.setText(str(width))
+        self.height_edit.setText(str(height))
         
-        self.status_var.set(f"영역이 선택되었습니다: X={rel_x1}, Y={rel_y1}, 너비={width}, 높이={height}")
+        self.status_signal.emit(f"영역이 선택되었습니다: X={rel_x1}, Y={rel_y1}, 너비={width}, 높이={height}")
         
         # 선택 후 미리보기 업데이트
         self.update_area_preview()
@@ -144,26 +172,26 @@ class CaptureAreaFrame(ttk.LabelFrame):
         try:
             # 창이 연결되어 있는지 확인
             if not WindowUtil.is_window_valid():
-                messagebox.showerror("오류", ERROR_NO_WINDOW)
+                QMessageBox.critical(self, "오류", ERROR_NO_WINDOW)
                 return
             
             # 캡처 영역 좌표 가져오기
             try:
-                x = int(self.x_var.get())
-                y = int(self.y_var.get())
-                width = int(self.width_var.get())
-                height = int(self.height_var.get())
+                x = int(self.x_edit.text())
+                y = int(self.y_edit.text())
+                width = int(self.width_edit.text())
+                height = int(self.height_edit.text())
                 
                 if width <= 0 or height <= 0:
                     raise ValueError("너비와 높이는 양수여야 합니다.")
             except ValueError as e:
-                messagebox.showerror("입력 오류", f"올바른 값을 입력해주세요: {str(e)}")
+                QMessageBox.critical(self, "입력 오류", f"올바른 값을 입력해주세요: {str(e)}")
                 return
             
             # 전체 창 캡처
             full_window_img = self.capture_manager.capture_full_window()
             if not full_window_img:
-                messagebox.showerror("오류", "창 캡처에 실패했습니다.")
+                QMessageBox.critical(self, "오류", "창 캡처에 실패했습니다.")
                 return
             
             # 캡처 영역 추출
@@ -174,21 +202,21 @@ class CaptureAreaFrame(ttk.LabelFrame):
                 # 영역이 이미지 범위를 벗어나는지 확인
                 img_width, img_height = full_window_img.size
                 if crop_region[0] < 0 or crop_region[1] < 0 or crop_region[2] > img_width or crop_region[3] > img_height:
-                    messagebox.showwarning(
+                    QMessageBox.warning(
+                        self, 
                         "영역 경고", 
-                        "설정한 영역이 창 범위를 벗어납니다. 일부만 표시됩니다.",
-                        parent=self.winfo_toplevel()
+                        "설정한 영역이 창 범위를 벗어납니다. 일부만 표시됩니다."
                     )
                 
                 # 캔버스 크기 가져오기
-                canvas_width = self.preview_canvas.winfo_width()
-                canvas_height = self.preview_canvas.winfo_height()
+                preview_width = self.preview_label.width()
+                preview_height = self.preview_label.height()
                 
                 # 이미지 크기 계산에 너무 작은 값이 사용되지 않도록 제한
-                if canvas_width < 50:
-                    canvas_width = 200
-                if canvas_height < 50:
-                    canvas_height = 150
+                if preview_width < 50:
+                    preview_width = 200
+                if preview_height < 50:
+                    preview_height = 150
                     
                 # 영역 자르기
                 cropped_img = full_window_img.crop((
@@ -202,8 +230,8 @@ class CaptureAreaFrame(ttk.LabelFrame):
                 img_width, img_height = cropped_img.size
                 
                 # 비율 계산
-                width_ratio = canvas_width / img_width
-                height_ratio = canvas_height / img_height
+                width_ratio = preview_width / img_width
+                height_ratio = preview_height / img_height
                 scale_ratio = min(width_ratio, height_ratio)
                 
                 # 이미지가 너무 크면 축소
@@ -214,52 +242,39 @@ class CaptureAreaFrame(ttk.LabelFrame):
                 else:
                     resized_img = cropped_img
                 
-                # 기존 이미지 삭제
-                self.preview_canvas.delete("all")
-                
-                # 캔버스에 이미지 표시
+                # PIL 이미지를 QPixmap으로 변환
                 self.preview_image = resized_img
-                self.preview_photo = ImageTk.PhotoImage(resized_img)
+                q_image = ImageQt.ImageQt(resized_img)
+                self.preview_pixmap = QPixmap.fromImage(q_image)
                 
-                # 캔버스 중앙에 이미지 배치
-                x_pos = (canvas_width - self.preview_photo.width()) // 2
-                y_pos = (canvas_height - self.preview_photo.height()) // 2
-                
-                self.preview_image_id = self.preview_canvas.create_image(
-                    x_pos, y_pos, 
-                    image=self.preview_photo, 
-                    anchor=tk.NW
-                )
+                # 미리보기 레이블에 이미지 표시
+                self.preview_label.setPixmap(self.preview_pixmap)
+                self.preview_label.setAlignment(Qt.AlignCenter)
                 
                 # 미리보기 정보 표시
                 info_text = f"{width}x{height} 픽셀"
-                self.preview_canvas.create_text(
-                    canvas_width//2, canvas_height-10,
-                    text=info_text,
-                    fill="navy",
-                    font=("Arial", 8)
-                )
+                self.info_label.setText(info_text)
                 
-                self.status_var.set(f"영역 미리보기가 업데이트되었습니다.")
+                self.status_signal.emit("영역 미리보기가 업데이트되었습니다.")
             
             except Exception as e:
-                messagebox.showerror("미리보기 오류", f"미리보기 생성 중 오류: {str(e)}")
+                QMessageBox.critical(self, "미리보기 오류", f"미리보기 생성 중 오류: {str(e)}")
         except Exception as e:
-            messagebox.showerror("미리보기 오류", f"미리보기 생성 중 오류: {str(e)}")
+            QMessageBox.critical(self, "미리보기 오류", f"미리보기 생성 중 오류: {str(e)}")
     
     def get_capture_info(self):
         """캡처 정보 가져오기"""
         try:
-            x = int(self.x_var.get())
-            y = int(self.y_var.get())
-            width = int(self.width_var.get())
-            height = int(self.height_var.get())
-            interval = float(self.interval_var.get())
+            x = int(self.x_edit.text())
+            y = int(self.y_edit.text())
+            width = int(self.width_edit.text())
+            height = int(self.height_edit.text())
+            interval = float(self.interval_edit.text())
             
             if width <= 0 or height <= 0 or interval <= 0:
                 raise ValueError("너비, 높이, 간격은 양수여야 합니다.")
                 
             return (x, y, width, height, interval)
         except ValueError as e:
-            messagebox.showerror("입력 오류", f"올바른 값을 입력해주세요: {str(e)}")
+            QMessageBox.critical(self, "입력 오류", f"올바른 값을 입력해주세요: {str(e)}")
             return None

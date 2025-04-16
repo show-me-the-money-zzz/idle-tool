@@ -1,560 +1,588 @@
-import tkinter as tk
+import sys
 import pyautogui
 import win32gui
 import time
-from PIL import Image, ImageTk
 import numpy as np
 import mss
-import mss.tools
 import keyboard  # 키보드 입력 감지를 위한 모듈
+from PIL import Image, ImageEnhance
+from PySide6.QtWidgets import (QApplication, QWidget, QLabel, QVBoxLayout, QFrame)
+from PySide6.QtGui import QPainter, QPixmap, QColor, QPen, QFont, QImage, QBrush, QCursor
+from PySide6.QtCore import Qt, QEvent, QRect, QPoint, QSize, QTimer, Signal, Slot
+
 from zzz.config import *  # 설정 상수 불러오기
 from core.window_utils import WindowUtil
 
-class RegionSelector:
+
+class ZoomWindow(QWidget):
+    """마우스 위치 주변을 확대하여 보여주는 창"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent, Qt.WindowStaysOnTopHint | Qt.Tool | Qt.FramelessWindowHint)
+        self.setWindowTitle("Magnifier")
+        
+        self.zoom_size = 150  # 확대 창 크기
+        self.zoom_factor = DRAG_ZOOM_FACTOR  # 확대 배율
+        
+        # 창 크기 설정
+        self.setFixedSize(self.zoom_size, self.zoom_size + 25)
+        
+        # 스크린샷 저장 변수
+        self.screenshot_pixmap = None
+        
+        # 메인 레이아웃
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        
+        # 확대 이미지 레이블
+        self.zoom_label = QLabel()
+        self.zoom_label.setFixedSize(self.zoom_size, self.zoom_size)
+        self.zoom_label.setStyleSheet("background-color: black;")
+        layout.addWidget(self.zoom_label)
+        
+        # 상태 레이블
+        self.status_label = QLabel("준비됨")
+        self.status_label.setFixedHeight(25)
+        self.status_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.status_label.setStyleSheet("background-color: lightgray; padding: 2px;")
+        layout.addWidget(self.status_label)
+    
+    def update_status(self, text, bg_color="lightgray"):
+        """상태 텍스트 업데이트"""
+        self.status_label.setText(text)
+        self.status_label.setStyleSheet(f"background-color: {bg_color}; padding: 2px;")
+    
+    def set_screenshot(self, pixmap):
+        """스크린샷 설정"""
+        self.screenshot_pixmap = pixmap
+    
+    def update_zoom_view(self, x, y):
+        """확대 이미지 업데이트"""
+        if not self.screenshot_pixmap:
+            return
+            
+        try:
+            # 확대할 영역 반경 계산
+            zoom_radius = int(self.zoom_size / (2 * self.zoom_factor))
+            
+            # 영역 계산
+            left = max(0, int(x - zoom_radius))
+            top = max(0, int(y - zoom_radius))
+            width = min(zoom_radius * 2, self.screenshot_pixmap.width() - left)
+            height = min(zoom_radius * 2, self.screenshot_pixmap.height() - top)
+            
+            if width <= 0 or height <= 0:
+                return
+                
+            # 영역 크롭
+            crop_pixmap = self.screenshot_pixmap.copy(left, top, width, height)
+            
+            # 확대
+            zoom_pixmap = crop_pixmap.scaled(
+                self.zoom_size, 
+                self.zoom_size, 
+                Qt.KeepAspectRatio, 
+                Qt.SmoothTransformation
+            )
+            
+            # 십자선 추가
+            painter = QPainter(zoom_pixmap)
+            painter.setPen(QPen(Qt.red, 1))
+            
+            # 가로선
+            painter.drawLine(0, self.zoom_size//2, self.zoom_size, self.zoom_size//2)
+            # 세로선
+            painter.drawLine(self.zoom_size//2, 0, self.zoom_size//2, self.zoom_size)
+            
+            painter.end()
+            
+            # 결과 이미지 표시
+            self.zoom_label.setPixmap(zoom_pixmap)
+            
+        except Exception as e:
+            print(f"확대 뷰 업데이트 오류: {e}")
+
+
+class RegionSelector(QWidget):
     """마우스 드래그로 영역을 선택하는 도구"""
     
-    def __init__(self):
-        self.root = None
-        self.canvas = None
-        self.start_x = None
-        self.start_y = None
-        self.current_x = None
-        self.current_y = None
-        self.rect_id = None
+    region_selected = Signal(dict)  # 영역 선택 완료 시 신호
+    
+    def __init__(self, parent=None):
+        super().__init__(parent, Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        
+        # 변수 초기화
+        self.start_point = None
+        self.current_point = None
         self.selected_region = None
-        self.callback = None
-        self.screenshot = None
         self.target_window_only = False
         self.window_rect = (0, 0, 0, 0)
+        self.callback = None
+        self.screenshot = None
+        self.screenshot_pixmap = None
+        
+        self.dragging = False  # 드래그 중인지 상태 추적
         
         # 고정 치수 관련 변수
         self.fixed_width = None
         self.fixed_height = None
-        self.fixed_aspect_ratio = None
         
-        # 확대 뷰 관련 변수
+        # 마우스 트래킹 활성화 
+        self.setMouseTracking(True)
+        
+        # 창 설정
+        self.setWindowOpacity(0.9)  # 반투명
+        
+        # 확대 창 변수 초기화 (실제 생성은 start_selection에서 함)
         self.zoom_window = None
-        self.zoom_canvas = None
-        self.zoom_factor = DRAG_ZOOM_FACTOR  # 확대 배율
-        self.zoom_size = 150  # 확대 창 크기
         
-        # 키 제어 안내 레이블
-        self.info_label = None
+        # 마우스 위치 추적 타이머
+        self.mouse_timer = None
+        
+        # 키 안내 레이블
+        self.info_label = QLabel(self)
+        self.info_label.setStyleSheet(
+            "background-color: #0000ff; color: #ffffff; "
+            "font-weight: bold; padding: 5px; border: 1px solid black;"
+        )
+        self.info_label.setText(
+            f"[{DRAG_FIXED_WIDTH_KEY}] 너비 고정 / [{DRAG_FIXED_HEIGHT_KEY}] 높이 고정 / "
+            f"[{DRAG_KEEP_SQUARE_KEY}] 정사각 비율 / [{DRAG_ASPECT_RATIO_KEY}] {DRAG_ASPECT_RATIO_TEXT} 비율"
+        )
+        self.info_label.move(10, 10)
+        self.info_label.adjustSize()
     
     def start_selection(self, callback=None, target_window_only=False):
         """영역 선택 시작"""
         self.callback = callback
         self.target_window_only = target_window_only
         
-        # 새 tkinter 창 생성 (메인 루트 창이 아닌 Toplevel 사용)
-        self.root = tk.Toplevel()
-        self.root.withdraw()  # 임시로 숨김
-        self.root.title("Region Selector - " + str(id(self)))  # 고유한 제목 사용
+        # 초기화
+        self.start_point = None
+        self.current_point = None
+        self.selected_region = None
         
-        # mss 인스턴스 생성
-        with mss.mss() as sct:
-            # 타겟 윈도우가 있고, 해당 윈도우만 캡처하는 모드라면
-            if target_window_only and WindowUtil and WindowUtil.is_window_valid():
-                # 창 위치 가져오기
-                self.window_rect = WindowUtil.get_window_rect()
-                left, top, right, bottom = self.window_rect
-                width = right - left
-                height = bottom - top
-                
-                # 전체 화면 스크린샷 (mss 사용)
-                monitor = {"top": top, "left": left, "width": width, "height": height}
-                sct_img = sct.grab(monitor)
-                self.screenshot = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
-            else:
-                # 전체 화면 스크린샷 (mss 사용)
-                sct_img = sct.grab(sct.monitors[0])
-                self.screenshot = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
-                self.window_rect = (0, 0, self.screenshot.width, self.screenshot.height)
-        
-        # 크기 설정
+        # 창 위치 및 크기 설정
         if target_window_only and WindowUtil and WindowUtil.is_window_valid():
+            # 타겟 윈도우 기준
+            self.window_rect = WindowUtil.get_window_rect()
             left, top, right, bottom = self.window_rect
             width = right - left
             height = bottom - top
-            self.root.geometry(f"{width}x{height}+{left}+{top}")
+            self.setGeometry(left, top, width, height)
+            
+            # 스크린샷 (타겟 윈도우만)
+            with mss.mss() as sct:
+                monitor = {"top": top, "left": left, "width": width, "height": height}
+                sct_img = sct.grab(monitor)
+                img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+                self.screenshot = img
         else:
-            # 전체 화면 크기로 설정
-            screen_width = self.root.winfo_screenwidth()
-            screen_height = self.root.winfo_screenheight()
-            self.root.geometry(f"{screen_width}x{screen_height}+0+0")
+            # 전체 화면
+            screen_width = QApplication.primaryScreen().size().width()
+            screen_height = QApplication.primaryScreen().size().height()
+            self.setGeometry(0, 0, screen_width, screen_height)
+            self.window_rect = (0, 0, screen_width, screen_height)
+            
+            # 전체 화면 스크린샷
+            with mss.mss() as sct:
+                monitor = sct.monitors[0]
+                sct_img = sct.grab(monitor)
+                img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+                self.screenshot = img
         
-        # 창 설정
-        self.root.attributes('-alpha', 0.9)  # 반투명 설정
-        self.root.attributes('-topmost', True)  # 항상 위에 표시
-        self.root.overrideredirect(True)  # 창 경계선 제거
-        
-        # 캔버스 생성
-        self.canvas = tk.Canvas(self.root, width=self.screenshot.width, height=self.screenshot.height)
-        self.canvas.pack(fill=tk.BOTH, expand=True)
-        
-        # PIL 이미지를 PhotoImage로 변환
-        photo = ImageTk.PhotoImage(self.screenshot)
-        
-        # 이미지를 캔버스 아이템으로 추가하고 참조 유지
-        self.canvas.image = photo  # 이미지에 대한 참조 유지
-        self.canvas.create_image(0, 0, image=photo, anchor=tk.NW)
-        
-        # 키 제어 안내 레이블 추가
-        self.info_label = tk.Label(
-            self.root, 
-            text = f"[{DRAG_FIXED_WIDTH_KEY}] 너비 고정 / [{DRAG_FIXED_HEIGHT_KEY}] 높이 고정 / [{DRAG_KEEP_SQUARE_KEY}] 정사각 비율 / [{DRAG_ASPECT_RATIO_KEY}] {DRAG_ASPECT_RATIO_TEXT} 비율",
-            bg="#0000ff",
-            fg="#ffffff",
-
-            font=("Arial", 10, "bold"), 
-            padx=100, pady=0,
-            bd=1,         # 테두리 추가
-            relief=tk.SOLID  # 단색 테두리
+        # PIL 이미지를 QPixmap으로 변환
+        img_qt = QImage(
+            self.screenshot.tobytes(),
+            self.screenshot.width,
+            self.screenshot.height,
+            3 * self.screenshot.width,  # 바이트 수 (RGB)
+            QImage.Format_RGB888
         )
-        self.info_label.place(x=10, y=10)
+        self.screenshot_pixmap = QPixmap.fromImage(img_qt)
         
         # 확대 창 생성
-        self.create_zoom_window()
+        if self.zoom_window:
+            self.zoom_window.close()
+            self.zoom_window = None
+            
+        self.zoom_window = ZoomWindow()
+        self.zoom_window.set_screenshot(self.screenshot_pixmap)
         
-        # 이벤트 바인딩
-        self.canvas.bind("<ButtonPress-1>", self.on_press)
-        self.canvas.bind("<B1-Motion>", self.on_drag)
-        self.canvas.bind("<ButtonRelease-1>", self.on_release)
-        self.canvas.bind("<Motion>", self.on_mouse_move)  # 마우스 움직임 감지
+        # 마우스 위치 추적 타이머 시작
+        self.mouse_timer = QTimer(self)
+        self.mouse_timer.timeout.connect(self.track_mouse)
+        self.mouse_timer.start(50)  # 50ms 간격으로 업데이트
         
-        # ESC 키 누르면 취소
-        self.root.bind("<Escape>", self.cancel_selection)
+        # 위젯 표시
+        self.show()
+        self.zoom_window.show()
+        self.zoom_window.raise_()
         
-        # 창 표시
-        self.root.deiconify()
-        
-        # 메인 루프 대기
-        self.root.wait_window(self.root)
+        # ESC 키 감지를 위한 이벤트 필터 설치
+        self.installEventFilter(self)
         
         return self.selected_region
     
-    def create_zoom_window(self):
-        """확대 창 생성"""
-        self.zoom_window = tk.Toplevel()
-        self.zoom_window.title("Magnifier")
-        self.zoom_window.geometry(f"{self.zoom_size}x{self.zoom_size + 25}")
-        
-        # 투명도 관련 문제 해결을 위한 설정
-        self.zoom_window.attributes('-alpha', 1.0)  # 완전 불투명하게 설정
-        self.zoom_window.attributes('-topmost', True)  # 항상 최상위에 표시
-        
-        # 다른 창들보다 더 위에 표시되도록 zorder 조정
-        self.zoom_window.lift()
-        
-        # 메인 프레임 (배경색 설정)
-        main_frame = tk.Frame(self.zoom_window, bg='black')
-        main_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # 확대 캔버스 (배경색 설정)
-        self.zoom_canvas = tk.Canvas(main_frame, width=self.zoom_size, height=self.zoom_size, bg='black')
-        self.zoom_canvas.pack(fill=tk.BOTH, expand=True)
-        
-        # 상태 표시줄 추가
-        self.status_frame = tk.Frame(self.zoom_window, height=25, bg="lightgray")
-        self.status_frame.pack(fill=tk.X, side=tk.BOTTOM)
-        
-        # 상태 레이블
-        self.status_label = tk.Label(
-            self.status_frame, 
-            text="준비됨", 
-            font=("Arial", 9), 
-            bd=1, relief=tk.SUNKEN, 
-            anchor=tk.W,
-            bg="lightgray"
-        )
-        self.status_label.pack(fill=tk.X, padx=2, pady=2)
-        
-        # 확대 창이 닫히면 선택 취소
-        self.zoom_window.protocol("WM_DELETE_WINDOW", lambda: self.cancel_selection())
-    
-    def update_zoom_view(self, x, y):
-        """마우스 위치에 따라 확대 뷰 업데이트"""
-        if not hasattr(self, 'screenshot') or self.screenshot is None:
+    def track_mouse(self):
+        """마우스 위치 추적 및 확대 창 업데이트"""
+        if not self.zoom_window:
             return
             
-        # 확대할 영역 계산
-        zoom_radius = self.zoom_size // (2 * self.zoom_factor)
+        # 현재 마우스 위치 가져오기
+        cursor_pos = QCursor.pos()
         
-        # 확대 영역이 스크린샷 범위를 벗어나지 않도록 보정
-        left = max(0, x - zoom_radius)
-        top = max(0, y - zoom_radius)
-        right = min(self.screenshot.width, x + zoom_radius)
-        bottom = min(self.screenshot.height, y + zoom_radius)
+        # 화면 내 상대 좌표로 변환
+        window_pos = self.mapFromGlobal(cursor_pos)
         
-        # 영역 크롭 및 확대
-        try:
-            zoom_area = self.screenshot.crop((left, top, right, bottom))
-            
-            # 이미지 불투명도 향상 (필요한 경우)
-            # RGBA로 변환해서 알파 채널을 조정
-            if zoom_area.mode != 'RGB':
-                zoom_area = zoom_area.convert('RGB')
-            
-            # 이미지 대비 강화 (선명도 향상)
-            from PIL import ImageEnhance
-            enhancer = ImageEnhance.Contrast(zoom_area)
-            zoom_area = enhancer.enhance(1.2)  # 대비 20% 증가
-            
-            # 밝기 약간 증가
-            enhancer = ImageEnhance.Brightness(zoom_area)
-            zoom_area = enhancer.enhance(1.1)  # 밝기 10% 증가
-            
-            # 확대
-            zoomed = zoom_area.resize(
-                (int(zoom_area.width * self.zoom_factor), 
-                int(zoom_area.height * self.zoom_factor)),
-                Image.LANCZOS
-            )
-            
-            # 확대 창 이미지 업데이트
-            self.zoomed_image = ImageTk.PhotoImage(zoomed)
-            self.zoom_canvas.delete("all")
-            
-            # 배경색 설정 (이미지 가시성 향상)
-            self.zoom_canvas.config(bg='black')
-            
-            self.zoom_canvas.create_image(self.zoom_size//2, self.zoom_size//2, 
-                                        image=self.zoomed_image, anchor=tk.CENTER)
-            
-            # 중심 표시 (십자선)
-            self.zoom_canvas.create_line(0, self.zoom_size//2, self.zoom_size, self.zoom_size//2, 
-                                        fill="red", width=1)
-            self.zoom_canvas.create_line(self.zoom_size//2, 0, self.zoom_size//2, self.zoom_size, 
-                                        fill="red", width=1)
-            
-            # 키 상태 확인 및 상태 표시줄 업데이트
-            self.update_status_bar()
-            
-            # 확대 창 위치 업데이트 (마우스 위치에 따라)
-            x_screen, y_screen = pyautogui.position()
-            screen_width = self.root.winfo_screenwidth()
-            screen_height = self.root.winfo_screenheight()
-            
-            # 마우스가 화면 오른쪽/아래에 있으면 확대 창을 왼쪽/위에 배치
-            if x_screen > screen_width // 2:
-                zoom_x = x_screen - self.zoom_size - 20
-            else:
-                zoom_x = x_screen + 20
-                
-            if y_screen > screen_height // 2:
-                zoom_y = y_screen - self.zoom_size - 20 - 25  # 상태 표시줄 높이 고려
-            else:
-                zoom_y = y_screen + 20
-                
-            self.zoom_window.geometry(f"{self.zoom_size}x{self.zoom_size + 25}+{zoom_x}+{zoom_y}")
-    
-            # 항상 최상위에 표시되도록 설정
-            self.zoom_window.attributes('-topmost', True)
-            self.zoom_window.lift()
-            
-        except Exception as e:
-            print(f"확대 뷰 업데이트 오류: {e}")
-
-    def update_status_bar(self):
-        """현재 키 상태에 따라 상태 표시줄 업데이트"""
-        if not hasattr(self, 'status_label') or not self.status_label:
-            return
+        # 확대 창 업데이트
+        self.zoom_window.update_zoom_view(window_pos.x(), window_pos.y())
         
-        # 키 상태 확인
-        is_square_key_pressed = keyboard.is_pressed(DRAG_KEEP_SQUARE_KEY)
-        is_width_key_pressed = keyboard.is_pressed(DRAG_FIXED_WIDTH_KEY)
-        is_height_key_pressed = keyboard.is_pressed(DRAG_FIXED_HEIGHT_KEY)
-        is_ratio_key_pressed = keyboard.is_pressed(DRAG_ASPECT_RATIO_KEY)
+        # 확대 창 위치 조정
+        screen_width = QApplication.primaryScreen().size().width()
+        screen_height = QApplication.primaryScreen().size().height()
         
-        status_text = "준비됨"
-        status_bg = "lightgray"
-        
-        # 활성화된 키에 따라 상태 텍스트와 색상 설정
-        if is_square_key_pressed:
-            status_text = f"[{DRAG_KEEP_SQUARE_KEY}] 정사각형 비율 유지"
-            status_bg = "#ffe6cc"  # 연한 주황색
-        elif is_width_key_pressed:
-            status_text = f"[{DRAG_FIXED_WIDTH_KEY}] 너비 고정"
-            status_bg = "#cce5ff"  # 연한 파란색
-        elif is_height_key_pressed:
-            status_text = f"[{DRAG_FIXED_HEIGHT_KEY}] 높이 고정"
-            status_bg = "#d4edda"  # 연한 녹색
-        elif is_ratio_key_pressed:
-            ratio_text = f"{DRAG_ASPECT_RATIO:.1f}"
-            if DRAG_ASPECT_RATIO == 16/9:
-                ratio_text = "16:9"
-            elif DRAG_ASPECT_RATIO == 4/3:
-                ratio_text = "4:3"
-            status_text = f"[{DRAG_ASPECT_RATIO_KEY}] {ratio_text} 비율 유지"
-            status_bg = "#f8d7da"  # 연한 빨간색
-        
-        # 드래그 상태에 따라 추가 정보
-        if self.start_x is not None and self.current_x is not None:
-            width = abs(self.current_x - self.start_x)
-            height = abs(self.current_y - self.start_y)
-            status_text += f" | {int(width)}x{int(height)}px"
-        
-        # 상태 레이블 업데이트
-        self.status_label.config(text=status_text, bg=status_bg)
-    
-    def on_mouse_move(self, event):
-        """마우스 이동 시 확대 뷰 업데이트"""
-        self.update_zoom_view(event.x, event.y)
-    
-    def on_press(self, event):
-        """마우스 버튼 누를 때"""
-        self.start_x = event.x
-        self.start_y = event.y
-        
-        # 새 사각형 생성
-        if self.rect_id:
-            self.canvas.delete(self.rect_id)
-        
-        self.rect_id = self.canvas.create_rectangle(
-            self.start_x, self.start_y, self.start_x, self.start_y,
-            outline='red', width=2
-        )
-    
-    def on_drag(self, event):
-        """마우스 드래그 중"""
-        current_x = event.x
-        current_y = event.y
-        
-        # 키보드 상태 확인
-        is_square_key_pressed = keyboard.is_pressed(DRAG_KEEP_SQUARE_KEY)
-        is_width_key_pressed = keyboard.is_pressed(DRAG_FIXED_WIDTH_KEY)
-        is_height_key_pressed = keyboard.is_pressed(DRAG_FIXED_HEIGHT_KEY)
-        is_ratio_key_pressed = keyboard.is_pressed(DRAG_ASPECT_RATIO_KEY)
-        
-        # 첫 드래그 시 고정 치수 설정
-        if self.fixed_width is None and is_width_key_pressed:
-            self.fixed_width = abs(current_x - self.start_x)
-        
-        if self.fixed_height is None and is_height_key_pressed:
-            self.fixed_height = abs(current_y - self.start_y)
-        
-        # 키 상태에 따라 좌표 조정
-        if is_square_key_pressed:
-            # 정사각형 유지
-            size = max(abs(current_x - self.start_x), abs(current_y - self.start_y))
-            if current_x >= self.start_x:
-                current_x = self.start_x + size
-            else:
-                current_x = self.start_x - size
-                
-            if current_y >= self.start_y:
-                current_y = self.start_y + size
-            else:
-                current_y = self.start_y - size
-        
-        elif is_width_key_pressed and self.fixed_width is not None:
-            # 너비 고정
-            if current_x >= self.start_x:
-                current_x = self.start_x + self.fixed_width
-            else:
-                current_x = self.start_x - self.fixed_width
-        
-        elif is_height_key_pressed and self.fixed_height is not None:
-            # 높이 고정
-            if current_y >= self.start_y:
-                current_y = self.start_y + self.fixed_height
-            else:
-                current_y = self.start_y - self.fixed_height
-        
-        elif is_ratio_key_pressed:
-            # 특정 비율 유지 (16:9 등)
-            width = abs(current_x - self.start_x)
-            height = width / DRAG_ASPECT_RATIO
-            
-            if current_y >= self.start_y:
-                current_y = self.start_y + height
-            else:
-                current_y = self.start_y - height
-        
-        # 현재 좌표 업데이트
-        self.current_x = current_x
-        self.current_y = current_y
-        
-        # 사각형 크기 업데이트
-        self.canvas.coords(self.rect_id, self.start_x, self.start_y, self.current_x, self.current_y)
-        
-        # 확대 뷰 업데이트 (이미 상태 표시줄 업데이트를 포함함)
-        self.update_zoom_view(event.x, event.y)
-        
-        # 선택 영역 크기 표시
-        width = abs(self.current_x - self.start_x)
-        height = abs(self.current_y - self.start_y)
-        
-        # 사각형 크기 업데이트
-        if self.rect_id:
-            self.canvas.delete(self.rect_id)
-        
-        # 이전 크기 텍스트와 반투명 효과 삭제
-        self.canvas.delete("size_text")
-        self.canvas.delete("overlay")
-        
-        # 선택 영역 계산
-        x1 = min(self.start_x, self.current_x)
-        y1 = min(self.start_y, self.current_y)
-        x2 = max(self.start_x, self.current_x)
-        y2 = max(self.start_y, self.current_y)
-        width = x2 - x1
-        height = y2 - y1
-        
-        # 반투명 검은색 배경과 드래그 영역만 선명하게 보이는 효과 생성
-        # 1. 위쪽 사각형
-        if y1 > 0:
-            self.canvas.create_rectangle(0, 0, self.screenshot.width, y1, 
-                                        fill="#000000", stipple="gray50", outline="", tags="overlay")
-        
-        # 2. 아래쪽 사각형
-        if y2 < self.screenshot.height:
-            self.canvas.create_rectangle(0, y2, self.screenshot.width, self.screenshot.height, 
-                                        fill="#000000", stipple="gray50", outline="", tags="overlay")
-        
-        # 3. 왼쪽 사각형
-        if x1 > 0:
-            self.canvas.create_rectangle(0, y1, x1, y2, 
-                                        fill="#000000", stipple="gray50", outline="", tags="overlay")
-        
-        # 4. 오른쪽 사각형
-        if x2 < self.screenshot.width:
-            self.canvas.create_rectangle(x2, y1, self.screenshot.width, y2, 
-                                        fill="#000000", stipple="gray50", outline="", tags="overlay")
-        
-        # 드래그 영역 테두리 (선명한 빨간색)
-        self.rect_id = self.canvas.create_rectangle(
-            self.start_x, self.start_y, self.current_x, self.current_y,
-            outline='red', width=2
-        )
-        
-        # 확대 뷰 업데이트 (이미 상태 표시줄 업데이트를 포함함)
-        self.update_zoom_view(event.x, event.y)
-        
-        # 중앙에 크기 텍스트 표시
-        x = min(self.start_x, self.current_x) + width / 2
-        y = min(self.start_y, self.current_y) + height / 2
-        
-        self.canvas.create_text(
-            x, y,
-            text=f"{int(width)} x {int(height)}",
-            fill="white",
-            font=("Arial", 12, "bold"),
-            tags="size_text"
-        )
-    
-    def on_release(self, event):
-        """마우스 버튼 놓을 때"""
-        # 오버레이 삭제
-        self.canvas.delete("overlay")
-
-        self.current_x = event.x
-        self.current_y = event.y
-        
-        # 키 상태에 따라 최종 조정 (on_drag와 동일한 로직)
-        is_square_key_pressed = keyboard.is_pressed(DRAG_KEEP_SQUARE_KEY)
-        is_width_key_pressed = keyboard.is_pressed(DRAG_FIXED_WIDTH_KEY)
-        is_height_key_pressed = keyboard.is_pressed(DRAG_FIXED_HEIGHT_KEY)
-        is_ratio_key_pressed = keyboard.is_pressed(DRAG_ASPECT_RATIO_KEY)
-        
-        if is_square_key_pressed:
-            # 정사각형 유지
-            size = max(abs(self.current_x - self.start_x), abs(self.current_y - self.start_y))
-            if self.current_x >= self.start_x:
-                self.current_x = self.start_x + size
-            else:
-                self.current_x = self.start_x - size
-                
-            if self.current_y >= self.start_y:
-                self.current_y = self.start_y + size
-            else:
-                self.current_y = self.start_y - size
-        
-        elif is_width_key_pressed and self.fixed_width is not None:
-            # 너비 고정
-            if self.current_x >= self.start_x:
-                self.current_x = self.start_x + self.fixed_width
-            else:
-                self.current_x = self.start_x - self.fixed_width
-        
-        elif is_height_key_pressed and self.fixed_height is not None:
-            # 높이 고정
-            if self.current_y >= self.start_y:
-                self.current_y = self.start_y + self.fixed_height
-            else:
-                self.current_y = self.start_y - self.fixed_height
-        
-        elif is_ratio_key_pressed:
-            # 특정 비율 유지 (16:9 등)
-            width = abs(self.current_x - self.start_x)
-            height = width / DRAG_ASPECT_RATIO
-            
-            if self.current_y >= self.start_y:
-                self.current_y = self.start_y + height
-            else:
-                self.current_y = self.start_y - height
-        
-        # 좌표 정규화 (시작점이 항상 좌상단, 끝점이 항상 우하단이 되도록)
-        x1 = min(self.start_x, self.current_x)
-        y1 = min(self.start_y, self.current_y)
-        x2 = max(self.start_x, self.current_x)
-        y2 = max(self.start_y, self.current_y)
-        
-        width = x2 - x1
-        height = y2 - y1
-        
-        # 창 기준 상대 좌표로 변환
-        if self.target_window_only and WindowUtil and WindowUtil.is_window_valid():
-            # 이미 타겟 윈도우 기준 좌표
-            rel_x1, rel_y1, rel_x2, rel_y2 = x1, y1, x2, y2
-            left, top, _, _ = self.window_rect
-            abs_x1, abs_y1 = x1 + left, y1 + top
-            abs_x2, abs_y2 = x2 + left, y2 + top
+        # 마우스 위치에 따라 확대 창 위치 조정
+        if cursor_pos.x() > screen_width // 2:
+            zoom_x = cursor_pos.x() - self.zoom_window.width() - 20
         else:
-            # 화면 기준 절대 좌표
-            abs_x1, abs_y1, abs_x2, abs_y2 = x1, y1, x2, y2
+            zoom_x = cursor_pos.x() + 20
             
-            # 창 기준 상대 좌표로 변환
-            if WindowUtil and WindowUtil.is_window_valid():
-                left, top, _, _ = WindowUtil.get_window_rect()
-                rel_x1, rel_y1 = abs_x1 - left, abs_y1 - top
-                rel_x2, rel_y2 = abs_x2 - left, abs_y2 - top
-            else:
-                rel_x1, rel_y1, rel_x2, rel_y2 = abs_x1, abs_y1, abs_x2, abs_y2
-        
-        # 선택된 영역 정보 저장
-        self.selected_region = {
-            "abs": (abs_x1, abs_y1, abs_x2, abs_y2),  # 절대 좌표 (화면 기준)
-            "rel": (rel_x1, rel_y1, rel_x2, rel_y2),  # 상대 좌표 (창 기준)
-            "width": width,
-            "height": height
-        }
-        
-        # 고정 치수 변수 초기화
-        self.fixed_width = None
-        self.fixed_height = None
-        
-        # 창 닫기
-        if self.zoom_window:
-            self.zoom_window.destroy()
-        self.root.destroy()
-        
-        # 콜백 함수 호출
-        if self.callback:
-            self.callback(self.selected_region)
+        if cursor_pos.y() > screen_height // 2:
+            zoom_y = cursor_pos.y() - self.zoom_window.height() - 20
+        else:
+            zoom_y = cursor_pos.y() + 20
+            
+        self.zoom_window.move(zoom_x, zoom_y)
     
-    def cancel_selection(self, event=None):
-        """ESC 키 눌러 선택 취소"""
+    def eventFilter(self, obj, event):
+        """이벤트 필터 (ESC 키 감지용)"""
+        # if event.type() == event.KeyPress and event.key() == Qt.Key_Escape:
+        if event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape:
+            self.cancel_selection()
+            return True
+        return super().eventFilter(obj, event)
+    
+    def cancel_selection(self):
+        """선택 취소"""
         self.selected_region = None
-        
-        # 고정 치수 변수 초기화
         self.fixed_width = None
         self.fixed_height = None
         
+        if self.mouse_timer:
+            self.mouse_timer.stop()
+            self.mouse_timer = None
+        
         if self.zoom_window:
-            self.zoom_window.destroy()
-        self.root.destroy()
+            self.zoom_window.close()
+            self.zoom_window = None
+        
+        self.close()
         
         # 콜백 함수 호출
         if self.callback:
             self.callback(None)
+    
+    def paintEvent(self, event):
+        """화면 그리기 이벤트"""
+        painter = QPainter(self)
+        
+        # 스크린샷 그리기
+        if self.screenshot_pixmap:
+            painter.drawPixmap(0, 0, self.screenshot_pixmap)
+        
+        # 선택 영역이 있으면 그리기
+        if self.start_point and self.current_point:
+            # 좌표 계산
+            x1 = min(self.start_point.x(), self.current_point.x())
+            y1 = min(self.start_point.y(), self.current_point.y())
+            x2 = max(self.start_point.x(), self.current_point.x())
+            y2 = max(self.start_point.y(), self.current_point.y())
+            width = x2 - x1
+            height = y2 - y1
+            
+            # 반투명 오버레이 생성 (선택 영역 제외한 영역을 어둡게)
+            overlay_color = QColor(0, 0, 0, 128)  # 반투명 검은색
+            
+            # 1. 위쪽 영역
+            if y1 > 0:
+                painter.fillRect(0, 0, self.width(), y1, overlay_color)
+            
+            # 2. 아래쪽 영역
+            if y2 < self.height():
+                painter.fillRect(0, y2, self.width(), self.height() - y2, overlay_color)
+            
+            # 3. 왼쪽 영역
+            if x1 > 0:
+                painter.fillRect(0, y1, x1, height, overlay_color)
+            
+            # 4. 오른쪽 영역
+            if x2 < self.width():
+                painter.fillRect(x2, y1, self.width() - x2, height, overlay_color)
+            
+            # 선택 영역 테두리 (빨간색)
+            pen = QPen(Qt.red)
+            pen.setWidth(2)
+            painter.setPen(pen)
+            painter.drawRect(x1, y1, width, height)
+            
+            # 크기 텍스트 표시
+            size_text = f"{int(width)} x {int(height)}"
+            font = QFont("Arial", 12, QFont.Bold)
+            painter.setFont(font)
+            
+            # 텍스트 배경 (가독성 향상을 위한 반투명 검은색 배경)
+            text_width = painter.fontMetrics().horizontalAdvance(size_text) + 10
+            text_height = painter.fontMetrics().height() + 4
+            text_x = x1 + (width - text_width) / 2
+            text_y = y1 + (height - text_height) / 2
+            painter.fillRect(text_x, text_y, text_width, text_height, QColor(0, 0, 0, 180))
+            
+            # 텍스트 (흰색)
+            painter.setPen(QColor(255, 255, 255))
+            painter.drawText(text_x + 5, text_y + text_height - 4, size_text)
+    
+    def mousePressEvent(self, event):
+        """마우스 버튼 누를 때"""
+        if event.button() == Qt.LeftButton:
+            # self.start_point = event.position()
+            # self.current_point = event.position()
+            # self.update()  # 화면 갱신
+            
+            # 반드시 정수로 변환하여 좌표 저장
+            x = int(event.position().x())
+            y = int(event.position().y())
+            
+            self.dragging = True  # 드래그 시작
+            self.start_point = QPoint(x, y)
+            self.current_point = QPoint(x, y)
+            self.update()  # 화면 갱신
+    
+    def mouseMoveEvent(self, event):
+        # 드래그 중이 아니면 처리하지 않음
+        if not self.dragging or not self.start_point:
+            return
+    
+        """마우스 이동 이벤트"""
+        current_pos = event.position()
+        
+        # 드래그 중이면 선택 영역 업데이트
+        if event.buttons() & Qt.LeftButton and self.start_point:
+            # 키보드 상태 확인
+            is_square_key_pressed = keyboard.is_pressed(DRAG_KEEP_SQUARE_KEY)
+            is_width_key_pressed = keyboard.is_pressed(DRAG_FIXED_WIDTH_KEY)
+            is_height_key_pressed = keyboard.is_pressed(DRAG_FIXED_HEIGHT_KEY)
+            is_ratio_key_pressed = keyboard.is_pressed(DRAG_ASPECT_RATIO_KEY)
+            
+            # 좌표 정수 변환
+            current_x = int(event.position().x())
+            current_y = int(event.position().y())
+            
+            # 첫 드래그 시 고정 치수 설정
+            if self.fixed_width is None and is_width_key_pressed:
+                self.fixed_width = abs(current_x - self.start_point.x())
+            
+            if self.fixed_height is None and is_height_key_pressed:
+                self.fixed_height = abs(current_y - self.start_point.y())
+            
+            # 키 상태에 따라 좌표 조정
+            if is_square_key_pressed:
+                # 정사각형 유지
+                size = max(abs(current_x - self.start_point.x()), abs(current_y - self.start_point.y()))
+                if current_x >= self.start_point.x():
+                    current_x = self.start_point.x() + size
+                else:
+                    current_x = self.start_point.x() - size
+                    
+                if current_y >= self.start_point.y():
+                    current_y = self.start_point.y() + size
+                else:
+                    current_y = self.start_point.y() - size
+            
+            elif is_width_key_pressed and self.fixed_width is not None:
+                # 너비 고정
+                if current_x >= self.start_point.x():
+                    current_x = self.start_point.x() + self.fixed_width
+                else:
+                    current_x = self.start_point.x() - self.fixed_width
+            
+            elif is_height_key_pressed and self.fixed_height is not None:
+                # 높이 고정
+                if current_y >= self.start_point.y():
+                    current_y = self.start_point.y() + self.fixed_height
+                else:
+                    current_y = self.start_point.y() - self.fixed_height
+            
+            elif is_ratio_key_pressed:
+                # 특정 비율 유지 (16:9 등)
+                width = abs(current_x - self.start_point.x())
+                height = width / DRAG_ASPECT_RATIO
+                
+                if current_y >= self.start_point.y():
+                    current_y = self.start_point.y() + height
+                else:
+                    current_y = self.start_point.y() - height
+            
+            # 현재 좌표 업데이트 (정수형)
+            self.current_point = QPoint(current_x, current_y)
+            self.update()  # 화면 갱신
+            
+            # 영역 크기 계산
+            x1 = min(self.start_point.x(), self.current_point.x())
+            y1 = min(self.start_point.y(), self.current_point.y())
+            x2 = max(self.start_point.x(), self.current_point.x())
+            y2 = max(self.start_point.y(), self.current_point.y())
+            width = x2 - x1
+            height = y2 - y1
+            
+            # 상태 표시 업데이트
+            if self.zoom_window:
+                status_text = f"{int(width)} x {int(height)}"
+                
+                if is_square_key_pressed:
+                    status_text = f"[{DRAG_KEEP_SQUARE_KEY}] 정사각형 | " + status_text
+                    bg_color = "#ffe6cc"  # 연한 주황색
+                elif is_width_key_pressed:
+                    status_text = f"[{DRAG_FIXED_WIDTH_KEY}] 너비 고정 | " + status_text
+                    bg_color = "#cce5ff"  # 연한 파란색
+                elif is_height_key_pressed:
+                    status_text = f"[{DRAG_FIXED_HEIGHT_KEY}] 높이 고정 | " + status_text
+                    bg_color = "#d4edda"  # 연한 녹색
+                elif is_ratio_key_pressed:
+                    ratio_text = f"{DRAG_ASPECT_RATIO:.1f}"
+                    if DRAG_ASPECT_RATIO == 16/9:
+                        ratio_text = "16:9"
+                    elif DRAG_ASPECT_RATIO == 4/3:
+                        ratio_text = "4:3"
+                    status_text = f"[{DRAG_ASPECT_RATIO_KEY}] {ratio_text} | " + status_text
+                    bg_color = "#f8d7da"  # 연한 빨간색
+                else:
+                    bg_color = "lightgray"
+                
+                self.zoom_window.update_status(status_text, bg_color)
+        
+        # 화면 갱신
+        self.update()
+    
+    def mouseReleaseEvent(self, event):
+        if not self.dragging or event.button() != Qt.LeftButton:
+            return
+        
+        """마우스 버튼 놓을 때"""
+        if event.button() == Qt.LeftButton and self.start_point:
+            self.dragging = False  # 드래그 종료
+            
+            # 최종 좌표 조정 (mouseMoveEvent와 동일한 로직)
+            is_square_key_pressed = keyboard.is_pressed(DRAG_KEEP_SQUARE_KEY)
+            is_width_key_pressed = keyboard.is_pressed(DRAG_FIXED_WIDTH_KEY)
+            is_height_key_pressed = keyboard.is_pressed(DRAG_FIXED_HEIGHT_KEY)
+            is_ratio_key_pressed = keyboard.is_pressed(DRAG_ASPECT_RATIO_KEY)
+            
+            current_x = event.position().x()
+            current_y = event.position().y()
+            
+            # 키 상태에 따른 좌표 조정 (mouseMoveEvent와 동일한 로직)
+            if is_square_key_pressed:
+                size = max(abs(current_x - self.start_point.x()), abs(current_y - self.start_point.y()))
+                if current_x >= self.start_point.x():
+                    current_x = self.start_point.x() + size
+                else:
+                    current_x = self.start_point.x() - size
+                    
+                if current_y >= self.start_point.y():
+                    current_y = self.start_point.y() + size
+                else:
+                    current_y = self.start_point.y() - size
+            
+            elif is_width_key_pressed and self.fixed_width is not None:
+                if current_x >= self.start_point.x():
+                    current_x = self.start_point.x() + self.fixed_width
+                else:
+                    current_x = self.start_point.x() - self.fixed_width
+            
+            elif is_height_key_pressed and self.fixed_height is not None:
+                if current_y >= self.start_point.y():
+                    current_y = self.start_point.y() + self.fixed_height
+                else:
+                    current_y = self.start_point.y() - self.fixed_height
+            
+            elif is_ratio_key_pressed:
+                width = abs(current_x - self.start_point.x())
+                height = width / DRAG_ASPECT_RATIO
+                
+                if current_y >= self.start_point.y():
+                    current_y = self.start_point.y() + height
+                else:
+                    current_y = self.start_point.y() - height
+            
+            # 현재 위치 업데이트
+            self.current_point = QPoint(int(current_x), int(current_y))
+            
+            # 좌표 정규화
+            x1 = min(self.start_point.x(), self.current_point.x())
+            y1 = min(self.start_point.y(), self.current_point.y())
+            x2 = max(self.start_point.x(), self.current_point.x())
+            y2 = max(self.start_point.y(), self.current_point.y())
+            
+            width = x2 - x1
+            height = y2 - y1
+            
+            # 창 기준 상대 좌표로 변환
+            if self.target_window_only and WindowUtil and WindowUtil.is_window_valid():
+                # 이미 타겟 윈도우 기준 좌표
+                rel_x1, rel_y1, rel_x2, rel_y2 = x1, y1, x2, y2
+                left, top, _, _ = self.window_rect
+                abs_x1, abs_y1 = x1 + left, y1 + top
+                abs_x2, abs_y2 = x2 + left, y2 + top
+            else:
+                # 화면 기준 절대 좌표
+                abs_x1, abs_y1, abs_x2, abs_y2 = x1, y1, x2, y2
+                
+                # 창 기준 상대 좌표로 변환
+                if WindowUtil and WindowUtil.is_window_valid():
+                    left, top, _, _ = WindowUtil.get_window_rect()
+                    rel_x1, rel_y1 = abs_x1 - left, abs_y1 - top
+                    rel_x2, rel_y2 = abs_x2 - left, abs_y2 - top
+                else:
+                    rel_x1, rel_y1, rel_x2, rel_y2 = abs_x1, abs_y1, abs_x2, abs_y2
+            
+            # 선택된 영역 정보 저장
+            self.selected_region = {
+                "abs": (abs_x1, abs_y1, abs_x2, abs_y2),  # 절대 좌표 (화면 기준)
+                "rel": (rel_x1, rel_y1, rel_x2, rel_y2),  # 상대 좌표 (창 기준)
+                "width": width,
+                "height": height
+            }
+            
+            # 타이머 정지
+            if self.mouse_timer:
+                self.mouse_timer.stop()
+                self.mouse_timer = None
+            
+            # 고정 치수 변수 초기화
+            self.fixed_width = None
+            self.fixed_height = None
+            
+            # 확대 창 닫기
+            if self.zoom_window:
+                self.zoom_window.close()
+                self.zoom_window = None
+            
+            # 신호 발생
+            if self.selected_region:
+                self.region_selected.emit(self.selected_region)
+            
+            # 콜백 함수 호출
+            if self.callback:
+                self.callback(self.selected_region)
+                
+            self.update()  # 최종 화면 갱신
+            self.close()
+    
+    def keyPressEvent(self, event):
+        """키 이벤트 처리"""
+        if event.key() == Qt.Key_Escape:
+            self.cancel_selection()
+        else:
+            super().keyPressEvent(event)

@@ -1,19 +1,18 @@
-import tkinter as tk
-from tkinter import messagebox
+from PySide6.QtWidgets import QMenu, QMessageBox, QDialog, QVBoxLayout, QTextEdit
+from PySide6.QtGui import QAction
 import os
 
 from zzz.config import *
 
 class MenuBar:
-    def __init__(self, root, settings_manager, ocr_initializer):
+    def __init__(self, main_window, settings_manager, ocr_initializer):
         """메뉴바 초기화"""
-        self.root = root
+        self.main_window = main_window
         self.settings_manager = settings_manager
         self.ocr_initializer = ocr_initializer
         
-        # 메뉴바 생성
-        self.menubar = tk.Menu(root)
-        root.config(menu=self.menubar)
+        # 메뉴바 생성 (QMainWindow에서 제공하는 메뉴바 사용)
+        self.menubar = main_window.menuBar()
         
         # 메뉴 추가
         self._create_file_menu()
@@ -24,31 +23,45 @@ class MenuBar:
     
     def _create_file_menu(self):
         """파일 메뉴 생성"""
-        file_menu = tk.Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label="파일", menu=file_menu)
-        file_menu.add_command(label="종료", command=self.root.quit)
+        file_menu = self.menubar.addMenu("파일(&F)")
+        exit_action = QAction("종료(&Q)", self.main_window)
+        exit_action.triggered.connect(self.main_window.close)
+        file_menu.addAction(exit_action)
     
     def _create_settings_menu(self):
         """설정 메뉴 생성"""
-        settings_menu = tk.Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label="설정", menu=settings_menu)
+        self.settings_menu = self.menubar.addMenu("설정(&S)")
         
         # OCR 관련 설정 하위 메뉴
-        ocr_menu = tk.Menu(settings_menu, tearoff=0)
-        settings_menu.add_cascade(label="OCR 설정", menu=ocr_menu)
-        ocr_menu.add_command(label="Tesseract OCR 경로 설정", command=self.set_tesseract_path)
-        ocr_menu.add_command(label="Tesseract OCR 경로 열기", command=self.open_tesseract_folder)
+        self.ocr_menu = QMenu("OCR 설정", self.main_window)
+        self.settings_menu.addMenu(self.ocr_menu)
+        
+        set_path_action = QAction("Tesseract OCR 경로 설정", self.main_window)
+        set_path_action.triggered.connect(self.set_tesseract_path)
+        self.ocr_menu.addAction(set_path_action)
+        
+        self.open_path_action = QAction("Tesseract OCR 경로 열기", self.main_window)
+        self.open_path_action.triggered.connect(self.open_tesseract_folder)
+        self.ocr_menu.addAction(self.open_path_action)
         
         # 응용 프로그램 데이터 폴더 관련 메뉴
-        settings_menu.add_separator()
-        settings_menu.add_command(label="앱 데이터 경로 열기", command=self.open_appdata_folder)
+        self.settings_menu.addSeparator()
+        
+        open_appdata_action = QAction("앱 데이터 경로 열기", self.main_window)
+        open_appdata_action.triggered.connect(self.open_appdata_folder)
+        self.settings_menu.addAction(open_appdata_action)
     
     def _create_help_menu(self):
         """도움말 메뉴 생성"""
-        help_menu = tk.Menu(self.menubar, tearoff=0)
-        self.menubar.add_cascade(label="도움말", menu=help_menu)
-        help_menu.add_command(label="사용법", command=self.show_help)
-        help_menu.add_command(label="정보", command=self.show_about)
+        help_menu = self.menubar.addMenu("도움말(&H)")
+        
+        help_action = QAction("사용법", self.main_window)
+        help_action.triggered.connect(self.show_help)
+        help_menu.addAction(help_action)
+        
+        about_action = QAction("정보", self.main_window)
+        about_action.triggered.connect(self.show_about)
+        help_menu.addAction(about_action)
     
     def set_tesseract_path(self):
         """Tesseract OCR 경로 설정"""
@@ -56,7 +69,7 @@ class MenuBar:
         current_path = self.settings_manager.get('Tesseract', 'Path', DEFAULT_TESSERACT_PATH)
         
         # 사용자에게 경로 선택 요청
-        new_path = self.settings_manager.prompt_tesseract_path(self.root)
+        new_path = self.settings_manager.prompt_tesseract_path(self.main_window)
         
         if new_path:
             # OCR 재초기화 함수 호출 (메시지 표시 옵션을 True로 설정)
@@ -76,28 +89,28 @@ class MenuBar:
                 # 해당 폴더 탐색기로 열기
                 os.startfile(folder_path)
             else:
-                messagebox.showinfo("알림", "Tesseract OCR 경로가 설정되어 있지 않습니다.", parent=self.root)
+                QMessageBox.information(
+                    self.main_window,
+                    "알림",
+                    "Tesseract OCR 경로가 설정되어 있지 않습니다."
+                )
         except Exception as e:
-            messagebox.showerror("오류", f"폴더를 여는 중 오류가 발생했습니다: {str(e)}", parent=self.root)
+            QMessageBox.critical(
+                self.main_window,
+                "오류",
+                f"폴더를 여는 중 오류가 발생했습니다: {str(e)}"
+            )
             
     def update_open_path_menu_state(self):
         """OCR 경로 탐색기로 열기 메뉴 상태 업데이트"""
         # 현재 설정된 Tesseract 경로 가져오기
         tesseract_path = self.settings_manager.get('Tesseract', 'Path', '')
         
-        # 메뉴바에서 설정 메뉴 가져오기
-        index = self.menubar.index("설정")
-        settings_menu = self.menubar.nametowidget(self.menubar.entrycget(index, "menu"))
-        
-        # OCR 설정 서브메뉴 가져오기
-        ocr_menu_index = settings_menu.index("OCR 설정")
-        ocr_menu = settings_menu.nametowidget(settings_menu.entrycget(ocr_menu_index, "menu"))
-        
         # 메뉴 활성화/비활성화
         if tesseract_path and os.path.exists(tesseract_path):
-            ocr_menu.entryconfig("Tesseract OCR 경로 열기", state="normal")
+            self.open_path_action.setEnabled(True)
         else:
-            ocr_menu.entryconfig("Tesseract OCR 경로 열기", state="disabled")
+            self.open_path_action.setEnabled(False)
             
     def open_appdata_folder(self):
         """앱 데이터 폴더 열기"""
@@ -115,9 +128,17 @@ class MenuBar:
                     os.makedirs(appdata_path)
                     os.startfile(appdata_path)
                 except Exception as e:
-                    messagebox.showerror("오류", f"폴더를 생성하는 중 오류가 발생했습니다: {str(e)}", parent=self.root)
+                    QMessageBox.critical(
+                        self.main_window,
+                        "오류",
+                        f"폴더를 생성하는 중 오류가 발생했습니다: {str(e)}"
+                    )
         except Exception as e:
-            messagebox.showerror("오류", f"앱 데이터 폴더를 여는 중 오류가 발생했습니다: {str(e)}", parent=self.root)
+            QMessageBox.critical(
+                self.main_window,
+                "오류",
+                f"앱 데이터 폴더를 여는 중 오류가 발생했습니다: {str(e)}"
+            )
     
     def show_help(self):
         """사용법 표시"""
@@ -144,14 +165,19 @@ class MenuBar:
    - '설정' 메뉴에서 Tesseract OCR 경로 설정
         """
         
-        help_window = tk.Toplevel(self.root)
-        help_window.title("사용법")
-        help_window.geometry("500x400")
+        # 도움말 대화상자 생성
+        help_dialog = QDialog(self.main_window)
+        help_dialog.setWindowTitle("사용법")
+        help_dialog.resize(500, 400)
         
-        text = tk.Text(help_window, wrap=tk.WORD)
-        text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        text.insert(tk.END, help_text)
-        text.config(state=tk.DISABLED)  # 읽기 전용
+        layout = QVBoxLayout(help_dialog)
+        
+        text_edit = QTextEdit()
+        text_edit.setPlainText(help_text)
+        text_edit.setReadOnly(True)
+        layout.addWidget(text_edit)
+        
+        help_dialog.exec()
     
     def show_about(self):
         """정보 표시"""
@@ -166,4 +192,8 @@ class MenuBar:
 설치: https://github.com/UB-Mannheim/tesseract/wiki
         """
         
-        messagebox.showinfo("정보", about_text, parent=self.root)
+        QMessageBox.information(
+            self.main_window,
+            "정보",
+            about_text
+        )

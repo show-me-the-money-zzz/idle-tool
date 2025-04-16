@@ -133,7 +133,7 @@ class CaptureManager:
                         # 콜백 함수 호출
                         if self.callback_fn:
                             timestamp = time.strftime("%H:%M:%S", time.localtime())
-                        # self.callback_fn("result", f"[{timestamp}] 인식 결과:\n{text}\n{'='*50}\n")
+                            # self.callback_fn("result", f"[{timestamp}] 인식 결과:\n{text}\n{'='*50}\n")
                             # logtext = f"[{timestamp}] {KEY}: {text}"
                             # if not text:
                             #     logtext += "\n"
