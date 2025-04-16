@@ -1,0 +1,10 @@
+keyboard==0.13.5
+mss==9.0.1
+numpy==1.26.4
+opencv-python
+Pillow==11.1.0
+psutil==5.9.4
+PyAutoGUI==0.9.53
+pynput==1.8.1
+pytesseract==0.3.10
+pywin32==306
