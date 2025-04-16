@@ -96,13 +96,13 @@ class ConnectionFrame(QGroupBox):
         bottom_action_layout.addWidget(self.capture_window_btn)
         
         # 자동 캡처 버튼
-        self.auto_capture_btn = QPushButton("캡처 (자동)")
+        self.auto_capture_btn = QPushButton("캡처 (자동 저장)")
         self.auto_capture_btn.clicked.connect(self.auto_capture_full_window)
         self.auto_capture_btn.setEnabled(False)
         bottom_action_layout.addWidget(self.auto_capture_btn)
         
         # ✅ 폴더 열기 버튼 추가
-        open_folder_btn = QPushButton("폴더 열기") #✅
+        open_folder_btn = QPushButton("캡처 폴더 열기") #✅
         open_folder_btn.clicked.connect(self.open_capture_folder)
         bottom_action_layout.addWidget(open_folder_btn)
         
