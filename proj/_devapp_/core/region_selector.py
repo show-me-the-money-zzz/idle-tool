@@ -65,47 +65,6 @@ class ZoomWindow(QWidget):
         
         print("ZoomWindow 초기화 완료")
 
-    def follow_mouse(self):
-        """마우스 커서 위치 따라 이동"""
-        # 전역 커서 위치 가져오기
-        cursor_pos = QCursor.pos()
-        
-        # 화면 크기 가져오기
-        screen_width = QApplication.primaryScreen().size().width()
-        screen_height = QApplication.primaryScreen().size().height()
-        
-        # 마우스 위치에 따라 확대 창 위치 조정
-        if cursor_pos.x() > screen_width // 2:
-            zoom_x = cursor_pos.x() - self.width() - 20
-        else:
-            zoom_x = cursor_pos.x() + 20
-            
-        if cursor_pos.y() > screen_height // 2:
-            zoom_y = cursor_pos.y() - self.height() - 20
-        else:
-            zoom_y = cursor_pos.y() + 20
-        
-        # 현재 위치와 다를 때만 이동 (성능 향상)
-        current_pos = self.pos()
-        if abs(current_pos.x() - zoom_x) > 5 or abs(current_pos.y() - zoom_y) > 5:
-            self.move(zoom_x, zoom_y)
-        
-        # 부모 위젯이 있으면 마우스 위치 업데이트
-        if hasattr(self, 'parent_widget') and self.parent_widget:
-            window_pos = self.parent_widget.mapFromGlobal(cursor_pos)
-            self.update_zoom_view(window_pos.x(), window_pos.y())
-        else:
-            # 부모 위젯 없이 직접 스크린샷의 좌표 계산
-            left, top = 0, 0
-            if hasattr(self, 'parent_widget') and hasattr(self.parent_widget, 'window_rect'):
-                left, top, _, _ = self.parent_widget.window_rect
-            
-            rel_x = cursor_pos.x() - left
-            rel_y = cursor_pos.y() - top
-            self.update_zoom_view(rel_x, rel_y)
-            
-        self.raise_()  # 항상 최상위에 유지
-    
     def update_status(self, text, bg_color="lightgray"):
         """상태 텍스트 업데이트"""
         self.status_label.setText(text)
@@ -116,23 +75,52 @@ class ZoomWindow(QWidget):
         self.screenshot_pixmap = pixmap
     
     def follow_mouse(self):
-        """마우스 커서 위치 따라 이동"""
+        """마우스 커서 위치 따라 이동 (X는 고정, Y만 따라감)"""
+        # 전역 커서 위치 가져오기
         cursor_pos = QCursor.pos()
-        screen_width = QApplication.primaryScreen().size().width()
-        screen_height = QApplication.primaryScreen().size().height()
         
-        # 마우스 위치에 따라 확대 창 위치 조정
-        if cursor_pos.x() > screen_width // 2:
-            zoom_x = cursor_pos.x() - self.width() - 20
+        # 부모 위젯이 있는 경우 부모의 중앙 X 좌표 계산
+        parent_size = QSize(0, 0)
+        if hasattr(self, 'parent_widget') and self.parent_widget:
+            # 부모 위젯의 중앙 계산
+            geometry = self.parent_widget.geometry()
+            parent_center_x = geometry.center().x()
+            parent_size = geometry.size()
+            screen_center_x = parent_center_x
         else:
-            zoom_x = cursor_pos.x() + 20
-            
-        if cursor_pos.y() > screen_height // 2:
-            zoom_y = cursor_pos.y() - self.height() - 20
+            # 부모가 없으면 화면 중앙 사용
+            screen_width = QApplication.primaryScreen().size().width()
+            screen_center_x = screen_width // 2
+        
+        # X 위치 고정 (화면 중앙 기준 왼쪽 또는 오른쪽)
+        if cursor_pos.x() < screen_center_x:
+            zoom_x = screen_center_x - (parent_size.width() / 2) - self.width()
         else:
-            zoom_y = cursor_pos.y() + 20
-            
-        self.move(zoom_x, zoom_y)
+            zoom_x = screen_center_x + (parent_size.width() / 2)
+            # zoom_x += self.width()
+        
+        # Y 위치는 마우스 위치 따라감
+        zoom_y = cursor_pos.y() - self.height() // 2  # 마우스 위치 중앙에 맞춤
+        
+        # 화면 경계 벗어나지 않도록 보정
+        screen_height = QApplication.primaryScreen().size().height()
+        if zoom_y < 0:
+            zoom_y = 0
+        elif zoom_y + self.height() > screen_height:
+            zoom_y = screen_height - self.height()
+        
+        # 현재 위치와 다를 때만 이동 (성능 향상)
+        current_pos = self.pos()
+        if (abs(current_pos.x() - zoom_x) > 5 or 
+            abs(current_pos.y() - zoom_y) > 5):
+            self.move(zoom_x, zoom_y)
+        
+        # 확대 뷰 업데이트 (부모 위젯이 있을 경우)
+        if hasattr(self, 'parent_widget') and self.parent_widget:
+            window_pos = self.parent_widget.mapFromGlobal(cursor_pos)
+            self.update_zoom_view(window_pos.x(), window_pos.y())
+        
+        self.raise_()  # 항상 최상위에 유지
     
     def update_zoom_view(self, x, y):
         """확대 이미지 업데이트"""
