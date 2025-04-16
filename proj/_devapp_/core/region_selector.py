@@ -15,9 +15,16 @@ class ZoomWindow(QWidget):
     """마우스 위치 주변을 확대하여 보여주는 창"""
     
     def __init__(self, parent=None):
-        # 부모를 None으로 설정하여 독립적인 창으로 만듦
-        super().__init__(None, Qt.WindowStaysOnTopHint | Qt.Tool | Qt.FramelessWindowHint)
+        # 단순하게 최상위 창으로만 설정
+        super().__init__(None, Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setWindowTitle("Magnifier")
+        
+        # 창 속성 설정
+        self.setAttribute(Qt.WA_TranslucentBackground, False)  # 불투명 배경
+        self.setWindowOpacity(1.0)  # 완전 불투명
+        
+        # 눈에 띄는 스타일
+        self.setStyleSheet("QWidget { background-color: black; border: 3px solid red; }")
         
         self.zoom_size = 150  # 확대 창 크기
         self.zoom_factor = DRAG_ZOOM_FACTOR  # 확대 배율
@@ -27,42 +34,77 @@ class ZoomWindow(QWidget):
         
         # 스크린샷 저장 변수
         self.screenshot_pixmap = None
-        
-        # 창 배경색 및 투명도 설정
-        self.setStyleSheet("background-color: black;")
-        self.setWindowOpacity(1.0)  # 완전 불투명하게
+        self.parent_widget = parent  # 부모 위젯 참조 저장
         
         # 메인 레이아웃
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         
-        # 확대 이미지 레이블 (배경색 변경)
+        # 확대 이미지 레이블
         self.zoom_label = QLabel()
         self.zoom_label.setFixedSize(self.zoom_size, self.zoom_size)
-        self.zoom_label.setStyleSheet("background-color: #222222;")  # 어두운 회색 배경
+        self.zoom_label.setStyleSheet("background-color: black;")
         layout.addWidget(self.zoom_label)
         
-        # 상태 레이블 (좀 더 선명한 색상)
+        # 상태 레이블
         self.status_label = QLabel("준비됨")
         self.status_label.setFixedHeight(25)
         self.status_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.status_label.setStyleSheet("background-color: #444444; color: white; font-weight: bold; padding: 2px;")
         layout.addWidget(self.status_label)
         
-        # 마우스 트래킹 타이머
-        self.track_timer = QTimer(self)
-        self.track_timer.timeout.connect(self.follow_mouse)
-        
-        # 테두리 추가 (선택사항)
-        self.setStyleSheet("QWidget { background-color: black; border: 2px solid #00AAFF; }")
-        
         # 명시적으로 show() 호출
         self.show()
         self.raise_()
         
-        # 타이머 시작은 show() 이후에
-        self.track_timer.start(50)  # 50ms 간격으로 업데이트
+        # 마우스 트래킹 타이머
+        self.track_timer = QTimer(self)
+        self.track_timer.timeout.connect(self.follow_mouse)
+        self.track_timer.start(30)  # 30ms 간격으로 업데이트 (더 빠르게)
+        
+        print("ZoomWindow 초기화 완료")
+
+    def follow_mouse(self):
+        """마우스 커서 위치 따라 이동"""
+        # 전역 커서 위치 가져오기
+        cursor_pos = QCursor.pos()
+        
+        # 화면 크기 가져오기
+        screen_width = QApplication.primaryScreen().size().width()
+        screen_height = QApplication.primaryScreen().size().height()
+        
+        # 마우스 위치에 따라 확대 창 위치 조정
+        if cursor_pos.x() > screen_width // 2:
+            zoom_x = cursor_pos.x() - self.width() - 20
+        else:
+            zoom_x = cursor_pos.x() + 20
+            
+        if cursor_pos.y() > screen_height // 2:
+            zoom_y = cursor_pos.y() - self.height() - 20
+        else:
+            zoom_y = cursor_pos.y() + 20
+        
+        # 현재 위치와 다를 때만 이동 (성능 향상)
+        current_pos = self.pos()
+        if abs(current_pos.x() - zoom_x) > 5 or abs(current_pos.y() - zoom_y) > 5:
+            self.move(zoom_x, zoom_y)
+        
+        # 부모 위젯이 있으면 마우스 위치 업데이트
+        if hasattr(self, 'parent_widget') and self.parent_widget:
+            window_pos = self.parent_widget.mapFromGlobal(cursor_pos)
+            self.update_zoom_view(window_pos.x(), window_pos.y())
+        else:
+            # 부모 위젯 없이 직접 스크린샷의 좌표 계산
+            left, top = 0, 0
+            if hasattr(self, 'parent_widget') and hasattr(self.parent_widget, 'window_rect'):
+                left, top, _, _ = self.parent_widget.window_rect
+            
+            rel_x = cursor_pos.x() - left
+            rel_y = cursor_pos.y() - top
+            self.update_zoom_view(rel_x, rel_y)
+            
+        self.raise_()  # 항상 최상위에 유지
     
     def update_status(self, text, bg_color="lightgray"):
         """상태 텍스트 업데이트"""
@@ -183,7 +225,7 @@ class RegionSelectorDialog(QDialog):
         self.capture_screenshot()
         
         # 확대 창 생성
-        self.zoom_window = ZoomWindow()
+        self.zoom_window = ZoomWindow(self)  # 자신을 부모로 전달
         self.zoom_window.set_screenshot(self.screenshot_pixmap)
         
         # 마우스 추적 타이머
