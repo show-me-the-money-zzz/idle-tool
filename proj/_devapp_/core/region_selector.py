@@ -11,6 +11,138 @@ from zzz.config import *
 from core.window_utils import WindowUtil
 
 
+class ZoomWindow(QWidget):
+    """마우스 위치 주변을 확대하여 보여주는 창"""
+    
+    def __init__(self, parent=None):
+        # 부모를 None으로 설정하여 독립적인 창으로 만듦
+        super().__init__(None, Qt.WindowStaysOnTopHint | Qt.Tool | Qt.FramelessWindowHint)
+        self.setWindowTitle("Magnifier")
+        
+        self.zoom_size = 150  # 확대 창 크기
+        self.zoom_factor = DRAG_ZOOM_FACTOR  # 확대 배율
+        
+        # 창 크기 설정
+        self.setFixedSize(self.zoom_size, self.zoom_size + 25)
+        
+        # 스크린샷 저장 변수
+        self.screenshot_pixmap = None
+        
+        # 창 배경색 및 투명도 설정
+        self.setStyleSheet("background-color: black;")
+        self.setWindowOpacity(1.0)  # 완전 불투명하게
+        
+        # 메인 레이아웃
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        
+        # 확대 이미지 레이블 (배경색 변경)
+        self.zoom_label = QLabel()
+        self.zoom_label.setFixedSize(self.zoom_size, self.zoom_size)
+        self.zoom_label.setStyleSheet("background-color: #222222;")  # 어두운 회색 배경
+        layout.addWidget(self.zoom_label)
+        
+        # 상태 레이블 (좀 더 선명한 색상)
+        self.status_label = QLabel("준비됨")
+        self.status_label.setFixedHeight(25)
+        self.status_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.status_label.setStyleSheet("background-color: #444444; color: white; font-weight: bold; padding: 2px;")
+        layout.addWidget(self.status_label)
+        
+        # 마우스 트래킹 타이머
+        self.track_timer = QTimer(self)
+        self.track_timer.timeout.connect(self.follow_mouse)
+        
+        # 테두리 추가 (선택사항)
+        self.setStyleSheet("QWidget { background-color: black; border: 2px solid #00AAFF; }")
+        
+        # 명시적으로 show() 호출
+        self.show()
+        self.raise_()
+        
+        # 타이머 시작은 show() 이후에
+        self.track_timer.start(50)  # 50ms 간격으로 업데이트
+    
+    def update_status(self, text, bg_color="lightgray"):
+        """상태 텍스트 업데이트"""
+        self.status_label.setText(text)
+        self.status_label.setStyleSheet(f"background-color: {bg_color}; padding: 2px;")
+    
+    def set_screenshot(self, pixmap):
+        """스크린샷 설정"""
+        self.screenshot_pixmap = pixmap
+    
+    def follow_mouse(self):
+        """마우스 커서 위치 따라 이동"""
+        cursor_pos = QCursor.pos()
+        screen_width = QApplication.primaryScreen().size().width()
+        screen_height = QApplication.primaryScreen().size().height()
+        
+        # 마우스 위치에 따라 확대 창 위치 조정
+        if cursor_pos.x() > screen_width // 2:
+            zoom_x = cursor_pos.x() - self.width() - 20
+        else:
+            zoom_x = cursor_pos.x() + 20
+            
+        if cursor_pos.y() > screen_height // 2:
+            zoom_y = cursor_pos.y() - self.height() - 20
+        else:
+            zoom_y = cursor_pos.y() + 20
+            
+        self.move(zoom_x, zoom_y)
+    
+    def update_zoom_view(self, x, y):
+        """확대 이미지 업데이트"""
+        if not self.screenshot_pixmap:
+            return
+            
+        try:
+            # 확대할 영역 반경 계산
+            zoom_radius = int(self.zoom_size / (2 * self.zoom_factor))
+            
+            # 영역 계산
+            left = max(0, int(x - zoom_radius))
+            top = max(0, int(y - zoom_radius))
+            width = min(zoom_radius * 2, self.screenshot_pixmap.width() - left)
+            height = min(zoom_radius * 2, self.screenshot_pixmap.height() - top)
+            
+            if width <= 0 or height <= 0:
+                return
+                
+            # 영역 크롭
+            crop_pixmap = self.screenshot_pixmap.copy(left, top, width, height)
+            
+            # 확대
+            zoom_pixmap = crop_pixmap.scaled(
+                self.zoom_size, 
+                self.zoom_size, 
+                Qt.KeepAspectRatio, 
+                Qt.SmoothTransformation
+            )
+            
+            # 십자선 추가 (더 밝은 색상으로)
+            painter = QPainter(zoom_pixmap)
+            
+            # 십자선 (밝은 빨간색)
+            pen = QPen(QColor(255, 50, 50))
+            pen.setWidth(2)  # 선 두께 증가
+            painter.setPen(pen)
+            
+            # 가로선
+            painter.drawLine(0, self.zoom_size//2, self.zoom_size, self.zoom_size//2)
+            # 세로선
+            painter.drawLine(self.zoom_size//2, 0, self.zoom_size//2, self.zoom_size)
+            
+            painter.end()
+            
+            # 결과 이미지 표시
+            self.zoom_label.setPixmap(zoom_pixmap)
+            
+        except Exception as e:
+            print(f"확대 뷰 업데이트 오류: {e}")
+
+
 class RegionSelectorDialog(QDialog):
     """모달 대화상자로 구현한 영역 선택기"""
     
@@ -49,6 +181,15 @@ class RegionSelectorDialog(QDialog):
         
         # 캡처 영역 초기화
         self.capture_screenshot()
+        
+        # 확대 창 생성
+        self.zoom_window = ZoomWindow()
+        self.zoom_window.set_screenshot(self.screenshot_pixmap)
+        
+        # 마우스 추적 타이머
+        self.mouse_timer = QTimer(self)
+        self.mouse_timer.timeout.connect(self.track_mouse)
+        self.mouse_timer.start(50)  # 50ms 간격으로 업데이트
     
     def init_ui(self):
         """UI 구성요소 초기화"""
@@ -130,6 +271,22 @@ class RegionSelectorDialog(QDialog):
         # 창 업데이트
         self.update()
     
+    def track_mouse(self):
+        """마우스 위치 추적 및 확대 창 업데이트"""
+        if not hasattr(self, 'zoom_window') or not self.zoom_window:
+            return
+            
+        # 현재 마우스 위치 가져오기
+        cursor_pos = QCursor.pos()
+        
+        # 화면 내 상대 좌표로 변환
+        window_pos = self.mapFromGlobal(cursor_pos)
+        
+        # 창 안에 있는지 확인
+        if self.rect().contains(window_pos):
+            # 확대 창 업데이트
+            self.zoom_window.update_zoom_view(window_pos.x(), window_pos.y())
+    
     def paintEvent(self, event):
         """화면 그리기 이벤트"""
         painter = QPainter(self)
@@ -175,6 +332,37 @@ class RegionSelectorDialog(QDialog):
             
             # 크기 표시 업데이트
             self.update_size_label(width, height)
+            
+            # 확대 창 상태 업데이트
+            if hasattr(self, 'zoom_window') and self.zoom_window:
+                status_text = f"{int(width)} x {int(height)}"
+                
+                is_square_key_pressed = keyboard.is_pressed(DRAG_KEEP_SQUARE_KEY)
+                is_width_key_pressed = keyboard.is_pressed(DRAG_FIXED_WIDTH_KEY)
+                is_height_key_pressed = keyboard.is_pressed(DRAG_FIXED_HEIGHT_KEY)
+                is_ratio_key_pressed = keyboard.is_pressed(DRAG_ASPECT_RATIO_KEY)
+                
+                if is_square_key_pressed:
+                    status_text = f"[{DRAG_KEEP_SQUARE_KEY}] 정사각형 | " + status_text
+                    bg_color = "#ffe6cc"  # 연한 주황색
+                elif is_width_key_pressed:
+                    status_text = f"[{DRAG_FIXED_WIDTH_KEY}] 너비 고정 | " + status_text
+                    bg_color = "#cce5ff"  # 연한 파란색
+                elif is_height_key_pressed:
+                    status_text = f"[{DRAG_FIXED_HEIGHT_KEY}] 높이 고정 | " + status_text
+                    bg_color = "#d4edda"  # 연한 녹색
+                elif is_ratio_key_pressed:
+                    ratio_text = f"{DRAG_ASPECT_RATIO:.1f}"
+                    if DRAG_ASPECT_RATIO == 16/9:
+                        ratio_text = "16:9"
+                    elif DRAG_ASPECT_RATIO == 4/3:
+                        ratio_text = "4:3"
+                    status_text = f"[{DRAG_ASPECT_RATIO_KEY}] {ratio_text} | " + status_text
+                    bg_color = "#f8d7da"  # 연한 빨간색
+                else:
+                    bg_color = "lightgray"
+                
+                self.zoom_window.update_status(status_text, bg_color)
     
     def update_size_label(self, width, height):
         """크기 정보 업데이트"""
@@ -329,6 +517,15 @@ class RegionSelectorDialog(QDialog):
             "height": height
         }
         
+        # 확대 창 닫기
+        if hasattr(self, 'zoom_window') and self.zoom_window:
+            self.zoom_window.close()
+            self.zoom_window = None
+        
+        # 마우스 추적 타이머 종료
+        if hasattr(self, 'mouse_timer') and self.mouse_timer:
+            self.mouse_timer.stop()
+        
         # 영역 선택 완료 신호 발생
         self.region_selected.emit(self.selected_region)
         
@@ -338,9 +535,31 @@ class RegionSelectorDialog(QDialog):
     def keyPressEvent(self, event):
         """키 이벤트 처리"""
         if event.key() == Qt.Key_Escape:
+            # 확대 창 닫기
+            if hasattr(self, 'zoom_window') and self.zoom_window:
+                self.zoom_window.close()
+                self.zoom_window = None
+            
+            # 마우스 추적 타이머 종료
+            if hasattr(self, 'mouse_timer') and self.mouse_timer:
+                self.mouse_timer.stop()
+                
             self.reject()  # 취소하고 닫기
         else:
             super().keyPressEvent(event)
+    
+    def closeEvent(self, event):
+        """창이 닫힐 때 이벤트"""
+        # 확대 창 닫기
+        if hasattr(self, 'zoom_window') and self.zoom_window:
+            self.zoom_window.close()
+            self.zoom_window = None
+        
+        # 마우스 추적 타이머 종료
+        if hasattr(self, 'mouse_timer') and self.mouse_timer:
+            self.mouse_timer.stop()
+            
+        super().closeEvent(event)
 
 
 # RegionSelector 클래스는 이전 코드와의 호환성을 위한 래퍼 클래스
