@@ -51,7 +51,7 @@ class ZoomWindow(QWidget):
         self.status_label = QLabel("준비됨")
         self.status_label.setFixedHeight(25)
         self.status_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        self.status_label.setStyleSheet("background-color: #444444; color: white; font-weight: bold; padding: 2px;")
+        self.status_label.setStyleSheet("background-color: #000000; color: #ffffff; font-weight: bold; padding: 2px;")
         layout.addWidget(self.status_label)
         
         # 명시적으로 show() 호출
@@ -63,12 +63,21 @@ class ZoomWindow(QWidget):
         self.track_timer.timeout.connect(self.follow_mouse)
         self.track_timer.start(30)  # 30ms 간격으로 업데이트 (더 빠르게)
         
-        print("ZoomWindow 초기화 완료")
+        # print("ZoomWindow 초기화 완료")
+    
+    # def __del__(self):
+    #     print("소멸~~")
 
     def update_status(self, text, bg_color="lightgray"):
         """상태 텍스트 업데이트"""
+        # print(bg_color)
+        # bg_color="#000000"
         self.status_label.setText(text)
-        self.status_label.setStyleSheet(f"background-color: {bg_color}; padding: 2px;")
+        self.status_label.setStyleSheet(f"background-color: {bg_color}; color: #000000; padding: 2px;")
+        # self.status_label.setStyleSheet(
+        #     f"background-color: {bg_color}; color: #00ff00; "
+        #     "padding: 2px;"
+        # )
     
     def set_screenshot(self, pixmap):
         """스크린샷 설정"""
@@ -242,15 +251,15 @@ class RegionSelectorDialog(QDialog):
         self.info_label.setGeometry(10, 10, 700, 30)
         self.info_label.adjustSize()
         
-        # 크기 정보 레이블
-        self.size_label = QLabel(self)
-        self.size_label.setStyleSheet(
-            "background-color: rgba(0,0,0,180); color: white; "
-            "font-weight: bold; padding: 5px; border-radius: 3px;"
-        )
-        self.size_label.setText("드래그하여 영역을 선택하세요")
-        self.size_label.adjustSize()
-        self.size_label.move(10, 50)
+        # # 크기 정보 레이블
+        # self.size_label = QLabel(self)
+        # self.size_label.setStyleSheet(
+        #     "background-color: rgba(0,0,0,180); color: white; "
+        #     "font-weight: bold; padding: 5px; border-radius: 3px;"
+        # )
+        # self.size_label.setText("드래그하여 영역을 선택하세요")
+        # self.size_label.adjustSize()
+        # self.size_label.move(10, 50)
     
     def capture_screenshot(self):
         """스크린샷 캡처"""
@@ -361,7 +370,7 @@ class RegionSelectorDialog(QDialog):
             painter.drawRect(x1, y1, width, height)
             
             # 크기 표시 업데이트
-            self.update_size_label(width, height)
+            # self.update_size_label(width, height)
             
             # 확대 창 상태 업데이트
             if hasattr(self, 'zoom_window') and self.zoom_window:
@@ -373,34 +382,34 @@ class RegionSelectorDialog(QDialog):
                 is_ratio_key_pressed = keyboard.is_pressed(DRAG_ASPECT_RATIO_KEY)
                 
                 if is_square_key_pressed:
-                    status_text = f"[{DRAG_KEEP_SQUARE_KEY}] 정사각형 | " + status_text
-                    bg_color = "#ffe6cc"  # 연한 주황색
+                    status_text = f"정사각형 | " + status_text
+                    bg_color = "#ffad57"  # 연한 주황색
                 elif is_width_key_pressed:
-                    status_text = f"[{DRAG_FIXED_WIDTH_KEY}] 너비 고정 | " + status_text
-                    bg_color = "#cce5ff"  # 연한 파란색
+                    status_text = f"너비 고정 | " + status_text
+                    bg_color = "#6eb5ff"  # 연한 파란색
                 elif is_height_key_pressed:
-                    status_text = f"[{DRAG_FIXED_HEIGHT_KEY}] 높이 고정 | " + status_text
-                    bg_color = "#d4edda"  # 연한 녹색
+                    status_text = f"높이 고정 | " + status_text
+                    bg_color = "#4dff78"  # 연한 녹색
                 elif is_ratio_key_pressed:
                     ratio_text = f"{DRAG_ASPECT_RATIO:.1f}"
                     if DRAG_ASPECT_RATIO == 16/9:
                         ratio_text = "16:9"
                     elif DRAG_ASPECT_RATIO == 4/3:
                         ratio_text = "4:3"
-                    status_text = f"[{DRAG_ASPECT_RATIO_KEY}] {ratio_text} | " + status_text
-                    bg_color = "#f8d7da"  # 연한 빨간색
+                    status_text = f"{ratio_text} | " + status_text
+                    bg_color = "#ff6775"  # 연한 빨간색
                 else:
-                    bg_color = "lightgray"
+                    bg_color = "#0cffcc"
                 
                 self.zoom_window.update_status(status_text, bg_color)
     
-    def update_size_label(self, width, height):
-        """크기 정보 업데이트"""
-        self.size_label.setText(f"{int(width)} × {int(height)} 픽셀")
-        self.size_label.adjustSize()
+    # def update_size_label(self, width, height):
+    #     """크기 정보 업데이트"""
+    #     self.size_label.setText(f"{int(width)} × {int(height)} 픽셀")
+    #     self.size_label.adjustSize()
         
-        # 상단에 표시
-        self.size_label.move(10, 50)
+    #     # 상단에 표시
+    #     self.size_label.move(10, 50)
     
     def mousePressEvent(self, event):
         """마우스 버튼 누를 때"""
