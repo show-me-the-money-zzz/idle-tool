@@ -522,36 +522,36 @@ class CaptureAreaPopup(QDialog):
                     min(img_height, y + height)
                 ))
                 
-                # 캔버스에 맞게 이미지 크기 조정 (비율 유지)
+                # 캔버스에 맞게 이미지 크기 조정 (비율 유지하면서 최대한 크게)
                 img_width, img_height = cropped_img.size
-                
+
                 # 미리보기 레이블 크기
                 preview_width = self.preview_label.width()
                 preview_height = self.preview_label.height()
-                
-                # 비율 계산
+
+                # 비율 계산 - 이미지가 영역을 벗어나지 않으면서 최대한 크게 표시
                 width_ratio = preview_width / img_width
                 height_ratio = preview_height / img_height
+
+                # 이미지가 영역 안에 들어가도록 더 작은 비율 선택
                 scale_ratio = min(width_ratio, height_ratio)
-                
-                # 이미지가 너무 크면 축소
-                if scale_ratio < 1:
-                    new_width = int(img_width * scale_ratio)
-                    new_height = int(img_height * scale_ratio)
-                    resized_img = cropped_img.resize((new_width, new_height), Image.LANCZOS)
-                else:
-                    resized_img = cropped_img
-                
+
+                # 이미지 크기 조정
+                new_width = int(img_width * scale_ratio)
+                new_height = int(img_height * scale_ratio)
+                resized_img = cropped_img.resize((new_width, new_height), Image.LANCZOS)
+
                 # PIL 이미지를 QImage로 변환
                 self.preview_image = resized_img
                 q_image = ImageQt.ImageQt(resized_img)
                 self.preview_pixmap = QPixmap.fromImage(q_image)
-                
-                # 레이블에 이미지 표시
+
+                # 레이블에 이미지 표시 (중앙 정렬)
                 self.preview_label.setPixmap(self.preview_pixmap)
+                self.preview_label.setAlignment(Qt.AlignCenter)
                 
                 # 추출 버튼 활성화
-                self.extract_color_btn.setEnabled(False)
+                self.extract_color_btn.setEnabled(True)  # 이미지가 있으면 색상 추출 활성화
                 
                 self.status_signal.emit("영역 미리보기가 업데이트되었습니다.")
                 
