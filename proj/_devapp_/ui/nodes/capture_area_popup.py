@@ -767,7 +767,7 @@ class CaptureAreaPopup(QDialog):
         # 읽기 상태 중지
         self.reading_text = False
         
-        # 타이머 중지
+        # 모든 타이머 중지
         if hasattr(self, '_read_timer') and self._read_timer is not None:
             self._read_timer.stop()
             self._read_timer = None
@@ -776,19 +776,21 @@ class CaptureAreaPopup(QDialog):
             self.move_timer.stop()
             self.move_timer = None
         
-        # 로그 창 강제 종료
+        # 로그 창 강제 종료 - 참조를 일시 저장하고 삭제
+        log_window_ref = None
         if hasattr(self, 'log_window') and self.log_window is not None:
-            print("로그 창 강제 종료 중...")
-            # 로그 창 참조 이전에 저장
-            log_window = self.log_window
-            # 참조 제거 (먼저 수행)
+            print("로그 창 강제 종료 시도...")
+            log_window_ref = self.log_window
+            # 모든 연결 끊기
+            self.log_window.read_text_btn.clicked.disconnect()
+            self.log_window.clear_log_btn.clicked.disconnect()
+            # 참조 제거
             self.log_window = None
-            # 이제 로그 창 종료 (참조 제거 후)
-            log_window.force_close_window()
         
-        # region_selector 정리
-        if hasattr(self, 'region_selector'):
-            self.region_selector.dialog = None
+        # 저장된 참조로 로그 창 종료
+        if log_window_ref is not None:
+            log_window_ref.force_close_window()
+            log_window_ref = None
         
         # 콜백 호출
         if self.on_close_callback:
@@ -878,45 +880,43 @@ class LogWindow(QDialog):
     
     def closeEvent(self, event):
         """창이 닫힐 때 이벤트"""
-        print("CaptureAreaPopup closeEvent 호출됨")
+        print("LogWindow closeEvent 호출됨")
         
-        # 타이머 중지
-        if hasattr(self, '_read_timer') and self._read_timer is not None:
-            self._read_timer.stop()
+        # 부모가 이미 닫혔거나 강제 종료면 진짜로 닫기
+        if getattr(self, 'parent_closed', False) or getattr(self, 'force_close', False):
+            print("부모가 닫혔으므로 로그 창 완전히 종료")
+            event.accept()
+            return
         
-        # 로그 창 강제 종료
-        if hasattr(self, 'log_window') and self.log_window is not None:
-            print("closeEvent에서 로그 창 강제 종료")
-            self.log_window.parent_closed = True
-            self.log_window.close()
-            QApplication.processEvents()  # 이벤트 처리 강제
+        # 단순히 X를 눌러 닫을 경우 숨기기만 함
+        print("로그 창 숨기기만 함 (닫지 않음)")
+        self.hide()
+        event.ignore()
         
-        # 기본 이벤트 처리 계속
-        event.accept()
-        
-        # on_close 호출 (중복 처리되지 않도록 주의)
-        # self.on_close()  # 이 부분은 상황에 따라 주석 처리
+        # 이 부분이 잘못되었습니다 - CaptureAreaPopup 메서드처럼 작성됨
+        # 이 코드는 삭제해야 합니다
+        # if hasattr(self, 'log_window') and self.log_window is not None:
+        #     print("closeEvent에서 로그 창 강제 종료")
+        #     self.log_window.parent_closed = True
+        #     self.log_window.close()
+        #     QApplication.processEvents()
         
     # LogWindow 클래스에 추가
     def force_close_window(self):
         """강제로 창을 완전히 종료"""
         print("로그 창 강제 종료 메서드 호출됨")
         
-        # 창이 닫히기 전에 모든 참조 정리
+        # 강제 종료 플래그 설정
+        self.force_close = True
         self.parent_closed = True
         
-        # 모든 타이머 중지
-        for timer in self.findChildren(QTimer):
-            try:
-                timer.stop()
-            except:
-                pass
+        # 전역 참조를 전혀 남기지 않도록 메서드와 UI 요소들 정리
+        self.read_text_btn.clicked.disconnect()
+        self.clear_log_btn.clicked.disconnect()
         
-        # 창 닫기
-        self.hide()  # 먼저 숨김
-        self.close()  # 그 다음 닫기
-        self.deleteLater()  # 메모리에서 제거 예약
+        # 창 숨기기 및 닫기
+        self.hide()
+        self.close()
         
-        # 로그 정리
-        self.log_text.clear()
-        self.log_text = None
+        # 최종적으로 Qt에게 삭제 예약
+        self.deleteLater()
