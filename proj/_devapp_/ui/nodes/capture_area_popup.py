@@ -8,12 +8,18 @@ from PIL import Image, ImageQt
 from datetime import datetime
 import time
 import os
+from enum import Enum
 
 from zzz.config import *
 from stores import areas
 from grinder_utils.system import Calc_MS
 from core.window_utils import WindowUtil
 
+class CaptureMode(Enum):
+    IMAGE = 0
+    ZONE = 1
+    TEXT = 2
+    
 class CaptureAreaPopup(QDialog):
     """캡처 영역 설정 팝업 창"""
     
@@ -36,6 +42,8 @@ class CaptureAreaPopup(QDialog):
         self.capture_settings = None
         self.reading_text = False
         self.selected_colors = []
+        
+        self.capturemode = CaptureMode.IMAGE
 
         self._setup_ui()
 
@@ -56,6 +64,7 @@ class CaptureAreaPopup(QDialog):
         # 캡처 방식 선택 콤보박스
         self.capture_type_combo = QComboBox()
         self.capture_type_combo.addItems(["이미지", "빈영역", "텍스트"])
+        self.capture_type_combo.currentIndexChanged.connect(self.on_capture_type_changed)
         key_layout.addWidget(self.capture_type_combo)
         
         # KEY 레이블과 입력
@@ -66,11 +75,11 @@ class CaptureAreaPopup(QDialog):
         settings_layout.addLayout(key_layout)
         
         # 키워드 안내 텍스트
-        keywords_text = f"※ 예약 키워드: {' / '.join(LOOP_TEXT_KEYWORD)} / {' / '.join(LOOP_IMAGE_KEYWORD)}"
-        keywords_label = QLabel(keywords_text)
-        keywords_label.setWordWrap(True)
-        keywords_label.setStyleSheet("font-size: 8pt; color: gray;")
-        settings_layout.addWidget(keywords_label)
+        self.keywords_label = QLineEdit("")
+        self.keywords_label.setReadOnly(True)  # 읽기 전용으로 설정
+        self.keywords_label.setCursor(Qt.IBeamCursor)  # 텍스트 선택 커서로 변경
+        self.keywords_label.setStyleSheet("background-color: #5d5d5d; color:#ffffff")  # 비활성화 느낌의 배경색
+        settings_layout.addWidget(self.keywords_label)
         
         # 좌표 및 크기 입력 영역
         coords_layout = QGridLayout()
@@ -231,6 +240,8 @@ class CaptureAreaPopup(QDialog):
         
         main_layout.addWidget(log_group, 1)  # stretch 1
         
+        self.on_capture_type_changed(CaptureMode.IMAGE)
+        
         # 테스트용 색상 추가
         self.test_add_colors()
 
@@ -271,6 +282,31 @@ class CaptureAreaPopup(QDialog):
         # PySide6 ColorPickerPopup 인스턴스 생성 및 표시
         picker = ColorPickerPopup(self, self.preview_image, callback=handle_color_selection)
         picker.exec()  # 모달 다이얼로그로 표시 (이전 .mainloop() 대신)
+        
+    # 캡처 타입 변경 핸들러 함수 추가
+    def on_capture_type_changed(self, index):
+        # print(f"on_capture_type_changed({index})")
+        """캡처 타입이 변경되었을 때 호출되는 함수"""
+        mode = CaptureMode(index)
+        
+        # 선택된 캡처 타입에 따라 UI 요소 조정
+        if mode == CaptureMode.IMAGE:
+            self.interval_spin.setReadOnly(True)
+            self.key_input.setPlaceholderText("이미지 키 입력...")
+            self.status_signal.emit("이미지 모드로 변경되었습니다.")
+        elif mode == CaptureMode.ZONE:
+            self.interval_spin.setReadOnly(True)
+            self.key_input.setPlaceholderText("빈영역 키 입력...")
+            self.status_signal.emit("빈영역 모드로 변경되었습니다.")
+        elif mode == CaptureMode.TEXT:
+            self.interval_spin.setReadOnly(False)
+            self.key_input.setPlaceholderText("텍스트 키 입력...")
+            self.status_signal.emit("텍스트 모드로 변경되었습니다.")
+            
+        self.keywords_label.setText(self.GetText_Keywords(mode))
+        
+        # 객체에 현재 캡처 타입 저장
+        self.capturemode = mode
 
     def clear_log(self):
         """로그 내용 초기화"""
@@ -494,13 +530,11 @@ class CaptureAreaPopup(QDialog):
 
     def apply_settings(self):
         """설정 적용 및 저장"""
-        mode = self.capture_type_combo.currentText()
-        
-        if mode == "이미지":
+        if CaptureMode.IMAGE == self.capturemode:
             self.save_as_image()
-        elif mode == "빈영역":
+        elif CaptureMode.ZONE == self.capturemode:
             self.save_as_zone()
-        elif mode == "텍스트":
+        elif CaptureMode.TEXT == self.capturemode:
             self.save_as_text()
 
     def save_as_text(self):
@@ -682,6 +716,18 @@ class CaptureAreaPopup(QDialog):
         
         # 미리보기 업데이트
         self.update_area_preview()
+        
+    def GetText_Keywords(self, mode: CaptureMode):
+        ret = "※ 예약 키워드: ";
+        
+        if mode == CaptureMode.IMAGE:
+            ret += ' / '.join(LOOP_IMAGE_KEYWORD)
+        elif mode == CaptureMode.ZONE:
+            temp = ret
+        elif mode == CaptureMode.TEXT:
+            ret += ' / '.join(LOOP_TEXT_KEYWORD)
+            
+        return ret
 
     def on_close(self):
         """창 닫기"""
