@@ -36,7 +36,7 @@ DEFAULT_LOOP_INTERVAL = 1.0 # 기본 캡처 간격(초)
 LOOP_TEXT_KEYWORD = [
     "[스탯]피통", "[스탯]마나통", "[스탯]물약",
     "[지역]종류", "[지역]이름",
-]
+] # stores.def_info 에서 Update_Value 변경해줘야
 LOOP_IMAGE_KEYWORD = [
     "[스탯]물약-엥꼬",
 ]
