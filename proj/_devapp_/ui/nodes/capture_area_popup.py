@@ -356,20 +356,41 @@ class CaptureAreaPopup(QDialog):
         # 선택 임시 중단을 알림
         self.status_signal.emit("영역 선택 중... (ESC 키를 누르면 취소)")
         
-        # 창 최소화 (선택 화면이 가려지지 않도록)
-        self.hide()
-        self.parent.hide()
-        time.sleep(0.5)  # 창이 최소화될 시간 확보
+        # 현재 창 숨기기 (선택 화면이 가려지지 않도록)
+        self.setVisible(False)
         
-        # 영역 선택 시작
+        # 직접 콜백 함수 사용
+        def handle_selection_complete(region_info):
+            # 다시 창 표시
+            self.setVisible(True)
+            
+            if not region_info:
+                self.status_signal.emit("영역 선택이 취소되었습니다.")
+                return
+            
+            # 선택된 영역 정보를 UI에 업데이트
+            rel_x1, rel_y1, rel_x2, rel_y2 = region_info["rel"]
+            width = region_info["width"]
+            height = region_info["height"]
+            
+            self.x_spin.setValue(rel_x1)
+            self.y_spin.setValue(rel_y1)
+            self.width_spin.setValue(width)
+            self.height_spin.setValue(height)
+            
+            self.status_signal.emit(f"영역이 선택되었습니다: X={rel_x1}, Y={rel_y1}, 너비={width}, 높이={height}")
+            
+            # 선택 후 미리보기 업데이트
+            self.update_area_preview()
+            
+            # 필요시 창 활성화 (선택적)
+            self.activateWindow()
+        
+        # 영역 선택 시작 (콜백 전달)
         self.region_selector.start_selection(
-            callback=self.handle_region_selection,
+            callback=handle_selection_complete,
             target_window_only=target_window_only
         )
-        
-        # 창 복원
-        self.parent.show()
-        self.show()
 
     def handle_region_selection(self, region_info):
         """영역 선택 결과 처리"""

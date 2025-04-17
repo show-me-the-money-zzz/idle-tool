@@ -627,41 +627,36 @@ class RegionSelectorDialog(QDialog):
         super().closeEvent(event)
 
 
-# RegionSelector 클래스는 이전 코드와의 호환성을 위한 래퍼 클래스
 class RegionSelector:
     """RegionSelectorDialog를 사용하는 래퍼 클래스"""
-    
-    region_selected = Signal(dict)  # 이전 코드와의 호환성을 위한 더미 신호
-    
     def __init__(self, parent=None):
         self.parent = parent
         self.dialog = None
         self.callback = None
+        self.selected_region = None
     
     def start_selection(self, callback=None, target_window_only=False):
         """영역 선택 시작"""
         self.callback = callback
+        self.selected_region = None
         
         # 새 다이얼로그 생성
         self.dialog = RegionSelectorDialog(self.parent, target_window_only)
         
         # 결과 처리를 위한 시그널 연결
-        self.dialog.region_selected.connect(self.on_region_selected)
+        self.dialog.region_selected.connect(self._on_region_selected)
         
-        # print("다이얼로그 실행")
-        # 다이얼로그 실행
-        result = self.dialog.exec()
-        # print("다이얼로그 닫힘")
+        # 다이얼로그 표시 (exec 대신 show 사용)
+        self.dialog.show()
         
-        # 취소된 경우 처리
-        if result == QDialog.Rejected:
-            if self.callback:
-                self.callback(None)
-            return None
-            
-        return self.dialog.selected_region
+        # 콜백이 없는 경우 바로 결과 리턴
+        if not callback:
+            return self.selected_region
     
-    def on_region_selected(self, region):
-        """영역 선택 결과 처리"""
+    def _on_region_selected(self, region):
+        """영역 선택 결과 처리 (내부용)"""
+        self.selected_region = region
+        
+        # 콜백이 설정되어 있으면 호출
         if self.callback:
             self.callback(region)
