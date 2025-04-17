@@ -69,6 +69,10 @@ class WindowManager:
 
     def get_window_rect(self):
         return self.window_rect
+    
+    def Get_Resolution(self):
+        left, top, right, bottom = self.window_rect
+        return [ right - left, bottom - top ]
 
     def is_window_valid(self):
         return self.target_hwnd is not None and win32gui.IsWindow(self.target_hwnd)
@@ -97,17 +101,15 @@ class WindowManager:
             return False
         
     def Check_Reoslution(self):
-        resol = AppSetting.Get_Resolution()
-        PrintDEV(f"WindowManager.Check_Reoslution(): resol= {resol}")
+        setting_resol = AppSetting.Get_Resolution()
+        # PrintDEV(f"WindowManager.Check_Reoslution(): resol= {setting_resol}")
         
-        left, top, right, bottom = WindowUtil.get_window_rect()
-        width = right - left
-        height = bottom - top
-        if None != resol:
-            resol_w, resol_h = resol
+        if None != setting_resol:
+            width, height = self.Get_Resolution()
+            resol_w, resol_h = setting_resol
             if width != resol_w or height != resol_h:
                 QMessageBox.warning(None, "경고",
-                    "저장된 해상도와 불일치\n"
+                    f"저장된 해상도({resol_w}x{resol_h})와 불일치({width}x{height})\n"
                     "게임을 저장된 해상도로 변경함"
                 )
                 self.resize_window(resol_w, resol_h)
@@ -116,6 +118,7 @@ class WindowManager:
             temp = 0
             
             # # DEV 코드
+            # width, height = self.Get_Resolution()
             # AppSetting.Set_Resolution(width, height)
         
     def send_key(self, key):
