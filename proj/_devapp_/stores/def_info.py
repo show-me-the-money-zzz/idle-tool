@@ -14,29 +14,28 @@ def Update_Value(key, text):
     text = text.replace("\n", "").replace("\r", "")  # 줄바꿈 제거
     
     match key:
-        case "스탯:피통": _Set_HP(text)
-        case "스탯:마나통": _Set_MP(text)
-        case "스탯:물약": _Set_Potion(text)
-        # case "스탯:물약-엥꼬": Is_Potion0 = 0
+        case "[스탯]피통": _Set_HP(text)
+        case "[스탯]마나통": _Set_MP(text)
+        case "[스탯]물약": _Set_Potion(text)
+        # case "[스탯]물약-엥꼬": Is_Potion0 = 0
         
-        case "지역:종류":
+        case "[지역]종류":
             global Locate_Kind
             Locate_Kind = text
             # print(f"Locate_Kind= {Locate_Kind}")
-        case "지역:이름":
+        case "[지역]이름":
             global Locate_Name
             Locate_Name = text
             # print(f"Locate_Name= {Locate_Name}")
 
 def Update_Values(key, textlist):
     text = ""
-    if "스탯:피통" == key or "스탯:마나통" == key:
+    if "[스탯]피통" == key or "[스탯]마나통" == key:
         text = textlist[0]
     else:
         text = " ".join(textlist)
         
     Update_Value(key, text)
-
 
 def _Set_HP(text):
     global HP
