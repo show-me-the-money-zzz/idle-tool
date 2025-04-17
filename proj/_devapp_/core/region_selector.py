@@ -260,6 +260,8 @@ class RegionSelectorDialog(QDialog):
         # self.size_label.setText("드래그하여 영역을 선택하세요")
         # self.size_label.adjustSize()
         # self.size_label.move(10, 50)
+        
+        self.setCursor(Qt.CrossCursor)
     
     def capture_screenshot(self):
         """스크린샷 캡처"""
@@ -414,6 +416,9 @@ class RegionSelectorDialog(QDialog):
     def mousePressEvent(self, event):
         """마우스 버튼 누를 때"""
         if event.button() == Qt.LeftButton:
+            # 드래그 시작할 때 커서 변경
+            self.setCursor(Qt.ClosedHandCursor)  # 주먹 모양 커서
+        
             x = int(event.position().x())
             y = int(event.position().y())
             
@@ -490,6 +495,9 @@ class RegionSelectorDialog(QDialog):
         """마우스 버튼 놓을 때"""
         if not self.dragging or event.button() != Qt.LeftButton:
             return
+        
+        # 드래그 끝날 때 다시 십자 커서로 변경
+        self.setCursor(Qt.CrossCursor)
         
         self.dragging = False
         
