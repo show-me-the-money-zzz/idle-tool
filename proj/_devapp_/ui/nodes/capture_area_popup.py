@@ -14,6 +14,7 @@ from zzz.config import *
 from stores import areas
 from grinder_utils.system import Calc_MS
 from core.window_utils import WindowUtil
+from ui.nodes.log_dock_widget import LogDockWidget
 
 class CaptureMode(Enum):
     IMAGE = 0
@@ -45,22 +46,25 @@ class CaptureAreaPopup(QDialog):
         
         self.capturemode = CaptureMode.IMAGE
         
-        # 로그 창 생성
-        self.log_window = LogWindow(self)
+        # 로그 도킹 위젯 생성
+        self.log_dock = LogDockWidget(self)
+        self.log_dock.setFloating(True)  # 항상 분리된 상태로 설정
         
         # 로그 창 버튼 연결
-        self.log_window.read_text_btn.clicked.connect(self.toggle_read_text)
-        self.log_window.clear_log_btn.clicked.connect(self.clear_log)
+        self.log_dock.read_text_btn.clicked.connect(self.toggle_read_text)
+        self.log_dock.clear_log_btn.clicked.connect(self.clear_log)
+        
+        self.log_dock.setVisible(False)
         
         # 타이머 변수 (None으로 초기화)
         self._read_timer = None
-        
-        # 이동 타이머
-        self.move_timer = QTimer(self)
-        self.move_timer.timeout.connect(self.update_log_window_position)
-        self.move_timer.start(500)  # 0.5초 간격으로 위치 업데이트
 
         self._setup_ui()
+        
+        # 이동 타이머 추가
+        self.move_timer = QTimer(self)
+        self.move_timer.timeout.connect(self.update_log_dock_position)
+        self.move_timer.start(500)  # 0.5초 간격으로 위치 업데이트
 
     def _setup_ui(self):
         # 메인 레이아웃
@@ -308,18 +312,43 @@ class CaptureAreaPopup(QDialog):
             
         if self.reading_text: self.toggle_read_text()
         if CaptureMode.TEXT == mode:
-            self.log_window.ShowWindow(True)
-            self.update_log_window_position()
+            self.log_dock.setVisible(True)
+            # 적절한 위치로 도킹 위젯 이동
+            self.update_log_dock_position()
         else:
-            self.log_window.ShowWindow(False)
+            self.log_dock.setVisible(False)
         
         # 객체에 현재 캡처 타입 저장
         self.capturemode = mode
+        
+    def update_log_dock_position(self):
+        """로그 도킹 위젯 위치 업데이트"""
+        if self.log_dock.isVisible():
+            # 위젯이 도킹되었는지 분리되었는지 확인
+            if self.log_dock.isFloating():
+                # 메인 창의 오른쪽에 위치시킴
+                main_geo = self.geometry()
+                
+                # 새 위치 계산 (메인 창 오른쪽)
+                new_x = main_geo.x() + main_geo.width() + 10  # 10px 여백
+                new_y = main_geo.y()
+                
+                # 위젯 크기 설정 (필요한 경우)
+                dock_width = 400  # 적절한 너비
+                dock_height = main_geo.height()  # 메인 창과 동일한 높이
+                
+                # 위치 및 크기 설정
+                self.log_dock.setGeometry(new_x, new_y, dock_width, dock_height)
+            # 도킹된 상태에서는 위치 설정이 필요 없음 (자동으로 관리됨)
+            
+    def moveEvent(self, event):
+        """창 이동 시 로그 창도 함께 이동"""
+        super().moveEvent(event)
+        self.update_log_dock_position()
 
     def clear_log(self):
         """로그 내용 초기화"""
-        if hasattr(self, 'log_window'):
-            self.log_window.clear_log()
+        self.log_dock.clear_log()
 
     def toggle_read_text(self):
         """텍스트 읽기 시작/중지"""
@@ -331,10 +360,10 @@ class CaptureAreaPopup(QDialog):
             self._read_timer = None
         
         if self.reading_text:
-            self.log_window.read_text_btn.setText(self.READTEXT_BUTTON_STOP_TEXT)
+            self.log_dock.read_text_btn.setText(self.READTEXT_BUTTON_STOP_TEXT)
             self._read_loop_main()
         else:
-            self.log_window.read_text_btn.setText(self.READTEXT_BUTTON_START_TEXT)
+            self.log_dock.read_text_btn.setText(self.READTEXT_BUTTON_START_TEXT)
 
     def _read_loop_main(self):
         """텍스트 읽기 반복 함수"""
@@ -348,8 +377,8 @@ class CaptureAreaPopup(QDialog):
         # 타이머 설정 (간격은 로그 창에서 가져옴)
         interval = 1000  # 기본값
         try:
-            if hasattr(self, 'log_window') and self.log_window:
-                interval = int(self.log_window.interval_spin.value() * 1000)
+            if hasattr(self, 'log_dock') and self.log_dock:
+                interval = int(self.log_dock.interval_spin.value() * 1000)
         except:
             pass
         
@@ -392,7 +421,7 @@ class CaptureAreaPopup(QDialog):
                 recognized_text = "(인식된 텍스트 없음)\n"
                 
             timestamp = datetime.now().strftime("%H:%M:%S")
-            self.log_window.append_log(f"[{timestamp}] {recognized_text}")
+            self.log_dock.append_log(f"[{timestamp}] {recognized_text}")
     
             self.status_signal.emit("영역에서 텍스트 읽기 완료")
             
@@ -715,7 +744,7 @@ class CaptureAreaPopup(QDialog):
             y = self.y_spin.value()
             width = self.width_spin.value()
             height = self.height_spin.value()
-            interval = float(self.interval_spin.value())
+            interval = float(self.log_dock.interval_spin.value())
             
             if width <= 0 or height <= 0 or interval <= 0:
                 raise ValueError("너비, 높이, 간격은 양수여야 합니다.")
@@ -731,7 +760,6 @@ class CaptureAreaPopup(QDialog):
         self.y_spin.setValue(y)
         self.width_spin.setValue(width)
         self.height_spin.setValue(height)
-        self.interval_spin.setValue(interval)
         
         # 미리보기 업데이트
         self.update_area_preview()
@@ -739,30 +767,15 @@ class CaptureAreaPopup(QDialog):
     def apply_keyword_to_key_input(self):
         keyword = self.keywords_combo.currentText()
         self.key_input.setText(keyword)
-
-    def update_log_window_position(self):
-        """로그 창 위치 업데이트"""
-        if self.log_window.isVisible():
-            # 메인 창의 오른쪽에 위치시킴
-            main_geo = self.geometry()
-            log_geo = self.log_window.geometry()
-            
-            # 새 위치 계산 (메인 창 오른쪽)
-            new_x = main_geo.x() + main_geo.width() + 10  # 10px 여백
-            new_y = main_geo.y()
-            
-            # 설정한 위치와 현재 위치가 다른 경우에만 이동
-            if self.log_window.x() != new_x or self.log_window.y() != new_y:
-                self.log_window.move(new_x, new_y)
-                
-    def moveEvent(self, event):
-        """창 이동 시 로그 창도 함께 이동"""
-        super().moveEvent(event)
-        self.update_log_window_position()
+        
+    def closeEvent(self, event):
+        # print("[DEBUG] closeEvent triggered from X 버튼")
+        self.on_close()
+        event.accept()
     
     def on_close(self):
         """창 닫기"""
-        print("CaptureAreaPopup closing...")
+        # print("CaptureAreaPopup closing...")
         
         # 읽기 상태 중지
         self.reading_text = False
@@ -775,148 +788,16 @@ class CaptureAreaPopup(QDialog):
         if hasattr(self, 'move_timer') and self.move_timer is not None:
             self.move_timer.stop()
             self.move_timer = None
-        
-        # 로그 창 강제 종료 - 참조를 일시 저장하고 삭제
-        log_window_ref = None
-        if hasattr(self, 'log_window') and self.log_window is not None:
-            print("로그 창 강제 종료 시도...")
-            log_window_ref = self.log_window
-            # 모든 연결 끊기
-            self.log_window.read_text_btn.clicked.disconnect()
-            self.log_window.clear_log_btn.clicked.disconnect()
-            # 참조 제거
-            self.log_window = None
-        
-        # 저장된 참조로 로그 창 종료
-        if log_window_ref is not None:
-            log_window_ref.force_close_window()
-            log_window_ref = None
+            
+        try:
+            self.log_dock.close()
+            # print("로그 도킹 위젯 닫기")
+        except Exception as e:
+            print(f"로그 도킹 위젯 닫기 실패: {e}")
         
         # 콜백 호출
         if self.on_close_callback:
             self.on_close_callback(self.capture_settings)
         
-        print("CaptureAreaPopup 종료 완료")
+        # print("CaptureAreaPopup 종료 완료")
         self.reject()
-        
-
-# 추가해야 할 클래스 - LogWindow
-class LogWindow(QDialog):
-    """로그를 표시하는 분리된 창"""
-    
-    def __init__(self, parent=None):
-        super().__init__(parent, Qt.Window | Qt.WindowCloseButtonHint)
-        self.setWindowTitle("인식된 텍스트")
-        self.resize(400, 400)
-        
-        # 부모 창이 이미 닫혔는지 확인하기 위한 플래그
-        self.parent_closed = False
-        
-        # 메인 레이아웃
-        layout = QVBoxLayout(self)
-        
-        # 로그 컨트롤 영역 - 텍스트 옵션과 로그 초기화 버튼
-        log_control = QHBoxLayout()
-        
-        # 텍스트 옵션 - 왼쪽 정렬
-        self.text_options_widget = QWidget()
-        text_options_layout = QHBoxLayout(self.text_options_widget)
-        text_options_layout.setContentsMargins(0, 0, 0, 0)
-        
-        text_options_layout.addWidget(QLabel("간격(초):"))
-        self.interval_spin = QDoubleSpinBox()
-        self.interval_spin.setRange(0.1, 10.0)
-        self.interval_spin.setValue(1.0)
-        self.interval_spin.setSingleStep(0.1)
-        self.interval_spin.setFixedWidth(60)  # 폭 줄이기
-        text_options_layout.addWidget(self.interval_spin)
-        
-        # 글자 읽기 버튼 추가
-        self.read_text_btn = QPushButton(CaptureAreaPopup.READTEXT_BUTTON_START_TEXT)
-        text_options_layout.addWidget(self.read_text_btn)
-        
-        log_control.addWidget(self.text_options_widget)
-        
-        # 중간 여백
-        log_control.addStretch(1)
-        
-        # 로그 초기화 버튼 - 오른쪽 정렬
-        self.clear_log_btn = QPushButton("지우기")
-        log_control.addWidget(self.clear_log_btn)
-        
-        layout.addLayout(log_control)
-        
-        # 로그 텍스트 영역
-        self.log_text = QTextEdit()
-        self.log_text.setReadOnly(True)
-        layout.addWidget(self.log_text)
-        
-        # 부모 창 위치 변경 시 자동 이동을 위한 속성
-        self.setAttribute(Qt.WA_DeleteOnClose, False)
-        self.force_close = False
-        
-    def SetText_ReadButton(self, text):
-        self.read_text_btn.setText(text)
-        
-    def GetInterval(self):
-        return self.interval_spin.value()
-    
-    def clear_log(self):
-        """로그 내용 초기화"""
-        self.log_text.clear()
-    
-    def append_log(self, text):
-        """로그에 텍스트 추가"""
-        self.log_text.append(text)
-        # 스크롤 맨 아래로 이동
-        scrollbar = self.log_text.verticalScrollBar()
-        scrollbar.setValue(scrollbar.maximum())
-    
-    def ShowWindow(self, __show):
-        self.clear_log()
-        
-        if __show: self.show()
-        else: self.hide()
-    
-    def closeEvent(self, event):
-        """창이 닫힐 때 이벤트"""
-        print("LogWindow closeEvent 호출됨")
-        
-        # 부모가 이미 닫혔거나 강제 종료면 진짜로 닫기
-        if getattr(self, 'parent_closed', False) or getattr(self, 'force_close', False):
-            print("부모가 닫혔으므로 로그 창 완전히 종료")
-            event.accept()
-            return
-        
-        # 단순히 X를 눌러 닫을 경우 숨기기만 함
-        print("로그 창 숨기기만 함 (닫지 않음)")
-        self.hide()
-        event.ignore()
-        
-        # 이 부분이 잘못되었습니다 - CaptureAreaPopup 메서드처럼 작성됨
-        # 이 코드는 삭제해야 합니다
-        # if hasattr(self, 'log_window') and self.log_window is not None:
-        #     print("closeEvent에서 로그 창 강제 종료")
-        #     self.log_window.parent_closed = True
-        #     self.log_window.close()
-        #     QApplication.processEvents()
-        
-    # LogWindow 클래스에 추가
-    def force_close_window(self):
-        """강제로 창을 완전히 종료"""
-        print("로그 창 강제 종료 메서드 호출됨")
-        
-        # 강제 종료 플래그 설정
-        self.force_close = True
-        self.parent_closed = True
-        
-        # 전역 참조를 전혀 남기지 않도록 메서드와 UI 요소들 정리
-        self.read_text_btn.clicked.disconnect()
-        self.clear_log_btn.clicked.disconnect()
-        
-        # 창 숨기기 및 닫기
-        self.hide()
-        self.close()
-        
-        # 최종적으로 Qt에게 삭제 예약
-        self.deleteLater()
