@@ -26,7 +26,7 @@ from ui.log_frame import LogFrame
 import core.sanner as Scanner
 
 class AppUI(QMainWindow):
-    RUNNER_BUTTON_START_TEXT = "스캔 ▶"
+    RUNNER_BUTTON_START_TEXT = "스캔 ▶️" 
     RUNNER_BUTTON_STOP_TEXT = "스캔 ■"
     
     status_changed = Signal(str)  # 상태 변경 신호

@@ -23,7 +23,7 @@ class CaptureMode(Enum):
 class CaptureAreaPopup(QDialog):
     """캡처 영역 설정 팝업 창"""
     
-    READTEXT_BUTTON_START_TEXT = "글자 읽기 ▶"
+    READTEXT_BUTTON_START_TEXT = "글자 읽기 ▶️"
     READTEXT_BUTTON_STOP_TEXT = "글자 읽기 ■"
 
     def __init__(self, parent, region_selector, capture_manager, status_signal, on_close_callback=None):
