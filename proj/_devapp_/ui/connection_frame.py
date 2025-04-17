@@ -88,28 +88,51 @@ class ConnectionFrame(QGroupBox):
         bottom_action_frame = QWidget()
         bottom_action_layout = QHBoxLayout(bottom_action_frame)
         bottom_action_layout.setContentsMargins(0, 0, 0, 0)
-        
+
+        # 왼쪽에 배치할 버튼들
+        left_buttons_widget = QWidget()
+        left_buttons_layout = QHBoxLayout(left_buttons_widget)
+        left_buttons_layout.setContentsMargins(0, 0, 0, 0)
+
         # 캡처 버튼
         self.capture_window_btn = QPushButton("캡처")
         self.capture_window_btn.clicked.connect(self.capture_full_window)
         self.capture_window_btn.setEnabled(False)
-        bottom_action_layout.addWidget(self.capture_window_btn)
-        
+        left_buttons_layout.addWidget(self.capture_window_btn)
+
         # 자동 캡처 버튼
         self.auto_capture_btn = QPushButton("캡처 (자동 저장)")
         self.auto_capture_btn.clicked.connect(self.auto_capture_full_window)
         self.auto_capture_btn.setEnabled(False)
-        bottom_action_layout.addWidget(self.auto_capture_btn)
-        
-        # ✅ 폴더 열기 버튼 추가
-        open_folder_btn = QPushButton("캡처 폴더 열기") #✅
+        left_buttons_layout.addWidget(self.auto_capture_btn)
+
+        # 폴더 열기 버튼 추가
+        open_folder_btn = QPushButton("캡처 폴더 열기")
         open_folder_btn.clicked.connect(self.open_capture_folder)
-        bottom_action_layout.addWidget(open_folder_btn)
-        
-        # 여백
+        left_buttons_layout.addWidget(open_folder_btn)
+
+        # 왼쪽 버튼 그룹 추가
+        bottom_action_layout.addWidget(left_buttons_widget, 0, Qt.AlignLeft)
+
+        # 여백을 추가하여 오른쪽 버튼들과 분리
         bottom_action_layout.addStretch(1)
-        
-        name_layout.addWidget(bottom_action_frame, 3, 0, 1, 3, Qt.AlignLeft)
+
+        # 해상도 버튼 그룹
+        hd_button_widget = QWidget()
+        hd_button_layout = QHBoxLayout(hd_button_widget)
+        hd_button_layout.setContentsMargins(0, 0, 0, 0)
+        hd_button_layout.setSpacing(0)  # 버튼 간 간격 줄이기
+
+        for label in ["nHD", "HD+", "FHD"]:
+            btn = QPushButton(label)
+            btn.setFixedWidth(48)
+            btn.clicked.connect(lambda _, res=label: WindowUtil.Resize_HD(res))
+            hd_button_layout.addWidget(btn)
+
+        # 해상도 버튼 그룹을 오른쪽에 추가
+        bottom_action_layout.addWidget(hd_button_widget, 0, Qt.AlignRight)
+
+        name_layout.addWidget(bottom_action_frame, 3, 0, 1, 3)
         
         # 창 정보 표시 레이블
         self.window_info_edit = QLineEdit("연결된 창 없음")

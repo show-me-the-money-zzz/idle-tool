@@ -168,5 +168,58 @@ class WindowManager:
 
         left, top, _, _ = self.window_rect
         return abs_x - left, abs_y - top
+    
+    def resize_window(self, width, height):
+        if not self.is_window_valid():
+            print("타겟 윈도우가 유효하지 않습니다.")
+            return False
+
+        left, top, _, _ = self.window_rect
+
+        try:
+            win32gui.MoveWindow(self.target_hwnd, left, top, width, height, True)
+            self.update_window_info()
+            return True
+        except Exception as e:
+            print(f"창 크기 변경 실패: {e}")
+            return False
+        
+    def Resize_HD(self, name, game = ""):
+        """
+        지정된 이름(name)에 따라 해상도를 변경합니다.
+        name 예시: "nHD", "qHD", "HD", "HD+", "FHD", "QHD"
+        
+        Games
+            LORDNINE: 중간 FHD | 낮음 HD
+        """
+
+        # 기본 해상도 매핑
+        resolutions = {
+            "nHD": (640, 360),
+            "qHD": (960, 540),
+            "HD": (1280, 720),
+            "HD+": (1600, 900),
+            "FHD": (1920, 1080),
+            "QHD": (2560, 1440)
+        }
+
+        if name not in resolutions:
+            print(f"[오류] 지원하지 않는 해상도 이름: {name}")
+            return False
+
+        w, h = resolutions[name]
+
+        # 윈도우 테두리/타이틀바 보정
+        margin_w = 14  # 좌우 여백 합
+        margin_h = 7 + 30  # 30: 상단 타이틀 바
+        
+        if "LORDNINE" == game:
+            margin_w += 2
+            margin_h += 2
+
+        w += margin_w
+        h += margin_h
+
+        return self.resize_window(w, h)
 
 WindowUtil = WindowManager()
