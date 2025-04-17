@@ -52,7 +52,10 @@ class CaptureAreaPopup(QDialog):
         self.log_window.read_text_btn.clicked.connect(self.toggle_read_text)
         self.log_window.clear_log_btn.clicked.connect(self.clear_log)
         
-        # 창 이동 이벤트를 위한 타이머
+        # 타이머 변수 (None으로 초기화)
+        self._read_timer = None
+        
+        # 이동 타이머
         self.move_timer = QTimer(self)
         self.move_timer.timeout.connect(self.update_log_window_position)
         self.move_timer.start(500)  # 0.5초 간격으로 위치 업데이트
@@ -322,25 +325,39 @@ class CaptureAreaPopup(QDialog):
         """텍스트 읽기 시작/중지"""
         self.reading_text = not self.reading_text
         
+        # 기존 타이머 중지
+        if self._read_timer is not None:
+            self._read_timer.stop()
+            self._read_timer = None
+        
         if self.reading_text:
-            self.log_window.SetText_ReadButton(CaptureAreaPopup.READTEXT_BUTTON_STOP_TEXT)
+            self.log_window.read_text_btn.setText(self.READTEXT_BUTTON_STOP_TEXT)
             self._read_loop_main()
         else:
-            self.log_window.SetText_ReadButton(CaptureAreaPopup.READTEXT_BUTTON_START_TEXT)
+            self.log_window.read_text_btn.setText(self.READTEXT_BUTTON_START_TEXT)
 
     def _read_loop_main(self):
         """텍스트 읽기 반복 함수"""
-        if not self.reading_text:
+        # 창이 닫혔거나 읽기 상태가 아니면 종료
+        if not self.isVisible() or not self.reading_text:
             return
-            
+        
+        # 텍스트 읽기 실행
         self.read_text_from_area()
         
+        # 타이머 설정 (간격은 로그 창에서 가져옴)
+        interval = 1000  # 기본값
         try:
-            interval = Calc_MS(float(self.log_window.GetInterval()))
-        except ValueError:
-            interval = 2000
-            
-        QTimer.singleShot(interval, self._read_loop_main)
+            if hasattr(self, 'log_window') and self.log_window:
+                interval = int(self.log_window.interval_spin.value() * 1000)
+        except:
+            pass
+        
+        # 새 타이머 생성 (이전 타이머는 이미 중지됨)
+        self._read_timer = QTimer(self)
+        self._read_timer.setSingleShot(True)
+        self._read_timer.timeout.connect(self._read_loop_main)
+        self._read_timer.start(interval)
 
     def read_text_from_area(self):
         """지정된 영역에서 텍스트 읽기"""
@@ -745,14 +762,34 @@ class CaptureAreaPopup(QDialog):
     
     def on_close(self):
         """창 닫기"""
+        print("CaptureAreaPopup closing...")
+        
+        # 읽기 상태 중지
         self.reading_text = False
         
-        if hasattr(self, 'log_window'):
-            self.log_window.hide()
+        # 타이머 중지
+        if self._read_timer is not None:
+            self._read_timer.stop()
+            self._read_timer = None
+        
+        # 이동 타이머 중지
+        if self.move_timer is not None:
+            self.move_timer.stop()
             
+        # 로그 창 종료 플래그 설정 및 닫기
+        if hasattr(self, 'log_window') and self.log_window:
+            print("Closing log window...")
+            self.log_window.parent_closed = True
+            self.log_window.close()
+            self.log_window.deleteLater()  # 메모리에서 삭제 예약
+            self.log_window = None
+        
+        # 콜백 호출
         if self.on_close_callback:
             self.on_close_callback(self.capture_settings)
-        self.reject()  # 다이얼로그 닫기
+            
+        print("CaptureAreaPopup closed")
+        self.reject()  # 다이얼로그 종료
         
 
 # 추가해야 할 클래스 - LogWindow
@@ -763,6 +800,9 @@ class LogWindow(QDialog):
         super().__init__(parent, Qt.Window | Qt.WindowCloseButtonHint)
         self.setWindowTitle("인식된 텍스트")
         self.resize(400, 400)
+        
+        # 부모 창이 이미 닫혔는지 확인하기 위한 플래그
+        self.parent_closed = False
         
         # 메인 레이아웃
         layout = QVBoxLayout(self)
@@ -805,6 +845,7 @@ class LogWindow(QDialog):
         
         # 부모 창 위치 변경 시 자동 이동을 위한 속성
         self.setAttribute(Qt.WA_DeleteOnClose, False)
+        self.force_close = False
         
     def SetText_ReadButton(self, text):
         self.read_text_btn.setText(text)
@@ -823,14 +864,25 @@ class LogWindow(QDialog):
         scrollbar = self.log_text.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
     
-    def closeEvent(self, event):
-        """창이 닫힐 때 이벤트"""
-        # 창이 닫히지 않고 숨기도록 처리
-        self.hide()
-        event.ignore()
-    
     def ShowWindow(self, __show):
         self.clear_log()
         
         if __show: self.show()
         else: self.hide()
+    
+    def closeEvent(self, event):
+        """창이 닫힐 때 이벤트"""
+        # 부모가 이미 닫혔으면 무조건 닫기
+        if self.parent_closed:
+            event.accept()
+            return
+            
+        # 부모의 읽기 상태 확인 (안전하게)
+        parent_widget = self.parent()
+        if parent_widget and hasattr(parent_widget, 'reading_text'):
+            # 부모가 있고 읽기 상태가 있으면 중지
+            parent_widget.reading_text = False
+            
+        # 창 숨기기
+        self.hide()
+        event.ignore()  # 실제로 닫지는 않음
