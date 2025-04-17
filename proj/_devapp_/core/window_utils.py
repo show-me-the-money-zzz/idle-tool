@@ -7,6 +7,10 @@ import time
 from ctypes import windll, Structure, c_ulong, POINTER, sizeof, byref, c_long
 
 from pynput.keyboard import Key, Controller
+from PySide6.QtWidgets import QMessageBox
+
+from core.settings_manager import AppSetting
+from grinder_utils.system import PrintDEV
 
 class WindowManager:
     """윈도우 창 관리 및 제어 클래스"""
@@ -69,7 +73,7 @@ class WindowManager:
     def is_window_valid(self):
         return self.target_hwnd is not None and win32gui.IsWindow(self.target_hwnd)
 
-    def activate_window(self):
+    def activate_window(self, checkresolution = True):
         if not self.is_window_valid():
             return False
 
@@ -83,11 +87,36 @@ class WindowManager:
 
             win32gui.SetForegroundWindow(self.target_hwnd)
             time.sleep(0.3)
+            
+            if checkresolution:
+                self.Check_Reoslution()
 
             return True
         except Exception as e:
             print(f"창 활성화 오류: {e}")
             return False
+        
+    def Check_Reoslution(self):
+        resol = AppSetting.Get_Resolution()
+        PrintDEV(f"WindowManager.Check_Reoslution(): resol= {resol}")
+        
+        left, top, right, bottom = WindowUtil.get_window_rect()
+        width = right - left
+        height = bottom - top
+        if None != resol:
+            resol_w, resol_h = resol
+            if width != resol_w or height != resol_h:
+                QMessageBox.warning(None, "경고",
+                    "저장된 해상도와 불일치\n"
+                    "게임을 저장된 해상도로 변경함"
+                )
+                self.resize_window(resol_w, resol_h)
+                self.activate_window(False)
+        else:
+            temp = 0
+            
+            # # DEV 코드
+            # AppSetting.Set_Resolution(width, height)
         
     def send_key(self, key):
         # print(f"send_key_with_pynput({key})")
