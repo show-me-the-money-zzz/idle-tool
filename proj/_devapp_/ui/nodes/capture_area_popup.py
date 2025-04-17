@@ -108,7 +108,7 @@ class CaptureAreaPopup(QDialog):
         # 간격 및 창 내부 선택 옵션
         options_layout = QHBoxLayout()
         
-        options_layout.addWidget(QLabel("캡처 간격(초):"))
+        options_layout.addWidget(QLabel("글자읽기 간격(초):"))
         self.interval_spin = QDoubleSpinBox()
         self.interval_spin.setRange(0.1, 10.0)
         self.interval_spin.setValue(1.0)
@@ -118,6 +118,7 @@ class CaptureAreaPopup(QDialog):
         
         self.window_only_check = QCheckBox("창 내부만 선택")
         self.window_only_check.setChecked(True)
+        self.window_only_check.setEnabled(False)
         options_layout.addWidget(self.window_only_check)
         
         settings_layout.addLayout(options_layout)

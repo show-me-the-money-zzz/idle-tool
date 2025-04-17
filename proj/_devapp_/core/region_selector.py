@@ -514,6 +514,30 @@ class RegionSelectorDialog(QDialog):
                 current_y = self.start_point.y() + size
             else:
                 current_y = self.start_point.y() - size
+                
+        elif is_width_key_pressed and self.fixed_width is not None:
+            # 너비 고정
+            if current_x >= self.start_point.x():
+                current_x = self.start_point.x() + self.fixed_width
+            else:
+                current_x = self.start_point.x() - self.fixed_width
+        
+        elif is_height_key_pressed and self.fixed_height is not None:
+            # 높이 고정
+            if current_y >= self.start_point.y():
+                current_y = self.start_point.y() + self.fixed_height
+            else:
+                current_y = self.start_point.y() - self.fixed_height
+        
+        elif is_ratio_key_pressed:
+            # 특정 비율 유지 (16:9 등)
+            width = abs(current_x - self.start_point.x())
+            height = width / DRAG_ASPECT_RATIO
+            
+            if current_y >= self.start_point.y():
+                current_y = self.start_point.y() + height
+            else:
+                current_y = self.start_point.y() - height
         
         # 다른 비율 조정 코드도 동일...
         
