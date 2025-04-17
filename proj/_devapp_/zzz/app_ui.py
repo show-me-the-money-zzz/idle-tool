@@ -11,6 +11,7 @@ from core.capture_utils import CaptureManager
 from core.ocr_engine import setup_tesseract
 from zzz.config import *
 from core.region_selector import RegionSelector
+from core.settings_manager import AppSetting
 
 # 각 UI 컴포넌트 import
 from zzz.menu_bar import MenuBar
@@ -41,9 +42,6 @@ class AppUI(QMainWindow):
         self.setWindowTitle(APP_TITLE)
         self.resize(APP_WIDTH, APP_HEIGHT)
         
-        # 설정 관리자 저장
-        self.settings_manager = settings_manager
-
         # 상태 메시지 변수
         self.status_message = STATUS_READY
         
@@ -68,7 +66,6 @@ class AppUI(QMainWindow):
         # 메뉴바 생성
         self.menu_bar = MenuBar(
             self, 
-            self.settings_manager, 
             self.initialize_ocr_with_path
         )
         
@@ -88,7 +85,7 @@ class AppUI(QMainWindow):
     def initialize_ocr(self):
         """OCR 엔진 초기화"""
         # Tesseract 경로 확인 및 설정
-        tesseract_path = self.settings_manager.check_tesseract_path(self)
+        tesseract_path = AppSetting.check_tesseract_path(self)
         
         if tesseract_path and os.path.exists(tesseract_path):
             # OCR 엔진 초기화 (기존 설정은 메시지 표시하지 않음)
@@ -108,8 +105,8 @@ class AppUI(QMainWindow):
         try:
             # tesseract_path가 None이면 사용자에게 물어봐야 합니다
             if tesseract_path is None:
-                # 이 부분은 settings_manager가 구현한 방식에 따라 달라질 수 있습니다
-                tesseract_path = self.settings_manager.ask_tesseract_path(self)
+                # 이 부분은 AppSetting 구현한 방식에 따라 달라질 수 있습니다
+                tesseract_path = AppSetting.ask_tesseract_path(self)
                 if not tesseract_path:
                     return False
             
@@ -297,7 +294,7 @@ class AppUI(QMainWindow):
         else:
             try:
                 # Tesseract OCR이 설정되어 있는지 확인
-                tesseract_path = self.settings_manager.get('Tesseract', 'Path', '')
+                tesseract_path = AppSetting.get('Tesseract', 'Path', '')
                 if not tesseract_path or not os.path.exists(tesseract_path):
                     # OCR 설정 요청
                     if not self.initialize_ocr():

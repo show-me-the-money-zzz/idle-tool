@@ -195,3 +195,5 @@ class SettingsManager:
                 return None
         
         return tesseract_path
+    
+AppSetting = SettingsManager()

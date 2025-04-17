@@ -9,7 +9,7 @@ if current_dir not in sys.path:
     sys.path.append(current_dir)
 
 from zzz.app_ui import AppUI
-from core.settings_manager import SettingsManager
+from core.settings_manager import AppSetting
 from zzz.config import *
 
 def main():
@@ -30,8 +30,9 @@ def main():
         Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
     )
     
-    # 설정 관리자 생성
-    settings_manager = SettingsManager()
+    # # 설정 관리자 생성
+    # settings_manager = SettingsManager()
+    ## 모듈에서 직접 생성. 공용 사용 위함
     
     # QApplication 생성
     app = QApplication(sys.argv)
@@ -39,7 +40,7 @@ def main():
     app.setStyle(APP_THEME)
     
     # 메인 애플리케이션 UI 생성
-    main_window = AppUI(settings_manager)
+    main_window = AppUI(AppSetting)
     main_window.show()
     
     # 메인 이벤트 루프 실행

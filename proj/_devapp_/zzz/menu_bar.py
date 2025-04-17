@@ -3,12 +3,12 @@ from PySide6.QtGui import QAction
 import os
 
 from zzz.config import *
+from core.settings_manager import AppSetting
 
 class MenuBar:
-    def __init__(self, main_window, settings_manager, ocr_initializer):
+    def __init__(self, main_window, ocr_initializer):
         """메뉴바 초기화"""
         self.main_window = main_window
-        self.settings_manager = settings_manager
         self.ocr_initializer = ocr_initializer
         
         # 메뉴바 생성 (QMainWindow에서 제공하는 메뉴바 사용)
@@ -66,10 +66,10 @@ class MenuBar:
     def set_tesseract_path(self):
         """Tesseract OCR 경로 설정"""
         # 현재 설정값 가져오기
-        current_path = self.settings_manager.get('Tesseract', 'Path', DEFAULT_TESSERACT_PATH)
+        current_path = AppSetting.get('Tesseract', 'Path', DEFAULT_TESSERACT_PATH)
         
         # 사용자에게 경로 선택 요청
-        new_path = self.settings_manager.prompt_tesseract_path(self.main_window)
+        new_path = AppSetting.prompt_tesseract_path(self.main_window)
         
         if new_path:
             # OCR 재초기화 함수 호출 (메시지 표시 옵션을 True로 설정)
@@ -80,7 +80,7 @@ class MenuBar:
         """Tesseract OCR 폴더를 탐색기로 열기"""
         try:
             # 현재 설정된 Tesseract 경로 가져오기
-            tesseract_path = self.settings_manager.get('Tesseract', 'Path', '')
+            tesseract_path = AppSetting.get('Tesseract', 'Path', '')
             
             if tesseract_path and os.path.exists(tesseract_path):
                 # 파일 경로에서 디렉토리 경로 추출
@@ -104,7 +104,7 @@ class MenuBar:
     def update_open_path_menu_state(self):
         """OCR 경로 탐색기로 열기 메뉴 상태 업데이트"""
         # 현재 설정된 Tesseract 경로 가져오기
-        tesseract_path = self.settings_manager.get('Tesseract', 'Path', '')
+        tesseract_path = AppSetting.get('Tesseract', 'Path', '')
         
         # 메뉴 활성화/비활성화
         if tesseract_path and os.path.exists(tesseract_path):
@@ -117,7 +117,7 @@ class MenuBar:
         try:
             # Settings Manager에서 사용하는 AppData 경로 가져오기
             # 경로는 설정 파일의 디렉토리 경로를 사용
-            appdata_path = os.path.dirname(self.settings_manager.settings_path)
+            appdata_path = os.path.dirname(AppSetting.settings_path)
             
             if os.path.exists(appdata_path):
                 # 해당 폴더 탐색기로 열기
