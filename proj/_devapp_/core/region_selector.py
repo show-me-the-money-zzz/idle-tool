@@ -612,6 +612,8 @@ class RegionSelectorDialog(QDialog):
             super().keyPressEvent(event)
     
     def closeEvent(self, event):
+        # print("RegionSelectorDialog.closeEvent()")
+        
         """창이 닫힐 때 이벤트"""
         # 확대 창 닫기
         if hasattr(self, 'zoom_window') and self.zoom_window:
@@ -646,8 +648,10 @@ class RegionSelector:
         # 결과 처리를 위한 시그널 연결
         self.dialog.region_selected.connect(self.on_region_selected)
         
+        # print("다이얼로그 실행")
         # 다이얼로그 실행
         result = self.dialog.exec()
+        # print("다이얼로그 닫힘")
         
         # 취소된 경우 처리
         if result == QDialog.Rejected:
