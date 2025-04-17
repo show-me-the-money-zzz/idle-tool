@@ -606,7 +606,9 @@ class RegionSelectorDialog(QDialog):
             # 마우스 추적 타이머 종료
             if hasattr(self, 'mouse_timer') and self.mouse_timer:
                 self.mouse_timer.stop()
-                
+            
+            # 취소 시 신호 발생 (None을 전달)
+            self.region_selected.emit(None)
             self.reject()  # 취소하고 닫기
         else:
             super().keyPressEvent(event)

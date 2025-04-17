@@ -361,9 +361,11 @@ class CaptureAreaPopup(QDialog):
         
         # 직접 콜백 함수 사용
         def handle_selection_complete(region_info):
-            # 다시 창 표시
+            # 다시 창 표시 (취소 여부와 관계없이 항상 실행)
             self.setVisible(True)
+            self.activateWindow()  # 창 활성화
             
+            # 취소된 경우
             if not region_info:
                 self.status_signal.emit("영역 선택이 취소되었습니다.")
                 return
@@ -382,9 +384,6 @@ class CaptureAreaPopup(QDialog):
             
             # 선택 후 미리보기 업데이트
             self.update_area_preview()
-            
-            # 필요시 창 활성화 (선택적)
-            self.activateWindow()
         
         # 영역 선택 시작 (콜백 전달)
         self.region_selector.start_selection(
