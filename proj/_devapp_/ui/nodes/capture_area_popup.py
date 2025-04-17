@@ -29,7 +29,7 @@ class CaptureAreaPopup(QDialog):
     def __init__(self, parent, region_selector, capture_manager, status_signal, on_close_callback=None):
         super().__init__(parent)
         self.setWindowTitle("캡처 영역 설정")
-        self.resize(700, 640)
+        self.resize(520, 720)
         
         self.parent = parent
         self.region_selector = region_selector
@@ -96,103 +96,91 @@ class CaptureAreaPopup(QDialog):
         
         # 좌표 및 크기 입력 영역
         coords_layout = QGridLayout()
-        
+
+        RectSpinBoxWidth = 64
         # X 좌표
         coords_layout.addWidget(QLabel("X 좌표:"), 0, 0)
         self.x_spin = QSpinBox()
         self.x_spin.setRange(0, 9999)
+        self.x_spin.setFixedWidth(RectSpinBoxWidth)
         self.x_spin.setValue(int(DEFAULT_CAPTURE_X))
         coords_layout.addWidget(self.x_spin, 0, 1)
-        
+
         # Y 좌표
         coords_layout.addWidget(QLabel("Y 좌표:"), 0, 2)
         self.y_spin = QSpinBox()
         self.y_spin.setRange(0, 9999)
+        self.y_spin.setFixedWidth(RectSpinBoxWidth)
         self.y_spin.setValue(int(DEFAULT_CAPTURE_Y))
         coords_layout.addWidget(self.y_spin, 0, 3)
-        
+
         # 너비
         coords_layout.addWidget(QLabel("너비:"), 0, 4)
         self.width_spin = QSpinBox()
         self.width_spin.setRange(1, 9999)
+        self.width_spin.setFixedWidth(RectSpinBoxWidth)
         self.width_spin.setValue(int(DEFAULT_CAPTURE_WIDTH))
         coords_layout.addWidget(self.width_spin, 0, 5)
-        
+
         # 높이
         coords_layout.addWidget(QLabel("높이:"), 0, 6)
         self.height_spin = QSpinBox()
         self.height_spin.setRange(1, 9999)
+        self.height_spin.setFixedWidth(RectSpinBoxWidth)
         self.height_spin.setValue(int(DEFAULT_CAPTURE_HEIGHT))
         coords_layout.addWidget(self.height_spin, 0, 7)
-        
+
         settings_layout.addLayout(coords_layout)
+
+       # 동작 버튼들 가로 배치
+        action_buttons_layout = QHBoxLayout()
+
+        # 영역 선택 버튼
+        select_area_btn = QPushButton("영역 선택")
+        select_area_btn.clicked.connect(self.select_capture_area)
+        action_buttons_layout.addWidget(select_area_btn)
+
+        # 미리보기 업데이트 버튼
+        preview_btn = QPushButton("미리보기 업뎃")
+        preview_btn.clicked.connect(self.update_area_preview)
+        action_buttons_layout.addWidget(preview_btn)
+
+        # 여백 추가 (오른쪽으로 버튼 밀기)
+        action_buttons_layout.addStretch(1)
         
-        # 간격 및 창 내부 선택 옵션
-        options_layout = QHBoxLayout()
-        
-        options_layout.addWidget(QLabel("글자읽기 간격(초):"))
-        self.interval_spin = QDoubleSpinBox()
-        self.interval_spin.setRange(0.1, 10.0)
-        self.interval_spin.setValue(1.0)
-        self.interval_spin.setSingleStep(0.1)
-        self.interval_spin.setReadOnly(True)
-        options_layout.addWidget(self.interval_spin)
-        
+        # 창 내부만 선택 옵션 (우측 끝에 배치)
         self.window_only_check = QCheckBox("창 내부만 선택")
         self.window_only_check.setChecked(True)
         self.window_only_check.setEnabled(False)
-        options_layout.addWidget(self.window_only_check)
-        
-        settings_layout.addLayout(options_layout)
-        
-        top_controls.addWidget(settings_group, 3)  # 비율 3
-        
-        # 우측 버튼 영역
-        buttons_group = QGroupBox()
-        buttons_layout = QVBoxLayout(buttons_group)
-        
-        # 동작 버튼 그룹
-        action_group = QGroupBox("동작")
-        action_layout = QVBoxLayout(action_group)
-        
-        select_area_btn = QPushButton("영역 선택")
-        select_area_btn.clicked.connect(self.select_capture_area)
-        action_layout.addWidget(select_area_btn)
-        
-        preview_btn = QPushButton("미리보기 업뎃")
-        preview_btn.clicked.connect(self.update_area_preview)
-        action_layout.addWidget(preview_btn)
-        
-        self.read_text_btn = QPushButton(self.READTEXT_BUTTON_START_TEXT)
-        self.read_text_btn.clicked.connect(self.toggle_read_text)
-        action_layout.addWidget(self.read_text_btn)
-        
-        buttons_layout.addWidget(action_group)
-        
-        # 작업 버튼 그룹
+        action_buttons_layout.addWidget(self.window_only_check)
+
+        settings_layout.addLayout(action_buttons_layout)
+
+        # 전체 레이아웃에 settings_group 추가
+        top_controls.addWidget(settings_group, 1)  # 비율 조정 (전체 화면 사용)
+
+        main_layout.addLayout(top_controls)
+
+        # 작업 버튼들 그룹화 및 분리
         work_group = QGroupBox("작업")
-        work_layout = QVBoxLayout(work_group)
-        
+        work_layout = QHBoxLayout(work_group)
+
         # 저장 버튼 - 녹색 스타일
         save_btn = QPushButton("저장")
         save_btn.setStyleSheet("background-color: #2ecc71; color: white; font-weight: bold;")
         save_btn.clicked.connect(self.apply_settings)
         work_layout.addWidget(save_btn)
-        
-        # 여백 추가
-        work_layout.addStretch(1)
-        
+
         # 취소 버튼 - 빨간색 스타일
         cancel_btn = QPushButton("취소하고 닫기")
         cancel_btn.setStyleSheet("background-color: #e74c3c; color: white; font-weight: bold;")
         cancel_btn.clicked.connect(self.on_close)
         work_layout.addWidget(cancel_btn)
-        
-        buttons_layout.addWidget(work_group, 1)  # stretch 1
-        
-        top_controls.addWidget(buttons_group, 1)  # 비율 1
-        
-        main_layout.addLayout(top_controls)
+
+        # 오른쪽으로 공간 추가
+        work_layout.addStretch(1)
+
+        main_layout.addWidget(work_group)
         
         # 미리보기 영역
         preview_group = QGroupBox("영역 미리보기")
@@ -231,27 +219,50 @@ class CaptureAreaPopup(QDialog):
         
         main_layout.addWidget(preview_group, 1)  # stretch 1
         
-        # 로그 영역
-        log_group = QGroupBox("인식된 텍스트")
-        log_layout = QVBoxLayout(log_group)
-        
-        # 로그 컨트롤 영역
+       # 로그 영역
+        self.log_group = QGroupBox("인식된 텍스트")
+        log_layout = QVBoxLayout(self.log_group)
+
+        # 로그 컨트롤 영역 - 텍스트 옵션과 로그 초기화 버튼
         log_control = QHBoxLayout()
-        
-        log_control.addStretch(1)  # 오른쪽 정렬을 위한 빈 공간
-        
+
+        # 텍스트 옵션 - 왼쪽 정렬
+        self.text_options_widget = QWidget()
+        text_options_layout = QHBoxLayout(self.text_options_widget)
+        text_options_layout.setContentsMargins(0, 0, 0, 0)
+
+        text_options_layout.addWidget(QLabel("글자읽기 간격(초):"))
+        self.interval_spin = QDoubleSpinBox()
+        self.interval_spin.setRange(0.1, 10.0)
+        self.interval_spin.setValue(1.0)
+        self.interval_spin.setSingleStep(0.1)
+        self.interval_spin.setFixedWidth(60)  # 폭 줄이기
+        text_options_layout.addWidget(self.interval_spin)
+
+        # 글자 읽기 버튼 추가
+        self.read_text_btn = QPushButton(self.READTEXT_BUTTON_START_TEXT)
+        self.read_text_btn.clicked.connect(self.toggle_read_text)
+        text_options_layout.addWidget(self.read_text_btn)
+
+        log_control.addWidget(self.text_options_widget)
+
+        # 중간 여백
+        log_control.addStretch(1)
+
+        # 로그 초기화 버튼 - 오른쪽 정렬
         clear_log_btn = QPushButton("로그 초기화")
         clear_log_btn.clicked.connect(self.clear_log)
         log_control.addWidget(clear_log_btn)
-        
+
         log_layout.addLayout(log_control)
-        
+
         # 로그 텍스트 영역
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
         log_layout.addWidget(self.log_text)
-        
-        main_layout.addWidget(log_group, 1)  # stretch 1
+
+        # 로그 그룹을 메인 레이아웃에 추가
+        main_layout.addWidget(self.log_group, 1)  # stretch 1
         
         self.on_capture_type_changed(CaptureMode.IMAGE)
         
@@ -306,16 +317,13 @@ class CaptureAreaPopup(QDialog):
         
         # 선택된 캡처 타입에 따라 UI 요소 조정
         if mode == CaptureMode.IMAGE:
-            self.interval_spin.setReadOnly(True)
             self.key_input.setPlaceholderText("이미지 키 입력...")
             self.status_signal.emit("이미지 모드로 변경되었습니다.")
             keyword_list = LOOP_IMAGE_KEYWORD
         elif mode == CaptureMode.ZONE:
-            self.interval_spin.setReadOnly(True)
             self.key_input.setPlaceholderText("빈영역 키 입력...")
             self.status_signal.emit("빈영역 모드로 변경되었습니다.")
         elif mode == CaptureMode.TEXT:
-            self.interval_spin.setReadOnly(False)
             self.key_input.setPlaceholderText("텍스트 키 입력...")
             self.status_signal.emit("텍스트 모드로 변경되었습니다.")
             keyword_list = LOOP_TEXT_KEYWORD
@@ -323,9 +331,12 @@ class CaptureAreaPopup(QDialog):
         # keyword 콤보박스 업데이트
         self.keywords_combo.clear()
         self.keywords_combo.addItems(keyword_list)
+        
         isExistKeywordList = 0 < len(keyword_list)
         self.keywords_combo.setEnabled(isExistKeywordList)
         self.apply_key_btn.setEnabled(isExistKeywordList)
+            
+        self.log_group.setVisible(mode == CaptureMode.TEXT)
         
         # 객체에 현재 캡처 타입 저장
         self.capturemode = mode
