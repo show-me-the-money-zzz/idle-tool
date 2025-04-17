@@ -1,6 +1,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDockWidget, QTextEdit, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QDoubleSpinBox
 
+from zzz.config import APP_THEME
+
 class LogDockWidget(QDockWidget):
     """도킹 가능한 로그 위젯"""
     
@@ -24,7 +26,6 @@ class LogDockWidget(QDockWidget):
         
         # 컨트롤 영역 레이아웃
         controls_layout = QHBoxLayout()
-        
         
         # 간격 설정
         controls_layout.addWidget(QLabel("간격(초):"))
@@ -58,7 +59,13 @@ class LogDockWidget(QDockWidget):
     def init_title_bar(self):
         """스왑 버튼이 포함된 타이틀 바 위젯 생성"""
         bar = QWidget()
-        bar.setStyleSheet("background-color: #2b2b2b; color: #7f7f7f;")
+        
+        BG_COLOR = "#ffffff"
+        TEXT_COLOR = "#000000"
+        if False == ("mac" in APP_THEME.lower()):
+            BG_COLOR = "#2b2b2b"
+            TEXT_COLOR = "#7f7f7f"
+        bar.setStyleSheet(f"background-color: {BG_COLOR}; color: {TEXT_COLOR};")
         
         layout = QHBoxLayout(bar)
         layout.setContentsMargins(5, 2, 5, 2)
