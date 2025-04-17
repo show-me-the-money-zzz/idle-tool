@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QTabWidget, QWidget,
                              QLabel, QLineEdit, QPushButton, QCheckBox, QSpinBox, QDoubleSpinBox,
-                             QGroupBox, QGridLayout, QComboBox, QTextEdit, QScrollArea,
+                             QGroupBox, QGridLayout, QComboBox, QTextEdit, QScrollArea, QApplication,
                              QFrame, QMessageBox, QFileDialog)
 from PySide6.QtGui import QPixmap, QImage, QPainter, QColor, QFont
 from PySide6.QtCore import Qt, Signal, Slot, QTimer
@@ -767,7 +767,7 @@ class CaptureAreaPopup(QDialog):
         # 읽기 상태 중지
         self.reading_text = False
         
-        # 모든 타이머 중지 (명시적으로)
+        # 타이머 중지
         if hasattr(self, '_read_timer') and self._read_timer is not None:
             self._read_timer.stop()
             self._read_timer = None
@@ -778,37 +778,23 @@ class CaptureAreaPopup(QDialog):
         
         # 로그 창 강제 종료
         if hasattr(self, 'log_window') and self.log_window is not None:
-            print("강제로 로그 창 종료 중...")
-            
-            # 로그 창의 모든 타이머 종료
-            for child in self.log_window.findChildren(QTimer):
-                try:
-                    child.stop()
-                except Exception as e:
-                    print(f"타이머 중지 오류: {e}")
-            
-            # 강제 종료 플래그 설정
-            self.log_window.parent_closed = True
-            
-            # 창 닫기 및 메모리에서 제거
-            self.log_window.close()
-            self.log_window.deleteLater()
-            
-            # 참조 제거
+            print("로그 창 강제 종료 중...")
+            # 로그 창 참조 이전에 저장
+            log_window = self.log_window
+            # 참조 제거 (먼저 수행)
             self.log_window = None
+            # 이제 로그 창 종료 (참조 제거 후)
+            log_window.force_close_window()
+        
+        # region_selector 정리
+        if hasattr(self, 'region_selector'):
+            self.region_selector.dialog = None
         
         # 콜백 호출
         if self.on_close_callback:
             self.on_close_callback(self.capture_settings)
         
-        # 이 창의 모든 자식 위젯의 타이머 중지
-        for child in self.findChildren(QTimer):
-            try:
-                child.stop()
-            except Exception as e:
-                print(f"자식 타이머 중지 오류: {e}")
-        
-        print("CaptureAreaPopup 완전히 종료됨")
+        print("CaptureAreaPopup 종료 완료")
         self.reject()
         
 
@@ -892,15 +878,45 @@ class LogWindow(QDialog):
     
     def closeEvent(self, event):
         """창이 닫힐 때 이벤트"""
-        print("LogWindow closeEvent 호출됨")
+        print("CaptureAreaPopup closeEvent 호출됨")
         
-        # 부모가 이미 닫혔거나 강제 종료면 진짜로 닫기
-        if getattr(self, 'parent_closed', False):
-            print("부모가 닫혔으므로 로그 창 완전히 종료")
-            event.accept()
-            return
+        # 타이머 중지
+        if hasattr(self, '_read_timer') and self._read_timer is not None:
+            self._read_timer.stop()
         
-        # 그냥 X를 누른 경우 hide만 하고 실제로는 닫지 않음
-        print("로그 창 숨기기만 함 (닫지 않음)")
-        self.hide()
-        event.ignore()
+        # 로그 창 강제 종료
+        if hasattr(self, 'log_window') and self.log_window is not None:
+            print("closeEvent에서 로그 창 강제 종료")
+            self.log_window.parent_closed = True
+            self.log_window.close()
+            QApplication.processEvents()  # 이벤트 처리 강제
+        
+        # 기본 이벤트 처리 계속
+        event.accept()
+        
+        # on_close 호출 (중복 처리되지 않도록 주의)
+        # self.on_close()  # 이 부분은 상황에 따라 주석 처리
+        
+    # LogWindow 클래스에 추가
+    def force_close_window(self):
+        """강제로 창을 완전히 종료"""
+        print("로그 창 강제 종료 메서드 호출됨")
+        
+        # 창이 닫히기 전에 모든 참조 정리
+        self.parent_closed = True
+        
+        # 모든 타이머 중지
+        for timer in self.findChildren(QTimer):
+            try:
+                timer.stop()
+            except:
+                pass
+        
+        # 창 닫기
+        self.hide()  # 먼저 숨김
+        self.close()  # 그 다음 닫기
+        self.deleteLater()  # 메모리에서 제거 예약
+        
+        # 로그 정리
+        self.log_text.clear()
+        self.log_text = None

@@ -667,6 +667,10 @@ class RegionSelector:
         """영역 선택 결과 처리 (내부용)"""
         self.selected_region = region
         
+        # 다이얼로그 참조 정리
+        if hasattr(self, 'dialog') and self.dialog:
+            self.dialog = None
+        
         # 콜백이 설정되어 있으면 호출
         if self.callback:
             self.callback(region)
