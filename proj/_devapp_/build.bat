@@ -26,7 +26,18 @@ echo.
 echo.
 xcopy scripts dist\scripts\ /E /I /Y
 echo ✅✅ scripts 폴더 복사 완료
+echo.
 
+
+@REM 아이콘 복사용 디렉토리 생성 및 복사
+@REM 해당 앱의 윈도우 아이콘은 실시간으로 불러오기 때문에 동봉시켜야 함
+if not exist dist\zzz (
+    mkdir dist\zzz
+)
+copy /Y zzz\icon.ico dist\zzz\
+echo ✅✅✅ 아이콘 복사 완료
+
+echo.
 echo.
 echo.
 echo ********************
