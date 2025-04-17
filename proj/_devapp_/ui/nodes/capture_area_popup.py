@@ -338,6 +338,9 @@ class CaptureAreaPopup(QDialog):
             
         self.log_group.setVisible(mode == CaptureMode.TEXT)
         
+        if self.reading_text: self.toggle_read_text()
+        self.clear_log()
+        
         # 객체에 현재 캡처 타입 저장
         self.capturemode = mode
 
