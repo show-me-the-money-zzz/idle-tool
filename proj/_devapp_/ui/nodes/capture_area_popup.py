@@ -23,8 +23,8 @@ class CaptureMode(Enum):
 class CaptureAreaPopup(QDialog):
     """캡처 영역 설정 팝업 창"""
     
-    READTEXT_BUTTON_START_TEXT = "글자 읽기 ▶️"
-    READTEXT_BUTTON_STOP_TEXT = "글자 읽기 🟥"
+    READTEXT_BUTTON_START_TEXT = "▶️"
+    READTEXT_BUTTON_STOP_TEXT = "🟥"
 
     def __init__(self, parent, region_selector, capture_manager, status_signal, on_close_callback=None):
         super().__init__(parent)
@@ -44,6 +44,18 @@ class CaptureAreaPopup(QDialog):
         self.selected_colors = []
         
         self.capturemode = CaptureMode.IMAGE
+        
+        # 로그 창 생성
+        self.log_window = LogWindow(self)
+        
+        # 로그 창 버튼 연결
+        self.log_window.read_text_btn.clicked.connect(self.toggle_read_text)
+        self.log_window.clear_log_btn.clicked.connect(self.clear_log)
+        
+        # 창 이동 이벤트를 위한 타이머
+        self.move_timer = QTimer(self)
+        self.move_timer.timeout.connect(self.update_log_window_position)
+        self.move_timer.start(500)  # 0.5초 간격으로 위치 업데이트
 
         self._setup_ui()
 
@@ -219,51 +231,6 @@ class CaptureAreaPopup(QDialog):
         
         main_layout.addWidget(preview_group, 1)  # stretch 1
         
-       # 로그 영역
-        self.log_group = QGroupBox("인식된 텍스트")
-        log_layout = QVBoxLayout(self.log_group)
-
-        # 로그 컨트롤 영역 - 텍스트 옵션과 로그 초기화 버튼
-        log_control = QHBoxLayout()
-
-        # 텍스트 옵션 - 왼쪽 정렬
-        self.text_options_widget = QWidget()
-        text_options_layout = QHBoxLayout(self.text_options_widget)
-        text_options_layout.setContentsMargins(0, 0, 0, 0)
-
-        text_options_layout.addWidget(QLabel("글자읽기 간격(초):"))
-        self.interval_spin = QDoubleSpinBox()
-        self.interval_spin.setRange(0.1, 10.0)
-        self.interval_spin.setValue(1.0)
-        self.interval_spin.setSingleStep(0.1)
-        self.interval_spin.setFixedWidth(60)  # 폭 줄이기
-        text_options_layout.addWidget(self.interval_spin)
-
-        # 글자 읽기 버튼 추가
-        self.read_text_btn = QPushButton(self.READTEXT_BUTTON_START_TEXT)
-        self.read_text_btn.clicked.connect(self.toggle_read_text)
-        text_options_layout.addWidget(self.read_text_btn)
-
-        log_control.addWidget(self.text_options_widget)
-
-        # 중간 여백
-        log_control.addStretch(1)
-
-        # 로그 초기화 버튼 - 오른쪽 정렬
-        clear_log_btn = QPushButton("로그 초기화")
-        clear_log_btn.clicked.connect(self.clear_log)
-        log_control.addWidget(clear_log_btn)
-
-        log_layout.addLayout(log_control)
-
-        # 로그 텍스트 영역
-        self.log_text = QTextEdit()
-        self.log_text.setReadOnly(True)
-        log_layout.addWidget(self.log_text)
-
-        # 로그 그룹을 메인 레이아웃에 추가
-        main_layout.addWidget(self.log_group, 1)  # stretch 1
-        
         self.on_capture_type_changed(CaptureMode.IMAGE)
         
         # 테스트용 색상 추가
@@ -336,27 +303,30 @@ class CaptureAreaPopup(QDialog):
         self.keywords_combo.setEnabled(isExistKeywordList)
         self.apply_key_btn.setEnabled(isExistKeywordList)
             
-        self.log_group.setVisible(mode == CaptureMode.TEXT)
-        
         if self.reading_text: self.toggle_read_text()
-        self.clear_log()
+        if CaptureMode.TEXT == mode:
+            self.log_window.ShowWindow(True)
+            self.update_log_window_position()
+        else:
+            self.log_window.ShowWindow(False)
         
         # 객체에 현재 캡처 타입 저장
         self.capturemode = mode
 
     def clear_log(self):
         """로그 내용 초기화"""
-        self.log_text.clear()
+        if hasattr(self, 'log_window'):
+            self.log_window.clear_log()
 
     def toggle_read_text(self):
         """텍스트 읽기 시작/중지"""
         self.reading_text = not self.reading_text
         
         if self.reading_text:
-            self.read_text_btn.setText(self.READTEXT_BUTTON_STOP_TEXT)
+            self.log_window.SetText_ReadButton(CaptureAreaPopup.READTEXT_BUTTON_STOP_TEXT)
             self._read_loop_main()
         else:
-            self.read_text_btn.setText(self.READTEXT_BUTTON_START_TEXT)
+            self.log_window.SetText_ReadButton(CaptureAreaPopup.READTEXT_BUTTON_START_TEXT)
 
     def _read_loop_main(self):
         """텍스트 읽기 반복 함수"""
@@ -366,7 +336,7 @@ class CaptureAreaPopup(QDialog):
         self.read_text_from_area()
         
         try:
-            interval = Calc_MS(float(self.interval_spin.value()))
+            interval = Calc_MS(float(self.log_window.GetInterval()))
         except ValueError:
             interval = 2000
             
@@ -405,12 +375,8 @@ class CaptureAreaPopup(QDialog):
                 recognized_text = "(인식된 텍스트 없음)\n"
                 
             timestamp = datetime.now().strftime("%H:%M:%S")
-            self.log_text.append(f"[{timestamp}] {recognized_text}")
-            
-            # 스크롤 맨 아래로 이동
-            scrollbar = self.log_text.verticalScrollBar()
-            scrollbar.setValue(scrollbar.maximum())
-            
+            self.log_window.append_log(f"[{timestamp}] {recognized_text}")
+    
             self.status_signal.emit("영역에서 텍스트 읽기 완료")
             
         except Exception as e:
@@ -757,9 +723,114 @@ class CaptureAreaPopup(QDialog):
         keyword = self.keywords_combo.currentText()
         self.key_input.setText(keyword)
 
+    def update_log_window_position(self):
+        """로그 창 위치 업데이트"""
+        if self.log_window.isVisible():
+            # 메인 창의 오른쪽에 위치시킴
+            main_geo = self.geometry()
+            log_geo = self.log_window.geometry()
+            
+            # 새 위치 계산 (메인 창 오른쪽)
+            new_x = main_geo.x() + main_geo.width() + 10  # 10px 여백
+            new_y = main_geo.y()
+            
+            # 설정한 위치와 현재 위치가 다른 경우에만 이동
+            if self.log_window.x() != new_x or self.log_window.y() != new_y:
+                self.log_window.move(new_x, new_y)
+                
+    def moveEvent(self, event):
+        """창 이동 시 로그 창도 함께 이동"""
+        super().moveEvent(event)
+        self.update_log_window_position()
+    
     def on_close(self):
         """창 닫기"""
         self.reading_text = False
+        
+        if hasattr(self, 'log_window'):
+            self.log_window.hide()
+            
         if self.on_close_callback:
             self.on_close_callback(self.capture_settings)
         self.reject()  # 다이얼로그 닫기
+        
+
+# 추가해야 할 클래스 - LogWindow
+class LogWindow(QDialog):
+    """로그를 표시하는 분리된 창"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent, Qt.Window | Qt.WindowCloseButtonHint)
+        self.setWindowTitle("인식된 텍스트")
+        self.resize(400, 400)
+        
+        # 메인 레이아웃
+        layout = QVBoxLayout(self)
+        
+        # 로그 컨트롤 영역 - 텍스트 옵션과 로그 초기화 버튼
+        log_control = QHBoxLayout()
+        
+        # 텍스트 옵션 - 왼쪽 정렬
+        self.text_options_widget = QWidget()
+        text_options_layout = QHBoxLayout(self.text_options_widget)
+        text_options_layout.setContentsMargins(0, 0, 0, 0)
+        
+        text_options_layout.addWidget(QLabel("간격(초):"))
+        self.interval_spin = QDoubleSpinBox()
+        self.interval_spin.setRange(0.1, 10.0)
+        self.interval_spin.setValue(1.0)
+        self.interval_spin.setSingleStep(0.1)
+        self.interval_spin.setFixedWidth(60)  # 폭 줄이기
+        text_options_layout.addWidget(self.interval_spin)
+        
+        # 글자 읽기 버튼 추가
+        self.read_text_btn = QPushButton(CaptureAreaPopup.READTEXT_BUTTON_START_TEXT)
+        text_options_layout.addWidget(self.read_text_btn)
+        
+        log_control.addWidget(self.text_options_widget)
+        
+        # 중간 여백
+        log_control.addStretch(1)
+        
+        # 로그 초기화 버튼 - 오른쪽 정렬
+        self.clear_log_btn = QPushButton("지우기")
+        log_control.addWidget(self.clear_log_btn)
+        
+        layout.addLayout(log_control)
+        
+        # 로그 텍스트 영역
+        self.log_text = QTextEdit()
+        self.log_text.setReadOnly(True)
+        layout.addWidget(self.log_text)
+        
+        # 부모 창 위치 변경 시 자동 이동을 위한 속성
+        self.setAttribute(Qt.WA_DeleteOnClose, False)
+        
+    def SetText_ReadButton(self, text):
+        self.read_text_btn.setText(text)
+        
+    def GetInterval(self):
+        return self.interval_spin.value()
+    
+    def clear_log(self):
+        """로그 내용 초기화"""
+        self.log_text.clear()
+    
+    def append_log(self, text):
+        """로그에 텍스트 추가"""
+        self.log_text.append(text)
+        # 스크롤 맨 아래로 이동
+        scrollbar = self.log_text.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
+    
+    def closeEvent(self, event):
+        """창이 닫힐 때 이벤트"""
+        # 창이 닫히지 않고 숨기도록 처리
+        self.hide()
+        event.ignore()
+    
+    def ShowWindow(self, __show):
+        self.clear_log()
+        
+        if __show: self.show()
+        else: self.hide()
