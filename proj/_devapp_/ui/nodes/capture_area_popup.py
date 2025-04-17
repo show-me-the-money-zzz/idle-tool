@@ -74,12 +74,25 @@ class CaptureAreaPopup(QDialog):
         
         settings_layout.addLayout(key_layout)
         
-        # 키워드 안내 텍스트
-        self.keywords_label = QLineEdit("")
-        self.keywords_label.setReadOnly(True)  # 읽기 전용으로 설정
-        self.keywords_label.setCursor(Qt.IBeamCursor)  # 텍스트 선택 커서로 변경
-        self.keywords_label.setStyleSheet("background-color: #5d5d5d; color:#ffffff")  # 비활성화 느낌의 배경색
-        settings_layout.addWidget(self.keywords_label)
+        # # 키워드: 콤보박스 + 버튼 수평 배치
+        keywords_layout = QHBoxLayout()
+
+        # 키워드 콤보박스
+        self.keywords_combo = QComboBox()
+        self.keywords_combo.setFixedWidth(150)  # 폭 줄이기
+        keywords_layout.addWidget(self.keywords_combo)
+
+        # "KEY에 입력" 버튼
+        self.apply_key_btn = QPushButton("KEY에 입력")
+        self.apply_key_btn.clicked.connect(self.apply_keyword_to_key_input)
+        self.apply_key_btn.setFixedWidth(90)
+        keywords_layout.addWidget(self.apply_key_btn)
+
+        # 오른쪽 여백 추가 (왼쪽으로 몰기 위해)
+        keywords_layout.addStretch(1)
+
+        # 레이아웃 왼쪽 정렬 지정
+        settings_layout.addLayout(keywords_layout)
         
         # 좌표 및 크기 입력 영역
         coords_layout = QGridLayout()
@@ -289,11 +302,14 @@ class CaptureAreaPopup(QDialog):
         """캡처 타입이 변경되었을 때 호출되는 함수"""
         mode = CaptureMode(index)
         
+        keyword_list = []  # zone은 키워드 없음
+        
         # 선택된 캡처 타입에 따라 UI 요소 조정
         if mode == CaptureMode.IMAGE:
             self.interval_spin.setReadOnly(True)
             self.key_input.setPlaceholderText("이미지 키 입력...")
             self.status_signal.emit("이미지 모드로 변경되었습니다.")
+            keyword_list = LOOP_IMAGE_KEYWORD
         elif mode == CaptureMode.ZONE:
             self.interval_spin.setReadOnly(True)
             self.key_input.setPlaceholderText("빈영역 키 입력...")
@@ -302,8 +318,14 @@ class CaptureAreaPopup(QDialog):
             self.interval_spin.setReadOnly(False)
             self.key_input.setPlaceholderText("텍스트 키 입력...")
             self.status_signal.emit("텍스트 모드로 변경되었습니다.")
+            keyword_list = LOOP_TEXT_KEYWORD
             
-        self.keywords_label.setText(self.GetText_Keywords(mode))
+        # keyword 콤보박스 업데이트
+        self.keywords_combo.clear()
+        self.keywords_combo.addItems(keyword_list)
+        isExistKeywordList = 0 < len(keyword_list)
+        self.keywords_combo.setEnabled(isExistKeywordList)
+        self.apply_key_btn.setEnabled(isExistKeywordList)
         
         # 객체에 현재 캡처 타입 저장
         self.capturemode = mode
@@ -717,17 +739,9 @@ class CaptureAreaPopup(QDialog):
         # 미리보기 업데이트
         self.update_area_preview()
         
-    def GetText_Keywords(self, mode: CaptureMode):
-        ret = "※ 예약 키워드: ";
-        
-        if mode == CaptureMode.IMAGE:
-            ret += ' / '.join(LOOP_IMAGE_KEYWORD)
-        elif mode == CaptureMode.ZONE:
-            temp = ret
-        elif mode == CaptureMode.TEXT:
-            ret += ' / '.join(LOOP_TEXT_KEYWORD)
-            
-        return ret
+    def apply_keyword_to_key_input(self):
+        keyword = self.keywords_combo.currentText()
+        self.key_input.setText(keyword)
 
     def on_close(self):
         """창 닫기"""
