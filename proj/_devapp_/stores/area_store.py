@@ -2,9 +2,13 @@ import os
 import sys
 import json
 # from pathlib import Path
-from grinder_utils import finder
+from grinder_utils import finder, system
+from core.settings_manager import AppSetting
+from core.window_utils import WindowUtil
 
 class AreaStore:
+    _issetup_resolution = False
+    
     def __init__(self, name, filename):
         self.name = name
         self.filename = filename
@@ -14,7 +18,7 @@ class AreaStore:
         
         success = self._load()
         if not success:
-            print(f"{self.name} 데이터를 로드할 수 없습니다. 새 데이터 저장소를 생성합니다.")
+            system.PrintDEV(f"{self.name} 데이터를 로드할 수 없습니다. 새 데이터 저장소를 생성합니다.")
 
     def _resolve_path(self):
         # base = Path(__file__).parent.parent / "data"
@@ -29,11 +33,11 @@ class AreaStore:
                     self.items = json.load(f)
                     
                 if False == getattr(sys, 'frozen', False):  #utils.system.DEVAPP
-                    print(f"{self.name}.Load(): {' / '.join(self.items)}")
+                    system.PrintDEV(f"{self.name}.Load(): {' / '.join(self.items)}")
                     
                 return True
             except Exception as e:
-                print(f"[{self.name}] 데이터 로드 오류: {e}")
+                system.PrintDEV(f"[{self.name}] 데이터 로드 오류: {e}")
                 self.items = {}
                 
                 return False
@@ -43,11 +47,13 @@ class AreaStore:
             with open(self.store_path, "w", encoding="utf-8") as f:
                 json.dump(self.items, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            print(f"[{self.name}] 저장 실패: {e}")
+            system.PrintDEV(f"[{self.name}] 저장 실패: {e}")
 
     def add(self, key, data, save=True):
         self.items[key] = data
         if save:
+            if not AreaStore._issetup_resolution:
+                AreaStore.Setup_Resolution()
             self.save()
 
     def delete(self, key, save=True):
@@ -63,3 +69,18 @@ class AreaStore:
 
     def all(self):
         return self.items.copy()
+    
+    @staticmethod
+    def Setup_Resolution():
+        # 1회성 처리
+        # tesseract_path = AppSetting.get('Tesseract', 'path');
+        gene_resolution = AppSetting.Get_Resolution()
+        system.PrintDEV(f"AreaStore.Setup_Resolution(): {gene_resolution}")
+        if None == gene_resolution:
+            left, top, right, bottom = WindowUtil.get_window_rect()
+            width = right - left
+            height = bottom - top
+            # print(f"AreaStore.Setup_Resolution(): window resolution= {width} x {height}")
+            update_setting = AppSetting.Set_Resolution(width, height)
+            system.PrintDEV(f"AreaStore.Setup_Resolution(): update setting= {update_setting}")
+        AreaStore._issetup_resolution = True

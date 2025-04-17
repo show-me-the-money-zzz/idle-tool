@@ -6,10 +6,15 @@ import os
 import configparser
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from zzz.config import SETTINGS_FILE, DEFAULT_TESSERACT_EXEFILENAME
-from grinder_utils import finder
+from grinder_utils import finder, system
 
 class SettingsManager:
     """설정 관리 클래스"""
+    
+    SECTION_GENERAL = "General"
+    SECTION_TESSERACT = "Tesseract"
+    
+    KEY_TESSERACT_PATH = 'Path'
     
     def __init__(self, default_values=None):
         """
@@ -49,12 +54,12 @@ class SettingsManager:
                 return False
         
         # 파일이 없으면 기본 섹션 생성
-        if 'General' not in self.config:
-            self.config['General'] = {}
+        if SettingsManager.SECTION_GENERAL not in self.config:
+            self.config[SettingsManager.SECTION_GENERAL] = {}
         
         # 테서렉트 섹션 확인
-        if 'Tesseract' not in self.config:
-            self.config['Tesseract'] = {}
+        if SettingsManager.SECTION_TESSERACT not in self.config:
+            self.config[SettingsManager.SECTION_TESSERACT] = {}
         
         return False
     
@@ -69,7 +74,7 @@ class SettingsManager:
             with open(self.settings_path, 'w', encoding='utf-8') as f:
                 self.config.write(f)
             
-            print(f"설정 파일 저장 완료: {self.settings_path}")
+            system.PrintDEV(f"설정 파일 저장 완료: {self.settings_path}")
             return True
         except Exception as e:
             print(f"설정 파일 저장 중 오류 발생: {str(e)}")
@@ -126,7 +131,7 @@ class SettingsManager:
             str: 선택된 테서렉트 경로 또는 None (취소 시)
         """
         # 현재 설정된 경로 가져오기
-        current_path = self.get('Tesseract', 'Path', '')
+        current_path = self.get(SettingsManager.SECTION_TESSERACT, SettingsManager.KEY_TESSERACT_PATH, '')
         
         # 파일 선택 다이얼로그
         file_path, _ = QFileDialog.getOpenFileName(
@@ -138,7 +143,7 @@ class SettingsManager:
         
         if file_path:
             # 경로 저장
-            self.set('Tesseract', 'Path', file_path)
+            self.set(SettingsManager.SECTION_TESSERACT, SettingsManager.KEY_TESSERACT_PATH, file_path)
             self.save_settings()
             return file_path
         
@@ -168,7 +173,7 @@ class SettingsManager:
             str: 테서렉트 경로 또는 None (취소 시)
         """
         # 저장된 테서렉트 경로 가져오기
-        tesseract_path = self.get('Tesseract', 'Path', '')
+        tesseract_path = self.get(SettingsManager.SECTION_TESSERACT, SettingsManager.KEY_TESSERACT_PATH, '')
         
         # 경로가 없거나 파일이 존재하지 않으면 사용자에게 요청
         if not tesseract_path or not os.path.exists(tesseract_path):
@@ -195,5 +200,23 @@ class SettingsManager:
                 return None
         
         return tesseract_path
+    
+    KEY_GENERAL_RESOLUTION = "resolution"
+    def Get_General(self, key, default=None):
+        return self.get(SettingsManager.SECTION_GENERAL, key, default)
+    def Get_Resolution(self):
+        resolution = self.get(SettingsManager.SECTION_GENERAL, SettingsManager.KEY_GENERAL_RESOLUTION, default=None)
+        if None == resolution:
+            return None
+        resolarr = resolution.split("x") #Set_Resolution에서 사용한 구분자
+        ret = [ int(resolarr[0]), int(resolarr[1]) ]
+        return ret
+
+    def Set_Resolution(self, width, height):
+        val = f"{width}x{height}"
+        if self.set(SettingsManager.SECTION_GENERAL, SettingsManager.KEY_GENERAL_RESOLUTION, val):
+            if self.save_settings():
+                return True
+        return False
     
 AppSetting = SettingsManager()
