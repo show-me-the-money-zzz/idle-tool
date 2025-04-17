@@ -323,14 +323,19 @@ class CaptureAreaPopup(QDialog):
         
     def update_log_dock_position(self):
         """로그 도킹 위젯 위치 업데이트"""
+        SpaceX = 10
         if self.log_dock.isVisible():
             # 위젯이 도킹되었는지 분리되었는지 확인
             if self.log_dock.isFloating():
                 # 메인 창의 오른쪽에 위치시킴
                 main_geo = self.geometry()
                 
-                # 새 위치 계산 (메인 창 오른쪽)
-                new_x = main_geo.x() + main_geo.width() + 10  # 10px 여백
+                # 새 위치 계산
+                new_x = 0
+                if "right" == self.log_dock.Get_FloatingPos():
+                    new_x = main_geo.x() + main_geo.width() + SpaceX
+                elif "left" == self.log_dock.Get_FloatingPos():
+                    new_x = main_geo.x() - self.log_dock.width() - SpaceX
                 new_y = main_geo.y()
                 
                 # 위젯 크기 설정 (필요한 경우)

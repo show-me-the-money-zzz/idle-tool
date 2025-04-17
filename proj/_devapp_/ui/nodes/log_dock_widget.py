@@ -14,12 +14,17 @@ class LogDockWidget(QDockWidget):
         # 부모 참조 저장
         self.parent_dialog = parent
         
+        self.floatingPos = "left"
+        # --- 🔸 커스텀 타이틀 바 생성 ---
+        self.init_title_bar()
+        
         # 내용 위젯 생성
         self.content = QWidget()
         layout = QVBoxLayout(self.content)
         
         # 컨트롤 영역 레이아웃
         controls_layout = QHBoxLayout()
+        
         
         # 간격 설정
         controls_layout.addWidget(QLabel("간격(초):"))
@@ -49,6 +54,33 @@ class LogDockWidget(QDockWidget):
         layout.addWidget(self.log_text)
         
         self.setWidget(self.content)
+        
+    def init_title_bar(self):
+        """스왑 버튼이 포함된 타이틀 바 위젯 생성"""
+        bar = QWidget()
+        bar.setStyleSheet("background-color: #2b2b2b; color: #7f7f7f;")
+        
+        layout = QHBoxLayout(bar)
+        layout.setContentsMargins(5, 2, 5, 2)
+
+        title_label = QLabel("OCR - 텍스트 읽기")
+        layout.addWidget(title_label)
+        layout.addStretch()
+
+        self.swap_btn = QPushButton("◀▶")
+        self.swap_btn.setFixedSize(30, 20)
+        self.swap_btn.setToolTip("도킹 좌우 위치 전환")
+        self.swap_btn.clicked.connect(self.toggle_dock_side)
+        layout.addWidget(self.swap_btn)
+
+        self.setTitleBarWidget(bar)
+        
+    def toggle_dock_side(self):
+        if "right" == self.floatingPos:
+            self.floatingPos = "left"
+        elif "left" == self.floatingPos:
+            self.floatingPos = "right"
+    def Get_FloatingPos(self): return self.floatingPos
     
     def clear_log(self):
         """로그 내용 초기화"""
