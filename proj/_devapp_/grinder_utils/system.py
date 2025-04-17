@@ -3,6 +3,10 @@ import site
 
 DEVAPP = getattr(sys, 'frozen', False)
 
+def PrintDEV(text):
+    if False == DEVAPP:
+        print(text)
+
 def Print_LibPath():
     for path in site.getsitepackages():
         print("라이브러리 경로:", path)
