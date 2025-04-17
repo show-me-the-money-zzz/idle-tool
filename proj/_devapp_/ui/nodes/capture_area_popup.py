@@ -767,29 +767,49 @@ class CaptureAreaPopup(QDialog):
         # 읽기 상태 중지
         self.reading_text = False
         
-        # 타이머 중지
-        if self._read_timer is not None:
+        # 모든 타이머 중지 (명시적으로)
+        if hasattr(self, '_read_timer') and self._read_timer is not None:
             self._read_timer.stop()
             self._read_timer = None
         
-        # 이동 타이머 중지
-        if self.move_timer is not None:
+        if hasattr(self, 'move_timer') and self.move_timer is not None:
             self.move_timer.stop()
+            self.move_timer = None
+        
+        # 로그 창 강제 종료
+        if hasattr(self, 'log_window') and self.log_window is not None:
+            print("강제로 로그 창 종료 중...")
             
-        # 로그 창 종료 플래그 설정 및 닫기
-        if hasattr(self, 'log_window') and self.log_window:
-            print("Closing log window...")
+            # 로그 창의 모든 타이머 종료
+            for child in self.log_window.findChildren(QTimer):
+                try:
+                    child.stop()
+                except Exception as e:
+                    print(f"타이머 중지 오류: {e}")
+            
+            # 강제 종료 플래그 설정
             self.log_window.parent_closed = True
+            
+            # 창 닫기 및 메모리에서 제거
             self.log_window.close()
-            self.log_window.deleteLater()  # 메모리에서 삭제 예약
+            self.log_window.deleteLater()
+            
+            # 참조 제거
             self.log_window = None
         
         # 콜백 호출
         if self.on_close_callback:
             self.on_close_callback(self.capture_settings)
-            
-        print("CaptureAreaPopup closed")
-        self.reject()  # 다이얼로그 종료
+        
+        # 이 창의 모든 자식 위젯의 타이머 중지
+        for child in self.findChildren(QTimer):
+            try:
+                child.stop()
+            except Exception as e:
+                print(f"자식 타이머 중지 오류: {e}")
+        
+        print("CaptureAreaPopup 완전히 종료됨")
+        self.reject()
         
 
 # 추가해야 할 클래스 - LogWindow
@@ -872,17 +892,15 @@ class LogWindow(QDialog):
     
     def closeEvent(self, event):
         """창이 닫힐 때 이벤트"""
-        # 부모가 이미 닫혔으면 무조건 닫기
-        if self.parent_closed:
+        print("LogWindow closeEvent 호출됨")
+        
+        # 부모가 이미 닫혔거나 강제 종료면 진짜로 닫기
+        if getattr(self, 'parent_closed', False):
+            print("부모가 닫혔으므로 로그 창 완전히 종료")
             event.accept()
             return
-            
-        # 부모의 읽기 상태 확인 (안전하게)
-        parent_widget = self.parent()
-        if parent_widget and hasattr(parent_widget, 'reading_text'):
-            # 부모가 있고 읽기 상태가 있으면 중지
-            parent_widget.reading_text = False
-            
-        # 창 숨기기
+        
+        # 그냥 X를 누른 경우 hide만 하고 실제로는 닫지 않음
+        print("로그 창 숨기기만 함 (닫지 않음)")
         self.hide()
-        event.ignore()  # 실제로 닫지는 않음
+        event.ignore()
