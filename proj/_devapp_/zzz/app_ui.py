@@ -18,17 +18,14 @@ from zzz.menu_bar import MenuBar
 from zzz.status_bar import StatusBar
 from zzz.info_bar import InfoBar
 from ui.connection_frame import ConnectionFrame
+from ui.control_frame import ControlFrame
 from ui.input_handler_frame import InputHandlerFrame
 from ui.log_frame import LogFrame
-
 # from ui.capture_area_frame import CaptureAreaFrame
 
 import stores.sanner as Scanner
 
 class AppUI(QMainWindow):
-    RUNNER_BUTTON_START_TEXT = "스캔 ▶️" 
-    RUNNER_BUTTON_STOP_TEXT = "스캔 🟥"
-    
     status_changed = Signal(str)  # 상태 변경 신호
     
     def __init__(self, settings_manager):
@@ -141,10 +138,13 @@ class AppUI(QMainWindow):
         self.main_layout.addWidget(self.connection_frame)
         
         # 2. 캡처 영역 및 버튼 프레임
-        control_frame = self.create_control_frame()
-        # 컨트롤 프레임도 필요한 최소 높이만 사용
-        control_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.main_layout.addWidget(control_frame)
+        self.control_frame = ControlFrame(self,
+                                          self.status_changed,
+                                          self.toggle_capture,
+                                          self.apply_interval,
+                                          self.open_capture_area_popup
+                                          )
+        self.main_layout.addWidget(self.control_frame)
         
         # 3. 입력 처리 프레임
         self.input_handler_frame = InputHandlerFrame(self, self.status_changed)
@@ -167,50 +167,6 @@ class AppUI(QMainWindow):
         # 캡처 설정 저장 변수
         self.capture_settings = None
     
-    def create_control_frame(self):
-        """캡처 제어 프레임 생성"""
-        frame = QFrame()
-        frame_layout = QHBoxLayout(frame)
-        frame_layout.setContentsMargins(0, 5, 0, 5)
-        
-        # 캡처 시작/중지 버튼
-        self.capture_btn = QPushButton(AppUI.RUNNER_BUTTON_START_TEXT)
-        self.capture_btn.clicked.connect(self.toggle_capture)
-        frame_layout.addWidget(self.capture_btn)
-        
-        # 간격 프레임
-        interval_frame = QFrame()
-        interval_layout = QHBoxLayout(interval_frame)
-        interval_layout.setContentsMargins(10, 0, 10, 0)
-        
-        interval_label = QLabel("간격(초)")
-        interval_layout.addWidget(interval_label)
-        
-        self.interval_spin = QDoubleSpinBox()
-        self.interval_spin.setRange(0.0, 3.0)
-        self.interval_spin.setSingleStep(0.1)
-        self.interval_spin.setValue(Scanner.Loop_Interval)
-        self.interval_spin.setDecimals(1)
-        self.interval_spin.setFixedWidth(60)
-        interval_layout.addWidget(self.interval_spin)
-        
-        apply_btn = QPushButton("적용")
-        apply_btn.clicked.connect(self.apply_interval)
-        interval_layout.addWidget(apply_btn)
-        
-        frame_layout.addWidget(interval_frame)
-        
-        # 여백 추가
-        spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        frame_layout.addItem(spacer)
-        
-        # 아이템 생성 버튼
-        self.create_item_btn = QPushButton("아이템 생성")
-        self.create_item_btn.clicked.connect(self.open_capture_area_popup)
-        frame_layout.addWidget(self.create_item_btn)
-        
-        return frame
-    
     @Slot()
     def track_mouse_position(self):
         """마우스 위치 추적"""
@@ -228,7 +184,7 @@ class AppUI(QMainWindow):
             self.status_changed.emit(message)
             # 심각한 오류면 UI 업데이트
             if ERROR_WINDOW_CLOSED in message:
-                self.capture_btn.setText(AppUI.RUNNER_BUTTON_START_TEXT)
+                self.control_frame.update_capture_button_text(False)
     
     def open_capture_area_popup(self):
         """캡처 영역 설정 팝업 열기"""
@@ -282,7 +238,7 @@ class AppUI(QMainWindow):
         if self.capture_manager.is_capturing:
             # 캡처 중지
             self.capture_manager.stop_capture()
-            self.capture_btn.setText(AppUI.RUNNER_BUTTON_START_TEXT)
+            self.control_frame.update_capture_button_text(False)
             self.status_changed.emit(STATUS_STOPPED)
         else:
             try:
@@ -301,7 +257,7 @@ class AppUI(QMainWindow):
                 
                 # 캡처 시작
                 self.capture_manager.start_capture()
-                self.capture_btn.setText(AppUI.RUNNER_BUTTON_STOP_TEXT)
+                self.control_frame.update_capture_button_text(True)
                 self.status_changed.emit(STATUS_CAPTURING)
                 
             except ValueError as e:
@@ -310,10 +266,9 @@ class AppUI(QMainWindow):
                 QMessageBox.critical(self, "캡처 오류", f"캡처 시작 중 오류가 발생했습니다: {str(e)}")
     
     @Slot()
-    def apply_interval(self):
+    def apply_interval(self, val):
         try:
-            new_value = self.interval_spin.value()
-            Scanner.Loop_Interval = new_value
-            self.status_changed.emit(f"Loop 간격이 {new_value:.2f}초로 적용되었습니다.")
+            Scanner.Loop_Interval = val
+            self.status_changed.emit(f"Loop 간격이 {val:.2f}초로 적용되었습니다.")
         except ValueError:
             QMessageBox.critical(self, "입력 오류", "간격은 숫자 형식으로 입력해주세요.")
