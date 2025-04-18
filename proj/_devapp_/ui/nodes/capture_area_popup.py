@@ -211,7 +211,8 @@ class CaptureAreaPopup(QDialog):
         
         self.extract_color_btn = QPushButton("색 추출")
         self.extract_color_btn.clicked.connect(self.extract_color)
-        self.extract_color_btn.setEnabled(False)
+        if not MY_DEV_APP: self.extract_color_btn.setEnabled(False)
+        # self.extract_color_btn.setEnabled(False)
         color_layout.addWidget(self.extract_color_btn)
         
         # 컬러 스크롤 영역
@@ -571,8 +572,8 @@ class CaptureAreaPopup(QDialog):
                 self.preview_label.setPixmap(self.preview_pixmap)
                 self.preview_label.setAlignment(Qt.AlignCenter)
                 
-                # 추출 버튼 활성화
-                self.extract_color_btn.setEnabled(True)  # 이미지가 있으면 색상 추출 활성화
+                # # 추출 버튼 활성화
+                # self.extract_color_btn.setEnabled(True)  # 이미지가 있으면 색상 추출 활성화
                 
                 self.status_signal.emit("영역 미리보기가 업데이트되었습니다.")
                 
