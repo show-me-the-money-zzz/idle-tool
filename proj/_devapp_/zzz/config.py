@@ -7,7 +7,7 @@
 ▶️⏹️🟥
 """
 
-MY_DEV_APP = False
+MY_DEV_APP = True
 # 개발용 앱 구분
 
 # 앱 기본 설정
