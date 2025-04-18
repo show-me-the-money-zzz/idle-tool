@@ -510,7 +510,9 @@ class CaptureAreaPopup(QDialog):
             self.status_signal.emit(f"영역이 선택되었습니다: X={rel_x1}, Y={rel_y1}, 너비={width}, 높이={height}")
             
             # 선택 후 미리보기 업데이트
-            self.update_area_preview()
+            # self.update_area_preview()
+            # 기다렸다가 미리보기 업데이트
+            QTimer.singleShot(150, self.update_area_preview)
         
         # 영역 선택 시작 (콜백 전달)
         self.region_selector.start_selection(
@@ -572,6 +574,8 @@ class CaptureAreaPopup(QDialog):
                 if x < 0 or y < 0 or x + width > img_width or y + height > img_height:
                     QMessageBox.warning(self, "영역 경고", "설정한 영역이 창 범위를 벗어납니다. 일부만 표시됩니다.")
                 
+                # full_window_img.save("full_window_img.png", format="PNG") #DEV
+                
                 # 영역 자르기
                 cropped_img = full_window_img.crop((
                     max(0, x),
@@ -579,6 +583,7 @@ class CaptureAreaPopup(QDialog):
                     min(img_width, x + width),
                     min(img_height, y + height)
                 ))
+                # cropped_img.save("cropped_img.png", format="PNG") #DEV
                 
                 # 캔버스에 맞게 이미지 크기 조정 (비율 유지하면서 최대한 크게)
                 img_width, img_height = cropped_img.size
@@ -598,6 +603,7 @@ class CaptureAreaPopup(QDialog):
                 new_width = int(img_width * scale_ratio)
                 new_height = int(img_height * scale_ratio)
                 resized_img = cropped_img.resize((new_width, new_height), Image.LANCZOS)
+                # resized_img.save("resized_img.png", format="PNG") #DEV
 
                 # PIL 이미지를 QImage로 변환
                 self.preview_image = resized_img
