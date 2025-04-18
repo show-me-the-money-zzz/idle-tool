@@ -26,12 +26,14 @@ class ConnectionFrame(QGroupBox):
     async def AutoConnect(self):
         if RELEASE_APP:
             self.connect_to_app_name()
-            await asyncio.sleep(1)
-            self.connect_to_selected_app()
             await asyncio.sleep(0.5)
+            
+            self.connect_to_selected_app()
+            await asyncio.sleep(0.35)
+            
+            self.activateWindow()
+            self.raise_()
         await asyncio.sleep(0)
-        # self.activateWindow()
-        # self.raise_()
 
     def _setup_ui(self):
         """UI 구성요소 초기화"""
