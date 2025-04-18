@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QLineEdit
 from PySide6.QtCore import Qt, QTimer
 
 import stores.def_info as Info
-import core.sanner as Scanner
+import stores.sanner as Scanner
 
 class InfoBar(QFrame):
     def __init__(self, parent=None):

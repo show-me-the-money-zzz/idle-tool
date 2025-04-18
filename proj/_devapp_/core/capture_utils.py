@@ -12,7 +12,7 @@ import core.ocr_engine as OcrEngine
 from zzz.config import LOOP_TEXT_KEYWORD
 from stores.areas import *
 import stores.def_info as DefInfo
-import core.sanner as Scanner
+import stores.sanner as Scanner
 from core.window_utils import WindowUtil
 
 class CaptureManager:

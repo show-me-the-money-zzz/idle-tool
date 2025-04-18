@@ -23,7 +23,7 @@ from ui.log_frame import LogFrame
 
 # from ui.capture_area_frame import CaptureAreaFrame
 
-import core.sanner as Scanner
+import stores.sanner as Scanner
 
 class AppUI(QMainWindow):
     RUNNER_BUTTON_START_TEXT = "스캔 ▶️" 
