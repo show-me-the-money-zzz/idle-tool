@@ -206,30 +206,30 @@ class CaptureAreaPopup(QDialog):
         preview_group = QGroupBox("영역 미리보기")
         preview_layout = QVBoxLayout(preview_group)
         
-        # 색상 추출 영역
-        color_layout = QHBoxLayout()
-        
-        self.extract_color_btn = QPushButton("색 추출")
-        self.extract_color_btn.clicked.connect(self.extract_color)
-        if not MY_DEV_APP: self.extract_color_btn.setEnabled(False)
-        # self.extract_color_btn.setEnabled(False)
-        color_layout.addWidget(self.extract_color_btn)
-        
-        # 컬러 스크롤 영역
-        color_scroll = QScrollArea()
-        color_scroll.setWidgetResizable(True)
-        color_scroll.setFixedHeight(30)
-        
-        self.color_frame = QFrame()
-        self.color_frame.setMinimumWidth(200)
-        color_frame_layout = QHBoxLayout(self.color_frame)
-        color_frame_layout.setContentsMargins(0, 0, 0, 0)
-        color_frame_layout.setSpacing(1)
-        
-        color_scroll.setWidget(self.color_frame)
-        color_layout.addWidget(color_scroll)
-        
-        preview_layout.addLayout(color_layout)
+        if MY_DEV_APP:
+            # 색상 추출 영역
+            color_layout = QHBoxLayout()
+            
+            self.extract_color_btn = QPushButton("색 추출")
+            self.extract_color_btn.clicked.connect(self.extract_color)
+            # if not MY_DEV_APP: self.extract_color_btn.setEnabled(False)
+            color_layout.addWidget(self.extract_color_btn)
+            
+            # 컬러 스크롤 영역
+            color_scroll = QScrollArea()
+            color_scroll.setWidgetResizable(True)
+            color_scroll.setFixedHeight(30)
+            
+            self.color_frame = QFrame()
+            self.color_frame.setMinimumWidth(200)
+            color_frame_layout = QHBoxLayout(self.color_frame)
+            color_frame_layout.setContentsMargins(0, 0, 0, 0)
+            color_frame_layout.setSpacing(1)
+            
+            color_scroll.setWidget(self.color_frame)
+            color_layout.addWidget(color_scroll)
+            
+            preview_layout.addLayout(color_layout)
         
         # 미리보기 이미지 영역
         self.preview_label = QLabel()
@@ -242,15 +242,51 @@ class CaptureAreaPopup(QDialog):
         
         self.on_capture_type_changed(CaptureMode.IMAGE)
         
-        # 테스트용 색상 추가
-        self.test_add_colors()
+        if MY_DEV_APP:
+            # 테스트용 색상 추가
+            self.test_add_colors()
 
     def test_add_colors(self):
         """테스트용 색상 추가"""
-        colors = ["red", "green", "blue", "#ff00ff", "#ffffff"]
-        for _ in range(5):  # 5번 반복
-            for color in colors:
-                self.add_color(color)
+        self.add_color("red")
+        self.add_color("#00ff00")
+        self.add_color("#0000ff")
+        self.add_color("#000000")
+        self.add_color("#ffffff")
+        self.add_color("red")
+        self.add_color("#00ff00")
+        self.add_color("#0000ff")
+        self.add_color("#000000")
+        self.add_color("#ffffff")
+        self.add_color("red")
+        self.add_color("#00ff00")
+        self.add_color("#0000ff")
+        self.add_color("#000000")
+        self.add_color("#ffffff")
+        self.add_color("red")
+        self.add_color("#00ff00")
+        self.add_color("#0000ff")
+        self.add_color("#000000")
+        self.add_color("#ffffff")
+        self.add_color("red")
+        self.add_color("#00ff00")
+        self.add_color("#0000ff")
+        self.add_color("#000000")
+        self.add_color("#ffffff")
+        self.add_color("red")
+        self.add_color("#00ff00")
+        self.add_color("#0000ff")
+        self.add_color("#000000")
+        self.add_color("#ffffff")
+        self.add_color("red")
+        self.add_color("#00ff00")
+        self.add_color("#0000ff")
+        self.add_color("#000000")
+        self.add_color("#ffffff")
+        # colors = ["red", "green", "blue", "#ff00ff", "#ffffff"]
+        # for _ in range(5):  # 5번 반복
+        #     for color in colors:
+        #         self.add_color(color)
 
     def add_color(self, color):
         """컬러 버튼 추가"""
