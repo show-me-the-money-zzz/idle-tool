@@ -10,7 +10,7 @@ from core.window_utils import WindowUtil
 from core.capture_utils import CaptureManager
 from core.ocr_engine import setup_tesseract
 from zzz.config import *
-from core.region_selector import RegionSelector
+from ui.nodes.region_selector import RegionSelector
 from core.settings_manager import AppSetting
 
 # 각 UI 컴포넌트 import
@@ -158,14 +158,7 @@ class AppUI(QMainWindow):
         self.log_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         # 로그 프레임에 stretch factor 추가
         self.main_layout.addWidget(self.log_frame, 1)  # stretch factor 1 추가
-        
-        ## 이전 구현한 캡처 영역
-        # capatureareaframe = CaptureAreaFrame(self,
-        #                                      self.region_selector, self.capture_manager, self.status_changed
-        #                                      )
-        # capatureareaframe.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        # self.main_layout.addWidget(capatureareaframe, 2)
-        
+
         # 5. 정보바를 하단에 추가 (상태바 위쪽)
         self.info_bar = InfoBar(self)
         self.info_bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
