@@ -24,7 +24,7 @@ class ConnectionFrame(QGroupBox):
         asyncio.run(self.AutoConnect())
             
     async def AutoConnect(self):
-        if not MY_DEV_APP:
+        if RELEASE_APP:
             self.connect_to_app_name()
             await asyncio.sleep(1)
             self.connect_to_selected_app()
@@ -51,18 +51,18 @@ class ConnectionFrame(QGroupBox):
         name_layout.addWidget(QLabel("앱 이름 (부분 일치):"), 0, 0, Qt.AlignLeft)
         self.app_name_entry = QLineEdit(DEFAULT_APP_NAME)
         self.app_name_entry.setMinimumWidth(200)
-        if not MY_DEV_APP: self.app_name_entry.setEnabled(False)
+        if RELEASE_APP: self.app_name_entry.setEnabled(False)
         name_layout.addWidget(self.app_name_entry, 0, 1, Qt.AlignLeft)
         
         search_btn = QPushButton("검색")
         search_btn.clicked.connect(self.connect_to_app_name)
-        if not MY_DEV_APP: search_btn.setEnabled(False)
+        if RELEASE_APP: search_btn.setEnabled(False)
         name_layout.addWidget(search_btn, 0, 2)
         
         name_layout.addWidget(QLabel("검색 결과:"), 1, 0, Qt.AlignLeft)
         self.app_list = QComboBox()
         self.app_list.setMinimumWidth(400)
-        if not MY_DEV_APP: self.app_list.setEnabled(False)
+        if RELEASE_APP: self.app_list.setEnabled(False)
         name_layout.addWidget(self.app_list, 1, 1, 1, 2)
         
         # 상단 버튼 그룹 (좌측과 우측 나누기)
@@ -137,7 +137,7 @@ class ConnectionFrame(QGroupBox):
 
         name_layout.addWidget(bottom_action_frame, 3, 0, 1, 3)
         
-        if MY_DEV_APP:
+        if not RELEASE_APP:
             pid_tab = QWidget()
             tab_control.addTab(pid_tab, "PID로 연결")
             

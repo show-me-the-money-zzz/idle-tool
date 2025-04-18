@@ -232,13 +232,12 @@ class CaptureAreaPopup(QDialog):
         # 레이아웃에 추가
         preview_layout.addLayout(bg_color_layout)
         
-        if MY_DEV_APP:
+        if not RELEASE_APP:
             # 색상 추출 영역
             color_layout = QHBoxLayout()
             
             self.extract_color_btn = QPushButton("색 추출")
             self.extract_color_btn.clicked.connect(self.extract_color)
-            # if not MY_DEV_APP: self.extract_color_btn.setEnabled(False)
             color_layout.addWidget(self.extract_color_btn)
             
             # 컬러 스크롤 영역
@@ -268,7 +267,7 @@ class CaptureAreaPopup(QDialog):
         
         self.on_capture_type_changed(CaptureMode.IMAGE)
         
-        if MY_DEV_APP:
+        if not RELEASE_APP:
             # 테스트용 색상 추가
             self.test_add_colors()
 
