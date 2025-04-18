@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, Signal, Slot
 import win32gui
 from datetime import datetime
 import os
+import asyncio
 
 from zzz.config import *
 import ui.css as CSS
@@ -19,6 +20,18 @@ class ConnectionFrame(QGroupBox):
         self.status_signal = status_signal
         
         self._setup_ui()
+        
+        asyncio.run(self.AutoConnect())
+            
+    async def AutoConnect(self):
+        if not MY_DEV_APP:
+            self.connect_to_app_name()
+            await asyncio.sleep(1)
+            self.connect_to_selected_app()
+            await asyncio.sleep(0.5)
+        await asyncio.sleep(0)
+        # self.activateWindow()
+        # self.raise_()
 
     def _setup_ui(self):
         """UI 구성요소 초기화"""
@@ -30,22 +43,7 @@ class ConnectionFrame(QGroupBox):
         
         # 탭 페이지 생성
         name_tab = QWidget()
-        pid_tab = QWidget()
-        
         tab_control.addTab(name_tab, "앱 이름으로 연결")
-        tab_control.addTab(pid_tab, "PID로 연결")
-        
-        # PID 탭 설정
-        pid_layout = QGridLayout(pid_tab)
-        
-        pid_layout.addWidget(QLabel("프로세스 ID (PID):"), 0, 0, Qt.AlignLeft)
-        self.pid_entry = QLineEdit(DEFAULT_PID)
-        self.pid_entry.setMaximumWidth(100)
-        pid_layout.addWidget(self.pid_entry, 0, 1, Qt.AlignLeft)
-        
-        connect_pid_btn = QPushButton("연결")
-        connect_pid_btn.clicked.connect(self.connect_to_pid)
-        pid_layout.addWidget(connect_pid_btn, 0, 2)
         
         # 앱 이름 탭 설정
         name_layout = QGridLayout(name_tab)
@@ -53,15 +51,18 @@ class ConnectionFrame(QGroupBox):
         name_layout.addWidget(QLabel("앱 이름 (부분 일치):"), 0, 0, Qt.AlignLeft)
         self.app_name_entry = QLineEdit(DEFAULT_APP_NAME)
         self.app_name_entry.setMinimumWidth(200)
+        if not MY_DEV_APP: self.app_name_entry.setEnabled(False)
         name_layout.addWidget(self.app_name_entry, 0, 1, Qt.AlignLeft)
         
         search_btn = QPushButton("검색")
         search_btn.clicked.connect(self.connect_to_app_name)
+        if not MY_DEV_APP: search_btn.setEnabled(False)
         name_layout.addWidget(search_btn, 0, 2)
         
         name_layout.addWidget(QLabel("검색 결과:"), 1, 0, Qt.AlignLeft)
         self.app_list = QComboBox()
         self.app_list.setMinimumWidth(400)
+        if not MY_DEV_APP: self.app_list.setEnabled(False)
         name_layout.addWidget(self.app_list, 1, 1, 1, 2)
         
         # 상단 버튼 그룹 (좌측과 우측 나누기)
@@ -135,6 +136,22 @@ class ConnectionFrame(QGroupBox):
         bottom_action_layout.addWidget(hd_button_widget, 0, Qt.AlignRight)
 
         name_layout.addWidget(bottom_action_frame, 3, 0, 1, 3)
+        
+        if MY_DEV_APP:
+            pid_tab = QWidget()
+            tab_control.addTab(pid_tab, "PID로 연결")
+            
+            # PID 탭 설정
+            pid_layout = QGridLayout(pid_tab)
+            
+            pid_layout.addWidget(QLabel("프로세스 ID (PID):"), 0, 0, Qt.AlignLeft)
+            self.pid_entry = QLineEdit(DEFAULT_PID)
+            self.pid_entry.setMaximumWidth(100)
+            pid_layout.addWidget(self.pid_entry, 0, 1, Qt.AlignLeft)
+            
+            connect_pid_btn = QPushButton("연결")
+            connect_pid_btn.clicked.connect(self.connect_to_pid)
+            pid_layout.addWidget(connect_pid_btn, 0, 2)
         
         # 창 정보 표시 레이블
         self.window_info_edit = QLineEdit("연결된 창 없음")
