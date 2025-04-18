@@ -206,6 +206,32 @@ class CaptureAreaPopup(QDialog):
         preview_group = QGroupBox("영역 미리보기")
         preview_layout = QVBoxLayout(preview_group)
         
+        # 배경색 선택 영역 추가
+        bg_color_layout = QHBoxLayout()
+        bg_color_layout.setSpacing(2)
+
+        # 컬러 선택 버튼 레이블
+        bg_color_layout.addWidget(QLabel("배경색:"))
+
+        # 색상 버튼 생성 함수
+        def create_color_button(color_hex):
+            btn = QPushButton()
+            btn.setFixedSize(24, 24)
+            btn.setStyleSheet(f"background-color: {color_hex}; border: 1px solid gray;")
+            btn.clicked.connect(lambda: self.change_preview_background(color_hex))
+            return btn
+
+        # 지정된 색상들로 버튼 추가
+        colors = ["#d3d3d3", "#ff00ff", "#0000ff", "#00ff00", "#ffffff", "#000000" ]
+        for color in colors:
+            bg_color_layout.addWidget(create_color_button(color))
+
+        # 오른쪽에 여백 추가
+        bg_color_layout.addStretch(1)
+
+        # 레이아웃에 추가
+        preview_layout.addLayout(bg_color_layout)
+        
         if MY_DEV_APP:
             # 색상 추출 영역
             color_layout = QHBoxLayout()
@@ -318,6 +344,12 @@ class CaptureAreaPopup(QDialog):
         # PySide6 ColorPickerPopup 인스턴스 생성 및 표시
         picker = ColorPickerPopup(self, self.preview_image, callback=handle_color_selection)
         picker.exec()  # 모달 다이얼로그로 표시 (이전 .mainloop() 대신)
+        
+    def change_preview_background(self, color_hex):
+        # print(f"change_preview_background({color_hex})")
+        self.preview_label.setStyleSheet(f"background-color: {color_hex};")
+        if hasattr(self, 'preview_pixmap') and self.preview_pixmap:
+            self.preview_label.setPixmap(self.preview_pixmap)
         
     # 캡처 타입 변경 핸들러 함수 추가
     def on_capture_type_changed(self, index):
