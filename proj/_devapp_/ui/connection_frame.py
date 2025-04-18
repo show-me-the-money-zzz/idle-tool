@@ -7,6 +7,7 @@ from datetime import datetime
 import os
 
 from zzz.config import *
+import ui.css as CSS
 from core.window_utils import WindowUtil
 
 class ConnectionFrame(QGroupBox):
@@ -79,6 +80,7 @@ class ConnectionFrame(QGroupBox):
         
         # 우측 영역 - 게임 연결 버튼
         connect_app_btn = QPushButton("게임 연결")
+        connect_app_btn.setStyleSheet(CSS.BUTTON_APPLY)
         connect_app_btn.clicked.connect(self.connect_to_selected_app)
         top_action_layout.addWidget(connect_app_btn, 0, Qt.AlignRight)
         

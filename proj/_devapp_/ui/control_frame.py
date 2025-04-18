@@ -1,6 +1,8 @@
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QPushButton, QLabel, QDoubleSpinBox, QSpacerItem, QSizePolicy
 from PySide6.QtCore import Signal, Slot
+
 import stores.sanner as Scanner
+import ui.css as CSS
 
 class ControlFrame(QFrame):
     """캡처 제어 프레임"""
@@ -39,6 +41,7 @@ class ControlFrame(QFrame):
         
         # 아이템 생성 버튼
         self.create_item_btn = QPushButton("아이템 생성")
+        self.create_item_btn.setStyleSheet(CSS.BUTTON_APPLY)
         self.create_item_btn.clicked.connect(self.open_popup_callback)
         layout.addWidget(self.create_item_btn)
         

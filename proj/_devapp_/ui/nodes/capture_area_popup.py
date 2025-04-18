@@ -15,6 +15,7 @@ from stores import areas
 from grinder_utils.system import Calc_MS
 from core.window_utils import WindowUtil
 from ui.nodes.log_dock_widget import LogDockWidget
+import ui.css as CSS
 
 class CaptureMode(Enum):
     IMAGE = 0
@@ -186,13 +187,13 @@ class CaptureAreaPopup(QDialog):
 
         # 저장 버튼 - 녹색 스타일
         save_btn = QPushButton("저장")
-        save_btn.setStyleSheet("background-color: #2ecc71; color: white; font-weight: bold;")
+        save_btn.setStyleSheet(CSS.BUTTON_APPLY)
         save_btn.clicked.connect(self.apply_settings)
         work_layout.addWidget(save_btn)
 
         # 취소 버튼 - 빨간색 스타일
         cancel_btn = QPushButton("취소하고 닫기")
-        cancel_btn.setStyleSheet("background-color: #e74c3c; color: white; font-weight: bold;")
+        cancel_btn.setStyleSheet(CSS.BUTTON_CANCEL)
         cancel_btn.clicked.connect(self.on_close)
         work_layout.addWidget(cancel_btn)
 
