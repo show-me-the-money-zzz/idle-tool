@@ -222,8 +222,8 @@ class CaptureAreaPopup(QDialog):
             return btn
 
         # 지정된 색상들로 버튼 추가
-        colors = ["#d3d3d3", "#ff00ff", "#0000ff", "#00ff00", "#ffffff", "#000000" ]
-        for color in colors:
+        BG_COLORS = [ "#ff00ff", "#0000ff", "#00ff00", "#000000", "#ffffff", "#d3d3d3" ]
+        for color in BG_COLORS:
             bg_color_layout.addWidget(create_color_button(color))
 
         # 오른쪽에 여백 추가
@@ -259,7 +259,7 @@ class CaptureAreaPopup(QDialog):
         # 미리보기 이미지 영역
         self.preview_label = QLabel()
         self.preview_label.setAlignment(Qt.AlignCenter)
-        self.preview_label.setStyleSheet("background-color: lightgray;")
+        self.preview_label.setStyleSheet(f"background-color: {BG_COLORS[0]};")
         self.preview_label.setText("영역을 선택하면\n미리보기가 표시됩니다")
         preview_layout.addWidget(self.preview_label)
         
