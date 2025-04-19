@@ -166,28 +166,37 @@ class WindowManager:
                 print("창이 유효하지 않습니다.")
                 return False
 
+            print(f"WindowManager.click_at_position({rel_x}, {rel_y})")
             self.activate_window()
             time.sleep(0.1)
 
             left, top, _, _ = self.window_rect
             abs_x = left + rel_x
             abs_y = top + rel_y
+            print(f"click_at_position1({rel_x}, {rel_y})")
 
             class POINT(Structure):
                 _fields_ = [("x", c_long), ("y", c_long)]
+                
+            print(f"click_at_position2({rel_x}, {rel_y})")
 
             pt = POINT()
             windll.user32.GetCursorPos(byref(pt))
+            print(f"click_at_position3({rel_x}, {rel_y})")
 
             windll.user32.SetCursorPos(abs_x, abs_y)
             time.sleep(0.1)
+            print(f"click_at_position4({rel_x}, {rel_y})")
 
             windll.user32.mouse_event(0x0002, 0, 0, 0, 0)  # LEFTDOWN
+            print(f"click_at_position5({rel_x}, {rel_y})")
             time.sleep(0.1)
             windll.user32.mouse_event(0x0004, 0, 0, 0, 0)  # LEFTUP
+            print(f"click_at_position6({rel_x}, {rel_y})")
 
             time.sleep(0.1)
             windll.user32.SetCursorPos(pt.x, pt.y)
+            print(f"click_at_position7({rel_x}, {rel_y})")
 
             return True
         except Exception as e:

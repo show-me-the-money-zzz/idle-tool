@@ -8,6 +8,7 @@ import os
 from datetime import datetime
 from PIL import Image
 from typing import List, Tuple, Dict, Any
+import math
 
 import core.ocr_engine as OcrEngine
 # import core.ocr_engine_paddle as PaddleOCREngine
@@ -103,6 +104,17 @@ class CaptureManager:
                         self.callback_fn("error", "창이 닫혔습니다.")
                     self.is_capturing = False
                     break
+                
+                print("")
+                matching = self.match_image_in_zone(sct, "좌상단메뉴", "좌상단메뉴-월드맵")
+                # print(matching)
+                # print(self.match_image_in_zone(sct, "좌상단메뉴", "좌상단메뉴-마을이동"))
+                
+                if matching["matched"] and 85.0 <= matching["score_percent"]:
+                    # click = matching["click"]
+                    x, y = matching["click"]
+                    # print(f"click => {x}, {y}")
+                    WindowUtil.click_at_position(x, y)
 
                 # images = []
                 for n in range(len(LOOP_TEXT_KEYWORD)):
@@ -185,7 +197,7 @@ class CaptureManager:
         img = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
         return img
     
-    def capture_full_window_cv2(self) -> np.ndarray:
+    def capture_full_window_cv2(self, sct: mss.mss) -> np.ndarray:
         """
         연결된 창 전체를 OpenCV 형식(np.ndarray)으로 캡처합니다.
         
@@ -220,13 +232,13 @@ class CaptureManager:
         }
         
         # 화면 캡처
-        screenshot = self.sct.grab(monitor)
+        screenshot = sct.grab(monitor)
         
         # mss의 결과를 numpy 배열로 변환 (OpenCV 형식)
         img = np.array(screenshot)[:, :, :3]  # BGRA → BGR
         return img
         
-    def match_image_in_zone(self, zone_key: str, image_key: str) -> Dict[str, Any]:
+    def match_image_in_zone(self, sct: mss.mss, zone_key: str, image_key: str) -> Dict[str, Any]:
         """
         zone 영역 안에 image 이미지가 존재하는지 검사하는 OpenCV 템플릿 매칭
 
@@ -256,12 +268,13 @@ class CaptureManager:
             raise FileNotFoundError(f"템플릿 이미지가 존재하지 않음: {image['file']}")
         
         # 전체 화면 캡처
-        full_img = self.capture_full_window_cv2()
+        full_img = self.capture_full_window_cv2(sct)
         if full_img is None:
             raise ValueError("화면 캡처 실패")
         
         # 템플릿 이미지 로드
         template = cv2.imread(image["file"], cv2.IMREAD_COLOR)
+        img_w, img_h = image["width"], image["height"]
         
         # zone 영역 잘라내기
         x, y, w, h = zone["x"], zone["y"], zone["width"], zone["height"]
@@ -288,12 +301,30 @@ class CaptureManager:
         threshold = 0.9
         matched = max_val >= threshold
         
+        # return {
+        #     "matched": matched,
+        #     "score": float(max_val),
+        #     "zone": zone,
+        #     "image": image,
+        #     "position": (x + max_loc[0], y + max_loc[1]) if matched else None
+        # }
+        
+        target_x = x + max_loc[0]
+        target_y = y + max_loc[1]
+        
+        score = float(max_val)
+        score_2 = math.floor(score * 100) / 100
+        score_percent = score_2 * 100.0
+        click_x = target_x + (img_w * 0.5)
+        click_y = target_y + (img_h * 0.5)
         return {
             "matched": matched,
-            "score": float(max_val),
-            "zone": zone,
-            "image": image,
-            "position": (x + max_loc[0], y + max_loc[1]) if matched else None
+            "score": score_2,
+            "score_percent": score_percent,
+            "zone": zone_key,
+            "image": image_key,
+            "position": (target_x, target_y) if matched else None,
+            "click": (click_x, click_y) if matched else None,
         }
     
     def match_image_in_zone_with_screenshot(self, zone_key: str, image_key: str, screenshot_path: str) -> Dict[str, Any]:
