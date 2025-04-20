@@ -150,8 +150,9 @@ class InfoBar(QFrame):
     def scan_loop(self):
         """스캔 루프 - 별도의 스레드에서 실행"""
         # 스레드 내부에서 필요한 객체 생성 - 스레드 안전성 확보
-        with mss.mss() as sct:
-            while self.is_scanning:
+        
+        while self.is_scanning:
+            with mss.mss() as sct:
                 # 창이 여전히 존재하는지 확인
                 if not WindowUtil.update_window_info():
                     # 창이 닫혔으면 스캔 중지
