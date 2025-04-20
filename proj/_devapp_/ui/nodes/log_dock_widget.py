@@ -38,6 +38,7 @@ class LogDockWidget(QDockWidget):
         
         # 텍스트 읽기 버튼
         self.read_text_btn = QPushButton(parent.READTEXT_BUTTON_START_TEXT)
+        self.read_text_btn.setFixedWidth(28)
         controls_layout.addWidget(self.read_text_btn)
         
         # 중간 여백
