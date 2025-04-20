@@ -168,7 +168,7 @@ class InfoBar(QFrame):
                 # 지정된 간격만큼 대기
                 self.update_info()
                 
-                print("scan_loop")
+                # print("scan_loop")
                 time.sleep(1.0)
     
     def process_ocr(self, sct):
@@ -214,37 +214,6 @@ class InfoBar(QFrame):
             print(f"[캡처 실패] {type(e).__name__}: {e} (monitor: {monitor})")
             return None
         
-        img = np.array(screenshot)[:, :, :3]  # BGRA → BGR
-        return img
-    
-    def capture_full_window_cv2(self, sct):
-        """
-        연결된 창 전체를 OpenCV 형식으로 캡처
-        스레드 내에서 호출되므로 스레드 안전성 확보를 위해 모든 작업을 내부적으로 처리
-        """
-        if not WindowUtil.is_window_valid():
-            return None
-        
-        # 창 활성화
-        WindowUtil.activate_window()
-        
-        # 창 위치와 크기 가져오기
-        left, top, right, bottom = WindowUtil.get_window_rect()
-        width = right - left
-        height = bottom - top
-        
-        # mss로 화면 캡처 영역 정의
-        monitor = {
-            "top": top,
-            "left": left,
-            "width": width,
-            "height": height
-        }
-        
-        # 화면 캡처
-        screenshot = sct.grab(monitor)
-        
-        # mss의 결과를 numpy 배열로 변환 (OpenCV 형식)
         img = np.array(screenshot)[:, :, :3]  # BGRA → BGR
         return img
     
