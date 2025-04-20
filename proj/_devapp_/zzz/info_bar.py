@@ -141,8 +141,9 @@ class InfoBar(QFrame):
 
         # 스레드 종료 대기 및 정리
         if self.scan_thread and self.scan_thread.is_alive():
-            self.scan_thread.join(timeout=0.5)  # 종료 대기 시간
-        self.scan_thread = None
+            self.scan_thread.join(timeout=0.5)  # 대기.. 기다리는 시기
+        self.scan_thread = None # 참조 제거 → GC 대상
+        # 스레드는 scan_loop()가 False == self.is_scanning 로 종료
         
         # 상태 변경 시그널 발생
         # self.scan_status_changed.emit(False)
