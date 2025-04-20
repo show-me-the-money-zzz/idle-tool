@@ -119,15 +119,12 @@ class InfoBar(QFrame):
     
     def start_scan(self):
         """스캔 시작"""
-        if self.is_scanning:
+        # 이미 스캔 중이거나 스레드가 살아 있다면 중복 실행 방지
+        if self.is_scanning or (self.scan_thread and self.scan_thread.is_alive()):
             return
-        
+
         self.is_scanning = True
-        
-        # 버튼 텍스트 변경
         self.scan_button.setText("🟥")
-        
-        # 스캔 스레드 시작
         self.scan_thread = threading.Thread(target=self.scan_loop, daemon=True)
         self.scan_thread.start()
         
@@ -138,11 +135,14 @@ class InfoBar(QFrame):
         """스캔 중지"""
         if not self.is_scanning:
             return
-        
+
         self.is_scanning = False
-        
-        # 버튼 텍스트 변경
         self.scan_button.setText("▶️")
+
+        # 스레드 종료 대기 및 정리
+        if self.scan_thread and self.scan_thread.is_alive():
+            self.scan_thread.join(timeout=0.5)  # 종료 대기 시간
+        self.scan_thread = None
         
         # 상태 변경 시그널 발생
         # self.scan_status_changed.emit(False)
@@ -165,6 +165,8 @@ class InfoBar(QFrame):
                 
                 # 지정된 간격만큼 대기
                 self.update_info()
+                
+                print("scan_loop")
                 time.sleep(1.0)
     
     def process_ocr(self, sct):
