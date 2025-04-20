@@ -152,6 +152,9 @@ class InfoBar(QFrame):
         """스캔 루프 - 별도의 스레드에서 실행"""
         # 스레드 내부에서 필요한 객체 생성 - 스레드 안전성 확보
         
+        from core.capture_utils import CaptureManager  # 🔁 루프 내부에서 안전하게 import
+        captureman = CaptureManager()  # ✅ 스레드 안에서 생성
+        
         while self.is_scanning:
             with mss.mss() as sct:
                 # 창이 여전히 존재하는지 확인
@@ -163,15 +166,15 @@ class InfoBar(QFrame):
                     break
                 
                 # OCR 처리 수행
-                self.process_ocr(sct)
+                self.process_ocr(captureman, sct)
                 
                 # 지정된 간격만큼 대기
                 self.update_info()
                 
                 # print("scan_loop")
-                time.sleep(1.0)
+                time.sleep(0.5)
     
-    def process_ocr(self, sct):
+    def process_ocr(self, captureman, sct):
         """OCR 처리"""
         for KEY in LOOP_TEXT_KEYWORD:
             try:
@@ -180,7 +183,7 @@ class InfoBar(QFrame):
                     continue
                 
                 # print(KEY)
-                img = self._capture_crop(sct, area['x'], area['y'], area['width'], area['height'])
+                img = captureman._capture_crop(sct, area['x'], area['y'], area['width'], area['height'])
                 
                 if img is None:
                     raise ValueError("캡처된 이미지가 None입니다.")
@@ -196,26 +199,6 @@ class InfoBar(QFrame):
                 
             except Exception as e:
                 Info.Update_Value(KEY, "")
-    
-    def _capture_crop(self, sct, x, y, width, height):
-        """단일 영역을 캡처하여 OpenCV 이미지로 반환"""
-        left, top, _, _ = WindowUtil.get_window_rect()
-
-        monitor = {
-            "left": left + x,
-            "top": top + y,
-            "width": width,
-            "height": height
-        }
-        
-        try:
-            screenshot = sct.grab(monitor)
-        except Exception as e:
-            print(f"[캡처 실패] {type(e).__name__}: {e} (monitor: {monitor})")
-            return None
-        
-        img = np.array(screenshot)[:, :, :3]  # BGRA → BGR
-        return img
     
     def update_info(self):
         """정보 업데이트"""
