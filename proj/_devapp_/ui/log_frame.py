@@ -59,6 +59,7 @@ class LogFrame(QGroupBox):
     
     def add_warning(self, text): self.print_log("#ffe88c", text)    
     def add_error(self, text): self.print_log("#ff8c8c", text)
+    def add_notice(self, text): self.print_log("#00ff00", text)
         
     def print_log(self, color, text):
         timestamp = datetime.now().strftime("%m/%d %H:%M:%S")

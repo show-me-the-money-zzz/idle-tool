@@ -26,6 +26,7 @@ class Tasker(QObject):
     logframe_addlog = Signal(str)
     logframe_addwarning = Signal(str)
     logframe_adderror = Signal(str)
+    logframe_addnotice = Signal(str)
     
     def __init__(self, parent, capture_manager):
         super().__init__(parent)
@@ -50,7 +51,8 @@ class Tasker(QObject):
         self.is_running = True
         
         # 이미지 매칭 시작 (0.5초마다)
-        self.matching_timer.start(Scanner.Get_LoopInterval_MS())
+        # self.matching_timer.start(Scanner.Get_LoopInterval_MS())
+        self.matching_timer.start(100)
         
         self.status_changed.emit("Tasker: 작업이 시작되었습니다.")
         return True
@@ -138,7 +140,36 @@ class Tasker(QObject):
                 
         except Exception as e:
             self.logframe_adderror.emit(f"이미지 매칭 오류: {str(e)}")
+          
+    task_gss23_rf = "scan-open-worldmap";
+    def Task_GS23_RF(self):
+        limit_score = 50
+        
+        try:
+            # matching = self.match_image_in_zone(self.sct, "메뉴_좌상", "메뉴_좌상-맵", limit_score)
+            # # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
+            # # print(matching)
+            # score = matching["score_percent"]
+            # if limit_score <= score:
+            #     self.logframe_addlog.emit(f"ZONE:{matching["zone"]}에서 IMG:{matching["image"]} 찾음 ({score:.1f}%)}}")
             
+            # if matching["matched"] and limit_score <= score:
+            #     x, y = matching["click"]
+            #     # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
+            #     WindowUtil.click_at_position(x, y)
+            #     self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
+                
+            matching = self.match_image_in_zone(self.sct, "메뉴_마을", "메뉴_마을-잡화", limit_score)
+            # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
+            # print(matching)
+            self.logframe_addlog.emit(f"{matching}")
+            score = matching["score_percent"]
+            self.logframe_addnotice.emit("ㅋㅋㅋ")
+            
+            # if 50 <= score:
+        
+        except Exception as e:
+            self.logframe_adderror.emit(f"이미지 매칭 오류: {str(e)}")
     
     def Process_Loop(self):
         """이미지 매칭 및 UI 작업 - 매칭 타이머 콜백"""
@@ -151,7 +182,9 @@ class Tasker(QObject):
             return
         
         # self.Task_Click_Repeat_MpaIcon()
-        self.Task_Worldmap()
+        # self.Task_Worldmap()
+        
+        self.Task_GS23_RF()
         
         # except Exception as e:
         #     self.status_changed.emit(f"Tasker: 이미지 매칭 오류: {str(e)}")
