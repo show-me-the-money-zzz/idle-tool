@@ -20,7 +20,7 @@ APP_THEME_TkInter = 'classic'
 # vista: Windows Vista/7 / winnative: 원래의 Windows 네이티브 / xpnative: Windows XP 네이티브
 # aqua: macOS의 기본
 APP_THEME = 'Windows'
-# 배포는 'Macintosh' / 개발은 "Windows"
+# 배포는 'Macintosh' / 개발은 "Windows (Dark Theme)"
 # "Fusion", "Windows", "WindowsVista", "Macintosh", "macos"
 # 스타일 설정 (PySide6에서는 QApplication 스타일 시트 또는 Fusion 스타일 사용)
 
