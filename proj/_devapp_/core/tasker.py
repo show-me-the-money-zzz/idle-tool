@@ -76,14 +76,15 @@ class Tasker(QObject):
             return
         
         try:
-            matching = self.match_image_in_zone(self.sct, "좌상단메뉴", "좌상단메뉴-월드맵")
+            limit_score = 35
+            matching = self.match_image_in_zone(self.sct, "좌상단메뉴", "좌상단메뉴-월드맵", limit_score)
             # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
-            print(matching)
+            # print(matching)
             score = matching["score_percent"]
-            if 35 <= score:
+            if limit_score <= score:
                 self.logframe_addlog.emit(f"[범위] {matching["zone"]}에서 [이미지] {matching["image"]}를 찾았습니다. ({score:.1f}%)}}")
             
-            if matching["matched"] and 85.0 <= score:
+            if matching["matched"] and limit_score <= score:
                 x, y = matching["click"]
                 # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
                 WindowUtil.click_at_position(x, y)
@@ -92,7 +93,7 @@ class Tasker(QObject):
         except Exception as e:
             self.status_changed.emit(f"Tasker: 이미지 매칭 오류: {str(e)}")
     
-    def match_image_in_zone(self, sct, zone_key, image_key):
+    def match_image_in_zone(self, sct, zone_key, image_key, limit_score):
         """
         zone 영역 안에 image 이미지가 존재하는지 검사하는 OpenCV 템플릿 매칭
 
@@ -152,7 +153,7 @@ class Tasker(QObject):
             전체 화면에서의 절대 위치를 구하려면 zone의 좌표를 더해야 함
         """
         
-        threshold = 0.9
+        threshold = limit_score * 0.01
         matched = max_val >= threshold
         
         target_x = zoneitem.x + max_loc[0]
