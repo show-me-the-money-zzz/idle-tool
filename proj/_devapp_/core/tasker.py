@@ -34,7 +34,7 @@ class Tasker(QObject):
         
         # 이미지 매칭 및 UI 작업 타이머
         self.matching_timer = QTimer(self)
-        self.matching_timer.timeout.connect(self.process_image_matching)
+        self.matching_timer.timeout.connect(self.Scanning)
         
         # 공유 MSS 인스턴스
         self.sct = mss.mss()
@@ -65,7 +65,22 @@ class Tasker(QObject):
         self.status_changed.emit("Tasker: 작업이 중지되었습니다.")
         return True
     
-    def process_image_matching(self):
+    def Task_Click_Repeat_MpaIcon(self):
+        limit_score = 35
+        matching = self.match_image_in_zone(self.sct, "좌상단메뉴", "좌상단메뉴-월드맵", limit_score)
+        # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
+        # print(matching)
+        score = matching["score_percent"]
+        if limit_score <= score:
+            self.logframe_addlog.emit(f"[범위] {matching["zone"]}에서 [이미지] {matching["image"]}를 찾았습니다. ({score:.1f}%)}}")
+        
+        if matching["matched"] and limit_score <= score:
+            x, y = matching["click"]
+            # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
+            WindowUtil.click_at_position(x, y)
+            self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
+    
+    def Scanning(self):
         """이미지 매칭 및 UI 작업 - 매칭 타이머 콜백"""
         if not self.is_running:
             return
@@ -76,19 +91,7 @@ class Tasker(QObject):
             return
         
         try:
-            limit_score = 35
-            matching = self.match_image_in_zone(self.sct, "좌상단메뉴", "좌상단메뉴-월드맵", limit_score)
-            # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
-            # print(matching)
-            score = matching["score_percent"]
-            if limit_score <= score:
-                self.logframe_addlog.emit(f"[범위] {matching["zone"]}에서 [이미지] {matching["image"]}를 찾았습니다. ({score:.1f}%)}}")
-            
-            if matching["matched"] and limit_score <= score:
-                x, y = matching["click"]
-                # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
-                WindowUtil.click_at_position(x, y)
-                self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
+            self.Task_Click_Repeat_MpaIcon()
             
         except Exception as e:
             self.status_changed.emit(f"Tasker: 이미지 매칭 오류: {str(e)}")
