@@ -107,7 +107,8 @@ class CaptureManager:
                 
                 print("")
                 matching = self.match_image_in_zone(sct, "좌상단메뉴", "좌상단메뉴-월드맵")
-                # print(matching)
+                # matching = self.match_image_in_zone(sct, "좌상단메뉴", "좌상단메뉴-마을이동")
+                print(matching)
                 # print(self.match_image_in_zone(sct, "좌상단메뉴", "좌상단메뉴-마을이동"))
                 
                 if matching["matched"] and 85.0 <= matching["score_percent"]:
@@ -166,6 +167,8 @@ class CaptureManager:
                 # for item in texts:
                 #     DefInfo.Update_Value("aa", item)
 
+                # self.is_capturing = False   #DEV
+                
                 # 지정된 간격만큼 대기
                 time.sleep(Scanner.Loop_Interval)
     
@@ -273,7 +276,8 @@ class CaptureManager:
             raise ValueError("화면 캡처 실패")
         
         # 템플릿 이미지 로드
-        template = cv2.imread(image["file"], cv2.IMREAD_COLOR)
+        template = cv2.imread(image["file"], cv2.IMREAD_COLOR)        
+        # cv2.imwrite("debug_template_saved.png", template)   # 템플릿 이미지 저장 (디버깅용)
         img_w, img_h = image["width"], image["height"]
         
         # zone 영역 잘라내기
@@ -292,6 +296,7 @@ class CaptureManager:
             범위는 -1 ~ 1 (TM_CCOEFF_NORMED 방식 사용 시), 1에 가까울수록 매칭이 정확함
             템플릿 이미지가 검색 이미지의 특정 위치와 얼마나 유사한지
             보통 이 값에 임계값(threshold)을 적용하여 매칭 여부를 결정
+            
         max_loc (최대값 위치):
             매칭 점수가 가장 높은 위치의 좌표(x, y)를 튜플로 제공
             검색 영역(zone_crop) 내에서의 상대적 위치
@@ -315,8 +320,8 @@ class CaptureManager:
         score = float(max_val)
         score_2 = math.floor(score * 100) / 100
         score_percent = score_2 * 100.0
-        click_x = target_x + (img_w * 0.5)
-        click_y = target_y + (img_h * 0.5)
+        click_x = int(target_x + (img_w * 0.5))
+        click_y = int(target_y + (img_h * 0.5))
         return {
             "matched": matched,
             "score": score_2,
@@ -324,7 +329,7 @@ class CaptureManager:
             "zone": zone_key,
             "image": image_key,
             "position": (target_x, target_y) if matched else None,
-            "click": (click_x, click_y) if matched else None,
+            "click": (click_x, click_y) if matched else None,   # 소수점으로 클릭 시도하면 에러
         }
     
     def match_image_in_zone_with_screenshot(self, zone_key: str, image_key: str, screenshot_path: str) -> Dict[str, Any]:
