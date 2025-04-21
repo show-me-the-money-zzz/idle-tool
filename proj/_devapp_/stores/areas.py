@@ -43,10 +43,26 @@ def Get_TextArea(key, default=None) -> TextItem | None:
     if data:
         return TextItem(**data)
     return default
-GetAll_TextArea = Texts.all
+def GetAll_TextArea():
+    datalist = {}
+    for key, data in Texts.all().items():
+        datalist[key] = TextItem(**data)
+    return datalist
 Delete_TextArea = Texts.delete
 Save_TextArea = Texts.save
 Load_TextArea = lambda: True  # 이미 클래스에서 자동 로딩됨
+
+"""
+예시
+tlist = GetAll_TextArea()
+item1 = tlist["key1"]
+
+textareas = GetAll_TextArea().items()
+    for key, item in textareas:
+        print(f"[{key}] {item.x}, {item.y} | {item.width} x {item.height}")
+hp = GetAll_TextArea()["[스탯]피통"]
+print(f"{hp.x}, {hp.y} | {hp.width} x {hp.height}")
+"""
 
 # 이미지 영역 함수 인터페이스 (선택적으로 따로 제공 가능)
 Add_ImageArea = Images.add
@@ -55,7 +71,11 @@ def Get_ImageArea(key, default=None) -> ImageItem | None:
     if data:
         return ImageItem(**data)
     return default
-GetAll_ImageAreas = Images.all
+def GetAll_ImageAreas():
+    datalist = {}
+    for key, data in Images.all().items():
+        datalist[key] = ImageItem(**data)
+    return datalist
 Delete_ImageArea = Images.delete
 Save_ImageAreas = Images.save
 
@@ -66,7 +86,11 @@ def Get_ZoneArea(key, default=None) -> ZoneItem | None:
     if data:
         return ZoneItem(**data)
     return default
-GetAll_ZoneAreas = Zones.all
+def GetAll_ZoneAreas():
+    datalist = {}
+    for key, data in Zones.all().items():
+        datalist[key] = ZoneItem(**data)
+    return datalist
 Delete_ZoneArea = Zones.delete
 Save_ZoneAreas = Zones.save
 
