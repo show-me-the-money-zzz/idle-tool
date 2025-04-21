@@ -58,10 +58,10 @@ class ControlFrame(QFrame):
         layout.addWidget(interval_label)
         
         self.interval_spin = QDoubleSpinBox()
-        self.interval_spin.setRange(0.0, 3.0)
+        self.interval_spin.setRange(0.00, 3.00)
         self.interval_spin.setSingleStep(0.1)
         self.interval_spin.setValue(Scanner.Loop_Interval)
-        self.interval_spin.setDecimals(1)
+        self.interval_spin.setDecimals(2)   # 소수점 N자리 허용
         self.interval_spin.setFixedWidth(60)
         layout.addWidget(self.interval_spin)
         
