@@ -73,8 +73,8 @@ class Tasker(QObject):
             return
         
         try:
-            # matching = self.match_image_in_zone(self.sct, "좌상단메뉴", "좌상단메뉴-월드맵")
-            matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
+            matching = self.match_image_in_zone(self.sct, "좌상단메뉴", "좌상단메뉴-월드맵")
+            # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
             print(matching)
             
             if matching["matched"] and 85.0 <= matching["score_percent"]:
@@ -165,7 +165,7 @@ class Tasker(QObject):
             # "position": (target_x, target_y) if matched else None,
             # "click": (imageitem.ClickX, imageitem.ClickY) if matched else None,
             "position": (target_x, target_y),
-            "click": (imageitem.ClickX, imageitem.ClickY),
+            "click": imageitem.ClickPoint,
         }
         
     def match_image_in_zone_with_screenshot(self, zone_key: str, image_key: str, screenshot_path: str) -> Dict[str, Any]:
