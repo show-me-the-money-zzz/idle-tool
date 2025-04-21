@@ -178,12 +178,12 @@ class InfoBar(QFrame):
         """OCR 처리"""
         for KEY in LOOP_TEXT_KEYWORD:
             try:
-                area = Get_TextArea(KEY)
-                if area is None:
+                areaitem = Get_TextArea(KEY)
+                if areaitem is None:
                     continue
                 
                 # print(KEY)
-                img = captureman._capture_crop(sct, area['x'], area['y'], area['width'], area['height'])
+                img = captureman._capture_crop(sct, areaitem.x, areaitem.y, areaitem.width, areaitem.height)
                 
                 if img is None:
                     raise ValueError("캡처된 이미지가 None입니다.")

@@ -38,12 +38,11 @@ class TextItem:
 
 # 텍스트 영역 함수 인터페이스
 Add_TextArea = Texts.add
-Get_TextArea = Texts.get
-# def Get_TextArea(key, default=None) -> TextItem | None:
-#     data = Texts.get(key, default)
-#     if data:
-#         return TextItem(**data)
-#     return default
+def Get_TextArea(key, default=None) -> TextItem | None:
+    data = Texts.get(key, default)
+    if data:
+        return TextItem(**data)
+    return default
 GetAll_TextArea = Texts.all
 Delete_TextArea = Texts.delete
 Save_TextArea = Texts.save

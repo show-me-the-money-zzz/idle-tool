@@ -376,7 +376,7 @@ class CaptureManager:
             "score": float(max_val),
             "zone": zone_key,
             "image": image_key,
-            "position": (x + max_loc[0], y + max_loc[1]) if matched else None
+            "position": (zoneitem.x + max_loc[0], zoneitem.y + max_loc[1]) if matched else None
         }
         
     def __del__(self):
