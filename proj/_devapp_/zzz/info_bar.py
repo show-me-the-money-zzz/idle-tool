@@ -166,7 +166,9 @@ class InfoBar(QFrame):
                     break
                 
                 # OCR 처리 수행
-                self.process_ocr(captureman, sct)
+                # self.process_ocr(captureman, sct)
+                if False == self.process_ocr_1Capture(captureman, sct):
+                    break
                 
                 # 지정된 간격만큼 대기
                 self.update_info()
@@ -199,6 +201,29 @@ class InfoBar(QFrame):
                 
             except Exception as e:
                 Info.Update_Value(KEY, "")
+                
+    def process_ocr_1Capture(self, captureman, sct):
+        images = captureman._capture_crop_AllTextArea(sct)
+        if not images:
+            return False
+        
+        for key, image in images.items():
+            try:
+                # print(f"[{key}] {image}")
+                
+                text = OcrEngine.image_to_text(image)
+                # print(f"[{key}] → {text.strip()}")
+
+                # 값 업데이트
+                Info.Update_Value(key, text)
+            except Exception as e:
+                # print(f"[OCR 에러:{key}] {e}")
+                Info.Update_Value(key, "")
+                return False
+        
+        images.clear()
+        del images
+        return True
     
     def update_info(self):
         """정보 업데이트"""

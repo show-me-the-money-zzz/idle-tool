@@ -80,22 +80,21 @@ class CaptureManager:
         img = np.array(screenshot)[:, :, :3]  # BGRA → BGR
         return img
 
-    def _capture_crops(self
+    def _capture_crop_AllTextArea(self
                       , sct: mss.mss
-                      , areas: List[Tuple[int, int, int, int]]
-                      ) -> List[np.ndarray]:
+                      ):
         """다중 영역을 한 번의 전체 창 캡처 후 잘라서 OpenCV 이미지 리스트로 반환"""
-        ret: List[np.ndarray] = []
+        # ret: List[np.ndarray] = []
 
         left, top, right, bottom = WindowUtil.get_window_rect()
         full = self._capture_crop(sct, 0, 0, right - left, bottom - top)
         
-        if None == full: return None
-
-        for x, y, width, height in areas:
-            cropped = full[y:y+height, x:x+width].copy()
-            ret.append(cropped)
-
+        # if None == full: return None
+        
+        ret = {}
+        for key, item in GetAll_TextArea().items():
+            cropped = full[item.y:item.y+item.height, item.x:item.x+item.width].copy()
+            ret[key] = cropped
         return ret
     
     def capture_loop(self):
@@ -121,60 +120,7 @@ class CaptureManager:
                     x, y = matching["click"]
                     # print(f"click => {x}, {y}")
                     WindowUtil.click_at_position(x, y)
-
-                # # images = []
-                # for n in range(len(LOOP_TEXT_KEYWORD)):
-                #     KEY = LOOP_TEXT_KEYWORD[n]
                     
-                #     try:
-                #         area = Get_TextArea(KEY)
-                #         if area is None:
-                #             continue
-
-                #         img = self._capture_crop(sct, area['x'], area['y'], area['width'], area['height'])
-                #         # imgs = self._capture_crops(sct, [ [area['x'], area['y'], area['width'], area['height']] ])
-                #         # img = imgs[0]
-
-                #         # OCR 실행
-                #         if img is None:
-                #             raise ValueError("캡처된 이미지가 None입니다.")
-                #         text = OcrEngine.image_to_text(img)
-                #         # textlist = PaddleOCREngine.extract_text_list_from_image(img)
-                #         # print(textlist)
-                #         del img
-                #         import gc; gc.collect()
-                #         # text = "" # DEV.. ORC 처리 주석 처리시 사용
-                #         # images.append(img)
-                    
-                #         # 디버깅 정보 출력
-                #         # print(f"인식된 텍스트: {text}")
-                        
-                #         # 콜백 함수 호출
-                #         if self.callback_fn:
-                #             timestamp = time.strftime("%H:%M:%S", time.localtime())
-                #             # self.callback_fn("result", f"[{timestamp}] 인식 결과:\n{text}\n{'='*50}\n")
-                #             # logtext = f"[{timestamp}] {KEY}: {text}"
-                #             # if not text:
-                #             #     logtext += "\n"
-                #             # # self.callback_fn("result", logtext)
-                            
-                #             DefInfo.Update_Value(KEY, text)
-                #             # DefInfo.Update_Values(KEY, textlist)
-
-                #     except Exception as e:
-                #         DefInfo.Update_Value(KEY, "")
-                #         # print(f"[캡처 오류] {type(e).__name__}: {str(e)}")
-                #         # if self.callback_fn:
-                #         #     self.callback_fn("error", f"오류 발생: {str(e)}")
-                
-                # # texts = OcrEngine.images_to_text_parallel(images)
-                # # print(texts)
-                # # for item in texts:
-                # #     DefInfo.Update_Value("aa", item)
-
-                # self.is_capturing = False   #DEV
-                
-                # 지정된 간격만큼 대기
                 time.sleep(Scanner.Loop_Interval)
     
     def capture_full_window(self):
