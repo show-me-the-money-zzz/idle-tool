@@ -10,7 +10,6 @@ from typing import Dict, Any
 
 from core.window_utils import WindowUtil
 from stores.areas import *
-import stores.def_info as DefInfo
 import stores.sanner as Scanner
 from zzz.config import LOOP_TEXT_KEYWORD
 
@@ -22,8 +21,10 @@ class Tasker(QObject):
     # 시그널 정의
     status_changed = Signal(str)
     
-    def __init__(self, parent=None):
+    def __init__(self, parent, capture_manager):
         super().__init__(parent)
+        
+        self.capture_manager = capture_manager
         
         # 작업 상태 변수
         self.is_running = False
@@ -84,54 +85,6 @@ class Tasker(QObject):
         except Exception as e:
             self.status_changed.emit(f"Tasker: 이미지 매칭 오류: {str(e)}")
     
-    def _capture_crop(self, sct, x, y, width, height):
-        """단일 영역 캡처"""
-        left, top, _, _ = WindowUtil.get_window_rect()
-
-        monitor = {
-            "left": left + x,
-            "top": top + y,
-            "width": width,
-            "height": height
-        }
-        
-        try:
-            screenshot = sct.grab(monitor)
-        except Exception as e:
-            print(f"[캡처 실패] {e} (monitor: {monitor})")
-            return None
-        
-        img = np.array(screenshot)[:, :, :3]  # BGRA → BGR
-        return img
-    
-    def capture_full_window_cv2(self, sct):
-        """전체 창 캡처 (OpenCV 형식)"""
-        if not WindowUtil.is_window_valid():
-            return None
-        
-        # 창 활성화
-        WindowUtil.activate_window()
-        
-        # 창 위치와 크기 가져오기
-        left, top, right, bottom = WindowUtil.get_window_rect()
-        width = right - left
-        height = bottom - top
-        
-        # mss로 화면 캡처 영역 정의
-        monitor = {
-            "top": top,
-            "left": left,
-            "width": width,
-            "height": height
-        }
-        
-        # 화면 캡처
-        screenshot = sct.grab(monitor)
-        
-        # mss의 결과를 numpy 배열로 변환 (OpenCV 형식)
-        img = np.array(screenshot)[:, :, :3]  # BGRA → BGR
-        return img
-    
     def match_image_in_zone(self, sct, zone_key, image_key):
         """
         zone 영역 안에 image 이미지가 존재하는지 검사하는 OpenCV 템플릿 매칭
@@ -162,7 +115,7 @@ class Tasker(QObject):
             raise FileNotFoundError(f"템플릿 이미지가 존재하지 않음: {imageitem.file}")
         
         # 전체 화면 캡처
-        full_img = self.capture_full_window_cv2(sct)
+        full_img = self.capture_manager.capture_full_window_cv2(sct)
         if full_img is None:
             raise ValueError("화면 캡처 실패")
         

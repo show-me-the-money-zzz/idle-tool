@@ -71,7 +71,7 @@ class AppUI(QMainWindow):
         winman = WindowUtil  # 초기화를 위한
         self.capture_manager = CaptureManager(self.handle_capture_callback)
         
-        self.tasker = Tasker(self)
+        self.tasker = Tasker(self, self.capture_manager)
         # 시그널 연결
         self.tasker.status_changed.connect(self.status_bar.set_status)
         
