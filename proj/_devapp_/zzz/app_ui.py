@@ -8,6 +8,7 @@ import os
 
 from core.window_utils import WindowUtil
 from core.capture_utils import CaptureManager
+from core.tasker import Tasker  # 새로 추가
 from core.ocr_engine import setup_tesseract
 from zzz.config import *
 from ui.nodes.region_selector import RegionSelector
@@ -69,6 +70,11 @@ class AppUI(QMainWindow):
         # 기본 매니저 객체 생성
         winman = WindowUtil  # 초기화를 위한
         self.capture_manager = CaptureManager(self.handle_capture_callback)
+        
+        self.tasker = Tasker(self)
+        # 시그널 연결
+        self.tasker.status_changed.connect(self.status_bar.set_status)
+        
         self.region_selector = RegionSelector()
         
         # UI 컴포넌트 생성
@@ -235,11 +241,10 @@ class AppUI(QMainWindow):
     @Slot()
     def toggle_capture(self):
         """캡처 시작/중지 전환"""
-        if self.capture_manager.is_capturing:
+        if self.tasker.is_running:
             # 캡처 중지
-            self.capture_manager.stop_capture()
+            self.tasker.stop_tasks()
             self.control_frame.update_capture_button_text(False)
-            self.status_changed.emit(STATUS_STOPPED)
         else:
             try:
                 # Tesseract OCR이 설정되어 있는지 확인
@@ -255,10 +260,9 @@ class AppUI(QMainWindow):
                     QMessageBox.critical(self, "오류", ERROR_NO_WINDOW)
                     return
                 
-                # 캡처 시작
-                self.capture_manager.start_capture()
+                # 작업 시작
+                self.tasker.start_tasks()
                 self.control_frame.update_capture_button_text(True)
-                self.status_changed.emit(STATUS_CAPTURING)
                 
             except ValueError as e:
                 QMessageBox.critical(self, "입력 오류", f"올바른 값을 입력해주세요: {str(e)}")
