@@ -86,6 +86,56 @@ class Tasker(QObject):
                 
         except Exception as e:
             self.logframe_adderror.emit(f"이미지 매칭 오류: {str(e)}")
+            
+    task_wolrmap = "scan-open-worldmap";
+    def Task_Worldmap(self):
+        self.logframe_adderror.emit(f"step: {self.task_wolrmap}")
+        try:
+            if "scan-find-mapicon" == self.task_wolrmap:
+                limit_score = 35
+                matching = self.match_image_in_zone(self.sct, "좌상단메뉴", "좌상단메뉴-월드맵", limit_score)
+                score = matching["score_percent"]
+                
+                if limit_score <= score:
+                    self.logframe_addlog.emit(f"ZONE:{matching["zone"]}에서 IMG:{matching["image"]} 찾음 ({score:.1f}%)}}")
+                    
+                if matching["matched"] and limit_score <= score:
+                    self.task_wolrmap = "scan-open-worldmap"
+                    self.logframe_addwarning.emit(f"step 변경: {self.task_wolrmap}")
+            elif "scan-open-worldmap" == self.task_wolrmap:
+                WindowUtil.send_key("m")
+                self.logframe_addlog.emit(f"키보드 m 키를 누름")
+                self.task_wolrmap = "scan-find-popup-worldmap"
+                self.logframe_addwarning.emit(f"step 변경: {self.task_wolrmap}")
+            elif "scan-find-popup-worldmap" == self.task_wolrmap:
+                limit_score = 35
+                matching = self.match_image_in_zone(self.sct, "팝업타이틀", "팝업타이틀-월드맵", limit_score)
+                score = matching["score_percent"]
+                
+                if limit_score <= score:
+                    self.logframe_addlog.emit(f"ZONE:{matching["zone"]}에서 IMG:{matching["image"]} 찾음 ({score:.1f}%)}}")
+                    
+                if matching["matched"] and limit_score <= score:
+                    self.task_wolrmap = "scan-find-popup-exiticon"
+                    self.logframe_addwarning.emit(f"step 변경: {self.task_wolrmap}")
+            elif "scan-find-popup-exiticon" == self.task_wolrmap:
+                limit_score = 35
+                matching = self.match_image_in_zone(self.sct, "팝업나가기", "팝업-나가기", limit_score)
+                score = matching["score_percent"]
+                
+                if limit_score <= score:
+                    self.logframe_addlog.emit(f"ZONE:{matching["zone"]}에서 IMG:{matching["image"]} 찾음 ({score:.1f}%)}}")
+                    
+                if matching["matched"] and limit_score <= score:
+                    x, y = matching["click"]
+                    WindowUtil.click_at_position(x, y)
+                    self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
+                    self.task_wolrmap = "scan-find-mapicon"
+                    self.logframe_addwarning.emit(f"step 변경: {self.task_wolrmap}")
+                
+        except Exception as e:
+            self.logframe_adderror.emit(f"이미지 매칭 오류: {str(e)}")
+            
     
     def Process_Loop(self):
         """이미지 매칭 및 UI 작업 - 매칭 타이머 콜백"""
@@ -97,7 +147,8 @@ class Tasker(QObject):
             self.status_changed.emit("창이 닫혔습니다.")
             return
         
-        self.Task_Click_Repeat_MpaIcon()
+        # self.Task_Click_Repeat_MpaIcon()
+        self.Task_Worldmap()
         
         # except Exception as e:
         #     self.status_changed.emit(f"Tasker: 이미지 매칭 오류: {str(e)}")
