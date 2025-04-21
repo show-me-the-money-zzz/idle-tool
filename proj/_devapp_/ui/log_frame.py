@@ -52,7 +52,7 @@ class LogFrame(QGroupBox):
         self.status_signal.emit("로그가 초기화되었습니다.")
     
     def add_log(self, text):
-        color = "#efffe4" if self._color_toggle else "#d9d9d9"
+        color = "#b5b5b5" if self._color_toggle else "#ffffff"
         self.print_log(color, text)
         
         self._color_toggle = not self._color_toggle

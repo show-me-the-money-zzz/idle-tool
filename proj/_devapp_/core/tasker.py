@@ -8,6 +8,9 @@ import math
 import numpy as np
 from typing import Dict, Any
 
+import asyncio
+from asyncio import Future
+
 from core.window_utils import WindowUtil
 from stores.areas import *
 import stores.sanner as Scanner
@@ -30,15 +33,13 @@ class Tasker(QObject):
     
     def __init__(self, parent, capture_manager):
         super().__init__(parent)
+        self.async_helper = AsyncHelper(self)
         
         self.capture_manager = capture_manager
         
         # 작업 상태 변수
         self.is_running = False
-        
-        # 이미지 매칭 및 UI 작업 타이머
-        self.matching_timer = QTimer(self)
-        self.matching_timer.timeout.connect(self.Process_Loop)
+        self.current_task = None
         
         # 공유 MSS 인스턴스
         self.sct = mss.mss()
@@ -50,11 +51,9 @@ class Tasker(QObject):
             
         self.is_running = True
         
-        # 이미지 매칭 시작 (0.5초마다)
-        # self.matching_timer.start(Scanner.Get_LoopInterval_MS())
-        self.matching_timer.start(100)
+        self.current_task = self.async_helper.run_task(self.Process_Loop())
         
-        self.status_changed.emit("Tasker: 작업이 시작되었습니다.")
+        self.logframe_addnotice.emit("Tasker: 작업이 시작되었습니다.")
         return True
     
     def stop_tasks(self):
@@ -64,130 +63,31 @@ class Tasker(QObject):
             
         self.is_running = False
         
-        # 타이머 중지
-        self.matching_timer.stop()
+        # 현재 실행 중인 작업 취소
+        if self.current_task:
+            self.async_helper.cancel_task(self.current_task)
+            self.current_task = None
         
-        self.status_changed.emit("Tasker: 작업이 중지되었습니다.")
+        self.logframe_addnotice.emit("Tasker: 작업이 중지되었습니다.")
         return True
     
-    def Task_Click_Repeat_MpaIcon(self):
-        limit_score = 35
-        
+    async def Process_Loop(self):
         try:
-            matching = self.match_image_in_zone(self.sct, "좌상단메뉴", "좌상단메뉴-월드맵", limit_score)
-            # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
-            # print(matching)
-            score = matching["score_percent"]
-            if limit_score <= score:
-                self.logframe_addlog.emit(f"ZONE:{matching["zone"]}에서 IMG:{matching["image"]} 찾음 ({score:.1f}%)}}")
-            
-            if matching["matched"] and limit_score <= score:
-                x, y = matching["click"]
-                # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
-                WindowUtil.click_at_position(x, y)
-                self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
+            while self.is_running:
+                if not WindowUtil.update_window_info():
+                    self.stop_tasks()
+                    self.status_changed.emit("창이 닫혔습니다.")
+                    return
                 
+                self.logframe_addlog.emit("foo~~")
+                await self.async_helper.sleep(0)
+                
+        except asyncio.CancelledError:
+            # 작업 취소 처리
+            self.logframe_addwarning.emit("작업이 취소되었습니다.")
         except Exception as e:
-            self.logframe_adderror.emit(f"이미지 매칭 오류: {str(e)}")
-            
-    task_wolrmap = "scan-open-worldmap";
-    def Task_Worldmap(self):
-        self.logframe_adderror.emit(f"step: {self.task_wolrmap}")
-        try:
-            if "scan-find-mapicon" == self.task_wolrmap:
-                limit_score = 35
-                matching = self.match_image_in_zone(self.sct, "좌상단메뉴", "좌상단메뉴-월드맵", limit_score)
-                score = matching["score_percent"]
-                
-                if limit_score <= score:
-                    self.logframe_addlog.emit(f"ZONE:{matching["zone"]}에서 IMG:{matching["image"]} 찾음 ({score:.1f}%)}}")
-                    
-                if matching["matched"] and limit_score <= score:
-                    self.task_wolrmap = "scan-open-worldmap"
-                    self.logframe_addwarning.emit(f"step 변경: {self.task_wolrmap}")
-            elif "scan-open-worldmap" == self.task_wolrmap:
-                hotkey = HotKey.월드맵_열기
-                # hotkey = HotKey.인벤토리
-                WindowUtil.send_key(hotkey)
-                self.logframe_addlog.emit(f"키보드 {hotkey} 키를 누름")
-                self.task_wolrmap = "scan-find-popup-worldmap"
-                self.logframe_addwarning.emit(f"step 변경: {self.task_wolrmap}")
-            elif "scan-find-popup-worldmap" == self.task_wolrmap:
-                limit_score = 35
-                matching = self.match_image_in_zone(self.sct, "팝업타이틀", "팝업타이틀-월드맵", limit_score)
-                score = matching["score_percent"]
-                
-                if limit_score <= score:
-                    self.logframe_addlog.emit(f"ZONE:{matching["zone"]}에서 IMG:{matching["image"]} 찾음 ({score:.1f}%)}}")
-                    
-                if matching["matched"] and limit_score <= score:
-                    self.task_wolrmap = "scan-find-popup-exiticon"
-                    self.logframe_addwarning.emit(f"step 변경: {self.task_wolrmap}")
-            elif "scan-find-popup-exiticon" == self.task_wolrmap:
-                limit_score = 35
-                matching = self.match_image_in_zone(self.sct, "팝업나가기", "팝업-나가기", limit_score)
-                score = matching["score_percent"]
-                
-                if limit_score <= score:
-                    self.logframe_addlog.emit(f"ZONE:{matching["zone"]}에서 IMG:{matching["image"]} 찾음 ({score:.1f}%)}}")
-                    
-                if matching["matched"] and limit_score <= score:
-                    x, y = matching["click"]
-                    WindowUtil.click_at_position(x, y)
-                    self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
-                    self.task_wolrmap = "scan-find-mapicon"
-                    self.logframe_addwarning.emit(f"step 변경: {self.task_wolrmap}")
-                
-        except Exception as e:
-            self.logframe_adderror.emit(f"이미지 매칭 오류: {str(e)}")
-          
-    task_gss23_rf = "scan-open-worldmap";
-    def Task_GS23_RF(self):
-        limit_score = 50
-        
-        try:
-            # matching = self.match_image_in_zone(self.sct, "메뉴_좌상", "메뉴_좌상-맵", limit_score)
-            # # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
-            # # print(matching)
-            # score = matching["score_percent"]
-            # if limit_score <= score:
-            #     self.logframe_addlog.emit(f"ZONE:{matching["zone"]}에서 IMG:{matching["image"]} 찾음 ({score:.1f}%)}}")
-            
-            # if matching["matched"] and limit_score <= score:
-            #     x, y = matching["click"]
-            #     # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
-            #     WindowUtil.click_at_position(x, y)
-            #     self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
-                
-            matching = self.match_image_in_zone(self.sct, "메뉴_마을", "메뉴_마을-잡화", limit_score)
-            # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
-            # print(matching)
-            self.logframe_addlog.emit(f"{matching}")
-            score = matching["score_percent"]
-            self.logframe_addnotice.emit("ㅋㅋㅋ")
-            
-            # if 50 <= score:
-        
-        except Exception as e:
-            self.logframe_adderror.emit(f"이미지 매칭 오류: {str(e)}")
-    
-    def Process_Loop(self):
-        """이미지 매칭 및 UI 작업 - 매칭 타이머 콜백"""
-        if not self.is_running:
-            return
-            
-        if not WindowUtil.update_window_info():
-            self.stop_tasks()
-            self.status_changed.emit("창이 닫혔습니다.")
-            return
-        
-        # self.Task_Click_Repeat_MpaIcon()
-        # self.Task_Worldmap()
-        
-        self.Task_GS23_RF()
-        
-        # except Exception as e:
-        #     self.status_changed.emit(f"Tasker: 이미지 매칭 오류: {str(e)}")
+            # 예외 처리
+            self.logframe_adderror.emit(f"작업 중 오류 발생: {str(e)}")
     
     def match_image_in_zone(self, sct, zone_key, image_key, limit_score):
         """
@@ -323,3 +223,40 @@ class Tasker(QObject):
         self.stop_tasks()
         if hasattr(self, 'sct'):
             self.sct.close()
+            
+class AsyncHelper(QObject):
+    """PySide6와 asyncio 통합을 돕는 헬퍼 클래스"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.loop = asyncio.get_event_loop()
+        
+        # 비동기 작업을 처리할 타이머
+        self.async_timer = QTimer(self)
+        self.async_timer.timeout.connect(self.process_asyncio)
+        self.async_timer.start(10)  # 10ms 간격으로 asyncio 이벤트 루프 처리
+        
+    def process_asyncio(self):
+        """asyncio 이벤트 루프 처리"""
+        self.loop.call_soon(self.loop.stop)
+        self.loop.run_forever()
+        
+    def run_task(self, coro):
+        """코루틴 실행"""
+        return asyncio.run_coroutine_threadsafe(coro, self.loop)
+    
+    def cancel_task(self, future):
+        """안전하게 작업 취소"""
+        if future and not future.done():
+            future.cancel()
+            # 취소 후 처리를 위한 콜백 추가
+            future.add_done_callback(lambda f: self.process_asyncio())
+        
+    async def sleep(self, seconds):
+        """비동기 대기 - 재구현"""
+        try:
+            # QTimer 대신 asyncio.sleep 사용
+            await asyncio.sleep(seconds)
+        except asyncio.CancelledError:
+            # 취소 처리
+            raise
