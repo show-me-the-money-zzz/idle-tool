@@ -49,7 +49,6 @@ class LogFrame(QGroupBox):
         """로그에 텍스트 추가"""
         self.log_text.append(text)
         
-        # 스크롤을 최신 내용으로 이동
-        cursor = self.log_text.textCursor()
-        cursor.movePosition(cursor.End)
-        self.log_text.setTextCursor(cursor)
+        # 스크롤을 최신으로 이동
+        scrollbar = self.log_text.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())

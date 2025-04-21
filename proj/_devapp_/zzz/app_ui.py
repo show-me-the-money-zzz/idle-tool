@@ -72,13 +72,15 @@ class AppUI(QMainWindow):
         self.capture_manager = CaptureManager(self.handle_capture_callback)
         
         self.tasker = Tasker(self, self.capture_manager)
-        # 시그널 연결
-        self.tasker.status_changed.connect(self.status_bar.set_status)
         
         self.region_selector = RegionSelector()
         
         # UI 컴포넌트 생성
         self.setup_ui()
+        
+        # 시그널 연결
+        self.tasker.status_changed.connect(self.status_bar.set_status)
+        self.tasker.logframe_addlog.connect(self.log_frame.add_log)
         
         # 마우스 위치 추적을 위한 타이머 설정
         self.mouse_timer = QTimer(self)

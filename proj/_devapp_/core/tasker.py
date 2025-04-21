@@ -21,6 +21,9 @@ class Tasker(QObject):
     # 시그널 정의
     status_changed = Signal(str)
     
+    # 로그 메시지 시그널 추가
+    logframe_addlog = Signal(str)
+    
     def __init__(self, parent, capture_manager):
         super().__init__(parent)
         
@@ -76,11 +79,15 @@ class Tasker(QObject):
             matching = self.match_image_in_zone(self.sct, "좌상단메뉴", "좌상단메뉴-월드맵")
             # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
             print(matching)
+            score = matching["score_percent"]
+            if 35 <= score:
+                self.logframe_addlog.emit(f"[범위] {matching["zone"]}에서 [이미지] {matching["image"]}를 찾았습니다. ({score:.1f}%)}}")
             
-            if matching["matched"] and 85.0 <= matching["score_percent"]:
+            if matching["matched"] and 85.0 <= score:
                 x, y = matching["click"]
                 # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
                 WindowUtil.click_at_position(x, y)
+                self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
             
         except Exception as e:
             self.status_changed.emit(f"Tasker: 이미지 매칭 오류: {str(e)}")
