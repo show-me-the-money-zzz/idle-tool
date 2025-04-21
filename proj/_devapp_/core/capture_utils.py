@@ -26,8 +26,13 @@ class CaptureManager:
         self.capture_thread = None
         self.callback_fn = callback_fn
         self.sct = mss.mss()
+        
+        # # 색상 추출 캡처 RND
+        # from core.capture_util_extract import Test_Extract
+        # Test_Extract()
     
     def start_capture(self):
+    
         """캡처 시작"""
         if self.is_capturing:
             return False
@@ -109,7 +114,7 @@ class CaptureManager:
                 matching = self.match_image_in_zone(sct, "좌상단메뉴", "좌상단메뉴-월드맵")
                 # matching = self.match_image_in_zone(sct, "좌상단메뉴", "좌상단메뉴-마을이동")
                 print(matching)
-                # print(self.match_image_in_zone(sct, "좌상단메뉴", "좌상단메뉴-마을이동"))
+                # print(self.match_image_in_zone(sct, "좌상단메뉴", "좌상단메뉴-월드맵3"))
                 
                 if matching["matched"] and 85.0 <= matching["score_percent"]:
                     # click = matching["click"]
