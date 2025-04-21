@@ -12,6 +12,7 @@ from core.window_utils import WindowUtil
 from stores.areas import *
 import stores.sanner as Scanner
 from zzz.config import LOOP_TEXT_KEYWORD
+import zzz.hotkey as HotKey
 
 class Tasker(QObject):
     """
@@ -103,8 +104,10 @@ class Tasker(QObject):
                     self.task_wolrmap = "scan-open-worldmap"
                     self.logframe_addwarning.emit(f"step 변경: {self.task_wolrmap}")
             elif "scan-open-worldmap" == self.task_wolrmap:
-                WindowUtil.send_key("m")
-                self.logframe_addlog.emit(f"키보드 m 키를 누름")
+                hotkey = HotKey.월드맵_열기
+                # hotkey = HotKey.인벤토리
+                WindowUtil.send_key(hotkey)
+                self.logframe_addlog.emit(f"키보드 {hotkey} 키를 누름")
                 self.task_wolrmap = "scan-find-popup-worldmap"
                 self.logframe_addwarning.emit(f"step 변경: {self.task_wolrmap}")
             elif "scan-find-popup-worldmap" == self.task_wolrmap:
