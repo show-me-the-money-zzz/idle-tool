@@ -758,12 +758,16 @@ class CaptureAreaPopup(QDialog):
             
             # 상대 경로로 변환
             from pathlib import Path
-            data_path = Path(finder.Get_DataPath())
+            # data_path = Path(finder.Get_DataPath())
+            local_path = Path(finder.Get_LocalPth())
             file_path_obj = Path(file_path)
             
             try:
                 # 상대 경로 생성 시도
-                relative_path = file_path_obj.relative_to(data_path)
+                # relative_path = file_path_obj.relative_to(data_path)
+                # stored_path = str(relative_path)
+                local_path = Path(finder.Get_LocalPth())
+                relative_path = file_path_obj.relative_to(local_path)
                 stored_path = str(relative_path)
             except ValueError:
                 # 상대 경로 생성 실패 시 전체 경로 사용
