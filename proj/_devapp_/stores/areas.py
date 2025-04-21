@@ -1,40 +1,22 @@
 from .area_store import AreaStore
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Optional
+from stores.base_area_item import BaseAreaItem
 
 Texts = AreaStore("텍스트 영역", "text.json")
 Images = AreaStore("이미지 영역", "image.json")
 Zones = AreaStore("범위 영역", "zone.json")
 
 @dataclass
-class ImageItem:
-    x: int
-    y: int
-    width: int
-    height: int
+class ImageItem(BaseAreaItem):
+    _name: str = field(default="", init=False)
     file: str
-    
-    @property
-    def CenterX(self): return self.x + self.width // 2
-    @property
-    def CneterY(self): return self.y + self.height // 2
-    
-    @property
-    def ClickX(self): return int(self.CenterX)
-    
-    @property
-    def ClickY(self): return int(self.CneterY)
 @dataclass
-class ZoneItem:
-    x: int
-    y: int
-    width: int
-    height: int
+class ZoneItem(BaseAreaItem):
+    _name: str = field(default="", init=False)
 @dataclass
-class TextItem:
-    x: int
-    y: int
-    width: int
-    height: int
+class TextItem(BaseAreaItem):
+    _name: Optional[str] = None  # 기본값을 설정하면 필수 인자 아님
 
 # 텍스트 영역 함수 인터페이스
 Add_TextArea = Texts.add
