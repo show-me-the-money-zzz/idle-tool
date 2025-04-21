@@ -34,7 +34,7 @@ class Tasker(QObject):
         
         # 이미지 매칭 및 UI 작업 타이머
         self.matching_timer = QTimer(self)
-        self.matching_timer.timeout.connect(self.Scanning)
+        self.matching_timer.timeout.connect(self.Process_Loop)
         
         # 공유 MSS 인스턴스
         self.sct = mss.mss()
@@ -80,7 +80,7 @@ class Tasker(QObject):
             WindowUtil.click_at_position(x, y)
             self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
     
-    def Scanning(self):
+    def Process_Loop(self):
         """이미지 매칭 및 UI 작업 - 매칭 타이머 콜백"""
         if not self.is_running:
             return
