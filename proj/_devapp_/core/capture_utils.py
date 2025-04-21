@@ -263,17 +263,17 @@ class CaptureManager:
                 "position": (x, y)  # 전체 화면 기준 위치 (매칭 성공 시)
             }
         """
-        zone = Get_ZoneArea(zone_key)
-        image = Get_ImageArea(image_key)
+        zoneitem = Get_ZoneArea(zone_key)
+        imageitem = Get_ImageArea(image_key)
         
-        if not zone:
+        if not zoneitem:
             raise ValueError(f"존재하지 않는 zone 키: {zone_key}")
-        if not image:
+        if not imageitem:
             raise ValueError(f"존재하지 않는 image 키: {image_key}")
         
         # 이미지 파일이 존재하는지 확인
-        if not os.path.exists(image["file"]):
-            raise FileNotFoundError(f"템플릿 이미지가 존재하지 않음: {image['file']}")
+        if not os.path.exists(imageitem.file):
+            raise FileNotFoundError(f"템플릿 이미지가 존재하지 않음: {imageitem.file}")
         
         # 전체 화면 캡처
         full_img = self.capture_full_window_cv2(sct)
@@ -281,13 +281,11 @@ class CaptureManager:
             raise ValueError("화면 캡처 실패")
         
         # 템플릿 이미지 로드
-        template = cv2.imread(image["file"], cv2.IMREAD_COLOR)        
+        template = cv2.imread(imageitem.file, cv2.IMREAD_COLOR)        
         # cv2.imwrite("debug_template_saved.png", template)   # 템플릿 이미지 저장 (디버깅용)
-        img_w, img_h = image["width"], image["height"]
         
         # zone 영역 잘라내기
-        x, y, w, h = zone["x"], zone["y"], zone["width"], zone["height"]
-        zone_crop = full_img[y:y+h, x:x+w]
+        zone_crop = full_img[zoneitem.y:zoneitem.y+zoneitem.height, zoneitem.x:zoneitem.x+zoneitem.width]
         
         # 템플릿 매칭
         result = cv2.matchTemplate(zone_crop, template, cv2.TM_CCOEFF_NORMED)
@@ -319,14 +317,12 @@ class CaptureManager:
         #     "position": (x + max_loc[0], y + max_loc[1]) if matched else None
         # }
         
-        target_x = x + max_loc[0]
-        target_y = y + max_loc[1]
+        target_x = zoneitem.x + max_loc[0]
+        target_y = zoneitem.y + max_loc[1]
         
         score = float(max_val)
         score_2 = math.floor(score * 100) / 100
         score_percent = score_2 * 100.0
-        click_x = int(target_x + (img_w * 0.5))
-        click_y = int(target_y + (img_h * 0.5))
         return {
             "matched": matched,
             "score": score_2,
@@ -334,7 +330,7 @@ class CaptureManager:
             "zone": zone_key,
             "image": image_key,
             "position": (target_x, target_y) if matched else None,
-            "click": (click_x, click_y) if matched else None,   # 소수점으로 클릭 시도하면 에러
+            "click": (imageitem.ClickX, imageitem.ClickY) if matched else None,   # 소수점으로 클릭 시도하면 에러
         }
     
     def match_image_in_zone_with_screenshot(self, zone_key: str, image_key: str, screenshot_path: str) -> Dict[str, Any]:
@@ -349,20 +345,24 @@ class CaptureManager:
         Returns:
             dict: 매칭 결과
         """
-        zone = Get_ZoneArea(zone_key)
-        image = Get_ImageArea(image_key)
+        zoneitem = Get_ZoneArea(zone_key)
+        imageitem = Get_ImageArea(image_key)
+        
+        if None == zoneitem:
+            print(f"[{zone_key}] 키에 해당하는 Zone 아이템 없음")
+        if None == imageitem:
+            print(f"[{image_key}] 키에 해당하는 Image 아이템 없음")
         
         if not os.path.exists(screenshot_path):
             raise FileNotFoundError(f"스크린샷 파일이 존재하지 않음: {screenshot_path}")
-        if not os.path.exists(image["file"]):
-            raise FileNotFoundError(f"템플릿 이미지가 존재하지 않음: {image['file']}")
+        if not os.path.exists(imageitem.file):
+            raise FileNotFoundError(f"템플릿 이미지가 존재하지 않음: {imageitem.file}")
         
         full_img = cv2.imread(screenshot_path, cv2.IMREAD_COLOR)
-        template = cv2.imread(image["file"], cv2.IMREAD_COLOR)
+        template = cv2.imread(imageitem.file, cv2.IMREAD_COLOR)
         
         # zone 영역 잘라내기
-        x, y, w, h = zone["x"], zone["y"], zone["width"], zone["height"]
-        zone_crop = full_img[y:y+h, x:x+w]
+        zone_crop = full_img[zoneitem.y:zoneitem.y+zoneitem.height, zoneitem.x:zoneitem.x+zoneitem.width]
         
         # 템플릿 매칭
         result = cv2.matchTemplate(zone_crop, template, cv2.TM_CCOEFF_NORMED)
@@ -374,8 +374,8 @@ class CaptureManager:
         return {
             "matched": matched,
             "score": float(max_val),
-            "zone": zone,
-            "image": image,
+            "zone": zone_key,
+            "image": image_key,
             "position": (x + max_loc[0], y + max_loc[1]) if matched else None
         }
         
