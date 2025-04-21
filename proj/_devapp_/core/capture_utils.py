@@ -122,55 +122,55 @@ class CaptureManager:
                     # print(f"click => {x}, {y}")
                     WindowUtil.click_at_position(x, y)
 
-                # images = []
-                for n in range(len(LOOP_TEXT_KEYWORD)):
-                    KEY = LOOP_TEXT_KEYWORD[n]
+                # # images = []
+                # for n in range(len(LOOP_TEXT_KEYWORD)):
+                #     KEY = LOOP_TEXT_KEYWORD[n]
                     
-                    try:
-                        area = Get_TextArea(KEY)
-                        if area is None:
-                            continue
+                #     try:
+                #         area = Get_TextArea(KEY)
+                #         if area is None:
+                #             continue
 
-                        img = self._capture_crop(sct, area['x'], area['y'], area['width'], area['height'])
-                        # imgs = self._capture_crops(sct, [ [area['x'], area['y'], area['width'], area['height']] ])
-                        # img = imgs[0]
+                #         img = self._capture_crop(sct, area['x'], area['y'], area['width'], area['height'])
+                #         # imgs = self._capture_crops(sct, [ [area['x'], area['y'], area['width'], area['height']] ])
+                #         # img = imgs[0]
 
-                        # OCR 실행
-                        if img is None:
-                            raise ValueError("캡처된 이미지가 None입니다.")
-                        text = OcrEngine.image_to_text(img)
-                        # textlist = PaddleOCREngine.extract_text_list_from_image(img)
-                        # print(textlist)
-                        del img
-                        import gc; gc.collect()
-                        # text = "" # DEV.. ORC 처리 주석 처리시 사용
-                        # images.append(img)
+                #         # OCR 실행
+                #         if img is None:
+                #             raise ValueError("캡처된 이미지가 None입니다.")
+                #         text = OcrEngine.image_to_text(img)
+                #         # textlist = PaddleOCREngine.extract_text_list_from_image(img)
+                #         # print(textlist)
+                #         del img
+                #         import gc; gc.collect()
+                #         # text = "" # DEV.. ORC 처리 주석 처리시 사용
+                #         # images.append(img)
                     
-                        # 디버깅 정보 출력
-                        # print(f"인식된 텍스트: {text}")
+                #         # 디버깅 정보 출력
+                #         # print(f"인식된 텍스트: {text}")
                         
-                        # 콜백 함수 호출
-                        if self.callback_fn:
-                            timestamp = time.strftime("%H:%M:%S", time.localtime())
-                            # self.callback_fn("result", f"[{timestamp}] 인식 결과:\n{text}\n{'='*50}\n")
-                            # logtext = f"[{timestamp}] {KEY}: {text}"
-                            # if not text:
-                            #     logtext += "\n"
-                            # # self.callback_fn("result", logtext)
+                #         # 콜백 함수 호출
+                #         if self.callback_fn:
+                #             timestamp = time.strftime("%H:%M:%S", time.localtime())
+                #             # self.callback_fn("result", f"[{timestamp}] 인식 결과:\n{text}\n{'='*50}\n")
+                #             # logtext = f"[{timestamp}] {KEY}: {text}"
+                #             # if not text:
+                #             #     logtext += "\n"
+                #             # # self.callback_fn("result", logtext)
                             
-                            DefInfo.Update_Value(KEY, text)
-                            # DefInfo.Update_Values(KEY, textlist)
+                #             DefInfo.Update_Value(KEY, text)
+                #             # DefInfo.Update_Values(KEY, textlist)
 
-                    except Exception as e:
-                        DefInfo.Update_Value(KEY, "")
-                        # print(f"[캡처 오류] {type(e).__name__}: {str(e)}")
-                        # if self.callback_fn:
-                        #     self.callback_fn("error", f"오류 발생: {str(e)}")
+                #     except Exception as e:
+                #         DefInfo.Update_Value(KEY, "")
+                #         # print(f"[캡처 오류] {type(e).__name__}: {str(e)}")
+                #         # if self.callback_fn:
+                #         #     self.callback_fn("error", f"오류 발생: {str(e)}")
                 
-                # texts = OcrEngine.images_to_text_parallel(images)
-                # print(texts)
-                # for item in texts:
-                #     DefInfo.Update_Value("aa", item)
+                # # texts = OcrEngine.images_to_text_parallel(images)
+                # # print(texts)
+                # # for item in texts:
+                # #     DefInfo.Update_Value("aa", item)
 
                 # self.is_capturing = False   #DEV
                 
