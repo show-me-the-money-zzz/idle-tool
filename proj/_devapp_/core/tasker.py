@@ -23,6 +23,8 @@ class Tasker(QObject):
     
     # 로그 메시지 시그널 추가
     logframe_addlog = Signal(str)
+    logframe_addwarning = Signal(str)
+    logframe_adderror = Signal(str)
     
     def __init__(self, parent, capture_manager):
         super().__init__(parent)
@@ -67,18 +69,23 @@ class Tasker(QObject):
     
     def Task_Click_Repeat_MpaIcon(self):
         limit_score = 35
-        matching = self.match_image_in_zone(self.sct, "좌상단메뉴", "좌상단메뉴-월드맵", limit_score)
-        # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
-        # print(matching)
-        score = matching["score_percent"]
-        if limit_score <= score:
-            self.logframe_addlog.emit(f"[범위] {matching["zone"]}에서 [이미지] {matching["image"]}를 찾았습니다. ({score:.1f}%)}}")
         
-        if matching["matched"] and limit_score <= score:
-            x, y = matching["click"]
-            # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
-            WindowUtil.click_at_position(x, y)
-            self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
+        try:
+            matching = self.match_image_in_zone(self.sct, "좌상단메뉴", "좌상단메뉴-월드맵", limit_score)
+            # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
+            # print(matching)
+            score = matching["score_percent"]
+            if limit_score <= score:
+                self.logframe_addlog.emit(f"ZONE:{matching["zone"]}에서 IMG:{matching["image"]} 찾음 ({score:.1f}%)}}")
+            
+            if matching["matched"] and limit_score <= score:
+                x, y = matching["click"]
+                # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
+                WindowUtil.click_at_position(x, y)
+                self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
+                
+        except Exception as e:
+            self.logframe_adderror.emit(f"이미지 매칭 오류: {str(e)}")
     
     def Process_Loop(self):
         """이미지 매칭 및 UI 작업 - 매칭 타이머 콜백"""
@@ -90,11 +97,10 @@ class Tasker(QObject):
             self.status_changed.emit("창이 닫혔습니다.")
             return
         
-        try:
-            self.Task_Click_Repeat_MpaIcon()
-            
-        except Exception as e:
-            self.status_changed.emit(f"Tasker: 이미지 매칭 오류: {str(e)}")
+        self.Task_Click_Repeat_MpaIcon()
+        
+        # except Exception as e:
+        #     self.status_changed.emit(f"Tasker: 이미지 매칭 오류: {str(e)}")
     
     def match_image_in_zone(self, sct, zone_key, image_key, limit_score):
         """

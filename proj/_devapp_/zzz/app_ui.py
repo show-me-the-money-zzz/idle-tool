@@ -81,6 +81,8 @@ class AppUI(QMainWindow):
         # 시그널 연결
         self.tasker.status_changed.connect(self.status_bar.set_status)
         self.tasker.logframe_addlog.connect(self.log_frame.add_log)
+        self.tasker.logframe_addwarning.connect(self.log_frame.add_warning)
+        self.tasker.logframe_adderror.connect(self.log_frame.add_error)
         
         # 마우스 위치 추적을 위한 타이머 설정
         self.mouse_timer = QTimer(self)

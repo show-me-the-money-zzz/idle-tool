@@ -2,6 +2,8 @@ from PySide6.QtWidgets import (QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton,
                             QTextEdit, QScrollBar, QWidget, QFrame)
 from PySide6.QtCore import Qt, Signal, Slot
 
+from datetime import datetime
+
 class LogFrame(QGroupBox):
     """로그 프레임 (이전의 인식된 텍스트 영역)"""
     
@@ -9,6 +11,8 @@ class LogFrame(QGroupBox):
         super().__init__("로그", parent)
         
         self.status_signal = status_signal
+        
+        self._color_toggle = False
         
         self._setup_ui()
     
@@ -35,6 +39,8 @@ class LogFrame(QGroupBox):
         # 텍스트 영역
         self.log_text = QTextEdit(self)
         self.log_text.setReadOnly(True)  # 읽기 전용 설정
+        self.log_text.setStyleSheet("background-color: #4a4a4a; color: white;")
+        self.log_text.setFontPointSize(11)
         main_layout.addWidget(self.log_text)
         
         # PySide6에서는 QTextEdit이 이미 스크롤바를 내장하고 있음
@@ -46,8 +52,19 @@ class LogFrame(QGroupBox):
         self.status_signal.emit("로그가 초기화되었습니다.")
     
     def add_log(self, text):
-        """로그에 텍스트 추가"""
-        self.log_text.append(text)
+        color = "#efffe4" if self._color_toggle else "#d9d9d9"
+        self.print_log(color, text)
+        
+        self._color_toggle = not self._color_toggle
+    
+    def add_warning(self, text): self.print_log("#ffe88c", text)    
+    def add_error(self, text): self.print_log("#ff8c8c", text)
+        
+    def print_log(self, color, text):
+        timestamp = datetime.now().strftime("%m/%d %H:%M:%S")
+        
+        html = f'<span style="color:{color}">[{timestamp}] {text}</span>'
+        self.log_text.append(html)
         
         # 스크롤을 최신으로 이동
         scrollbar = self.log_text.verticalScrollBar()
