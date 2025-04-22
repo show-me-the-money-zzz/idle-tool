@@ -75,27 +75,33 @@ class Tasker(QObject):
         limit_score = 50
         
         try:
-            matching = self.match_image_in_zone("메뉴_좌상", "메뉴_좌상-맵")
+            matched = self.match_image_in_zone("메뉴_좌상", "메뉴_좌상-맵")
             # matching = self.match_image_in_zone("우상단메뉴", "우상단메뉴-인벤")
-            # print(matching)
-            score = matching["score_percent"]
+            # print(matched)
+            score = matched["score_percent"]
             if limit_score <= score:
-                self.logframe_addlog.emit(f"ZONE:{matching['zone']}에서 IMG:{matching['image']} 찾음 ({score:.1f}%)")
+                self.logframe_addlog.emit(f"ZONE:{matched['zone']}에서 IMG:{matched['image']} 찾음 ({score:.1f}%)")
             
             # if matching["matched"] and limit_score <= score:
             if limit_score <= score:
-                x, y = matching["click"]
+                x, y = matched["click"]
                 # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
                 WindowUtil.click_at_position(x, y)
                 self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
                 
-            # matching = self.match_image_in_zone("메뉴_마을", "메뉴_마을-잡화")
-            # # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
-            # self.logframe_addlog.emit(f"{matching}")
-            # # score = matching["score_percent"]
+            # matched = self.match_image_in_zone("메뉴_마을", "메뉴_마을-잡화")
+            # # matched = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
+            # self.logframe_addlog.emit(f"{matched}")
+            # # score = matched["score_percent"]
             # # self.logframe_addnotice.emit("ㅋㅋㅋ")
             
             # if 50 <= score:
+
+            # matched = self.match_image_in_zone("마을상인메뉴", "마을상인-잡화")
+            # # print(matched)
+            # self.logframe_addlog.emit(f"{matched}")
+            # matched = self.match_image_in_zone("마을상인메뉴", "마을상인-창고")
+            # self.logframe_addlog.emit(f"{matched}")
         
         except Exception as e:
             self.logframe_adderror.emit(f"이미지 매칭 오류: {str(e)}")
@@ -103,7 +109,7 @@ class Tasker(QObject):
     def Make_Task_GS23_RF(self): return {}
     
     running_task = {}
-    running_task_step = ""
+    running_task_steps = []
     async def Loop(self):
         # self.logframe_adderror.emit("시작")
         self.running_task = self.Make_Task_GS23_RF()
@@ -116,7 +122,7 @@ class Tasker(QObject):
                     return
                 
                 await self.Task_GS23_RF()
-                # task = self.running_task[self.running_task_step]
+                # task = self.running_task[self.running_task_steps]
                 
                 # if "matching" == task: await self.Matching(task)
                 
@@ -147,9 +153,9 @@ class Tasker(QObject):
         self.logframe_addlog.emit(f"<매칭> {zone} ZONE의 {zone} IMAGE 근접도 {task_score}% 이상: {matched_score}%로 {resulttext}")
         
         if isSuccess:
-            self.running_task_step = task["next_step"]
+            self.running_task_steps = task["next_step"]
         else:
-            self.running_task_step = task["fail_step"]
+            self.running_task_steps = task["fail_step"]
             
     async def Waiting(self, task):
         sec = task["sec"]
