@@ -100,8 +100,13 @@ class Tasker(QObject):
         except Exception as e:
             self.logframe_adderror.emit(f"이미지 매칭 오류: {str(e)}")
             
+    def Make_Task_GS23_RF(self): return {}
+    
+    running_task = {}
+    running_task_step = ""
     async def Loop(self):
         # self.logframe_adderror.emit("시작")
+        self.running_task = self.Make_Task_GS23_RF()
         
         try:
             while self.is_running:
@@ -111,6 +116,11 @@ class Tasker(QObject):
                     return
                 
                 await self.Task_GS23_RF()
+                # task = self.running_task[self.running_task_step]
+                
+                # if "matching" == task: await self.Matching(task)
+                
+                # elif "waiting" == task: await self.Waiting(task)
                 
                 # self.logframe_addlog.emit("foo~~")
                 await self.async_helper.sleep(0)
@@ -123,6 +133,29 @@ class Tasker(QObject):
         except Exception as e:
             # 예외 처리
             self.logframe_adderror.emit(f"작업 중 오류 발생: {str(e)}")
+            
+    async def Matching(self, task):
+        zone = task["zone"]
+        image = task["image"]
+        task_score = task["score"]
+        
+        matched = self.match_image_in_zone(zone, image, task_score)
+        matched_score = matched["score_percent"]
+        isSuccess = task_score <= matched_score
+        
+        resulttext = "성공" if isSuccess else "실패"
+        self.logframe_addlog.emit(f"<매칭> {zone} ZONE의 {zone} IMAGE 근접도 {task_score}% 이상: {matched_score}%로 {resulttext}")
+        
+        if isSuccess:
+            self.running_task_step = task["next_step"]
+        else:
+            self.running_task_step = task["fail_step"]
+            
+    async def Waiting(self, task):
+        sec = task["sec"]
+        self.logframe_addlog.emit(f"<잠깐대기> {sec} 초")
+        
+        await self.async_helper.sleep(sec)
     
     def match_image_in_zone(self, zone_key, image_key):
         """
