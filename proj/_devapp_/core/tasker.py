@@ -80,7 +80,7 @@ class Tasker(QObject):
             # print(matching)
             score = matching["score_percent"]
             if limit_score <= score:
-                self.logframe_addlog.emit(f"ZONE:{matching["zone"]}에서 IMG:{matching["image"]} 찾음 ({score:.1f}%)}}")
+                self.logframe_addlog.emit(f"ZONE:{matching['zone']}에서 IMG:{matching['image']} 찾음 ({score:.1f}%)")
             
             # if matching["matched"] and limit_score <= score:
             if limit_score <= score:
