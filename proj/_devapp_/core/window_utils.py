@@ -141,7 +141,7 @@ class WindowManager:
                 'space': Key.space,
                 'tab': Key.tab,
                 'backspace': Key.backspace,
-                'esc': Key.esc
+                'esc': Key.esc,
             }
             
             # 키 전송

@@ -383,16 +383,7 @@ class RegionSelectorDialog(QDialog):
                 is_height_key_pressed = keyboard.is_pressed(DRAG_FIXED_HEIGHT_KEY)
                 is_ratio_key_pressed = keyboard.is_pressed(DRAG_ASPECT_RATIO_KEY)
                 
-                if is_square_key_pressed:
-                    status_text = f"정사각형 | " + status_text
-                    bg_color = "#ffad57"  # 연한 주황색
-                elif is_width_key_pressed:
-                    status_text = f"너비 고정 | " + status_text
-                    bg_color = "#6eb5ff"  # 연한 파란색
-                elif is_height_key_pressed:
-                    status_text = f"높이 고정 | " + status_text
-                    bg_color = "#4dff78"  # 연한 녹색
-                elif is_ratio_key_pressed:
+                if is_ratio_key_pressed:
                     ratio_text = f"{DRAG_ASPECT_RATIO:.1f}"
                     if DRAG_ASPECT_RATIO == 16/9:
                         ratio_text = "16:9"
@@ -401,7 +392,17 @@ class RegionSelectorDialog(QDialog):
                     status_text = f"{ratio_text} | " + status_text
                     bg_color = "#ff6775"  # 연한 빨간색
                 else:
-                    bg_color = "#0cffcc"
+                    if is_square_key_pressed:
+                        status_text = f"정사각형 | " + status_text
+                        bg_color = "#ffad57"  # 연한 주황색
+                    elif is_width_key_pressed:
+                        status_text = f"너비 고정 | " + status_text
+                        bg_color = "#6eb5ff"  # 연한 파란색
+                    elif is_height_key_pressed:
+                        status_text = f"높이 고정 | " + status_text
+                        bg_color = "#4dff78"  # 연한 녹색
+                    else:
+                        bg_color = "#0cffcc"
                 
                 self.zoom_window.update_status(status_text, bg_color)
     
@@ -450,34 +451,7 @@ class RegionSelectorDialog(QDialog):
             self.fixed_height = abs(current_y - self.start_point.y())
         
         # 키 상태에 따라 좌표 조정
-        if is_square_key_pressed:
-            # 정사각형 유지
-            size = max(abs(current_x - self.start_point.x()), abs(current_y - self.start_point.y()))
-            if current_x >= self.start_point.x():
-                current_x = self.start_point.x() + size
-            else:
-                current_x = self.start_point.x() - size
-                
-            if current_y >= self.start_point.y():
-                current_y = self.start_point.y() + size
-            else:
-                current_y = self.start_point.y() - size
-        
-        elif is_width_key_pressed and self.fixed_width is not None:
-            # 너비 고정
-            if current_x >= self.start_point.x():
-                current_x = self.start_point.x() + self.fixed_width
-            else:
-                current_x = self.start_point.x() - self.fixed_width
-        
-        elif is_height_key_pressed and self.fixed_height is not None:
-            # 높이 고정
-            if current_y >= self.start_point.y():
-                current_y = self.start_point.y() + self.fixed_height
-            else:
-                current_y = self.start_point.y() - self.fixed_height
-        
-        elif is_ratio_key_pressed:
+        if is_ratio_key_pressed:
             # 특정 비율 유지 (16:9 등)
             width = abs(current_x - self.start_point.x())
             height = width / DRAG_ASPECT_RATIO
@@ -486,6 +460,33 @@ class RegionSelectorDialog(QDialog):
                 current_y = self.start_point.y() + height
             else:
                 current_y = self.start_point.y() - height
+        else:
+            if is_square_key_pressed:
+                # 정사각형 유지
+                size = max(abs(current_x - self.start_point.x()), abs(current_y - self.start_point.y()))
+                if current_x >= self.start_point.x():
+                    current_x = self.start_point.x() + size
+                else:
+                    current_x = self.start_point.x() - size
+                    
+                if current_y >= self.start_point.y():
+                    current_y = self.start_point.y() + size
+                else:
+                    current_y = self.start_point.y() - size
+            
+            elif is_width_key_pressed and self.fixed_width is not None:
+                # 너비 고정
+                if current_x >= self.start_point.x():
+                    current_x = self.start_point.x() + self.fixed_width
+                else:
+                    current_x = self.start_point.x() - self.fixed_width
+            
+            elif is_height_key_pressed and self.fixed_height is not None:
+                # 높이 고정
+                if current_y >= self.start_point.y():
+                    current_y = self.start_point.y() + self.fixed_height
+                else:
+                    current_y = self.start_point.y() - self.fixed_height
         
         # 현재 위치 업데이트
         self.current_point = QPoint(current_x, current_y)
@@ -511,33 +512,7 @@ class RegionSelectorDialog(QDialog):
         current_y = int(event.position().y())
         
         # 키 상태 관련 조정은 mouseMoveEvent와 동일
-        if is_square_key_pressed:
-            size = max(abs(current_x - self.start_point.x()), abs(current_y - self.start_point.y()))
-            if current_x >= self.start_point.x():
-                current_x = self.start_point.x() + size
-            else:
-                current_x = self.start_point.x() - size
-                
-            if current_y >= self.start_point.y():
-                current_y = self.start_point.y() + size
-            else:
-                current_y = self.start_point.y() - size
-                
-        elif is_width_key_pressed and self.fixed_width is not None:
-            # 너비 고정
-            if current_x >= self.start_point.x():
-                current_x = self.start_point.x() + self.fixed_width
-            else:
-                current_x = self.start_point.x() - self.fixed_width
-        
-        elif is_height_key_pressed and self.fixed_height is not None:
-            # 높이 고정
-            if current_y >= self.start_point.y():
-                current_y = self.start_point.y() + self.fixed_height
-            else:
-                current_y = self.start_point.y() - self.fixed_height
-        
-        elif is_ratio_key_pressed:
+        if is_ratio_key_pressed:
             # 특정 비율 유지 (16:9 등)
             width = abs(current_x - self.start_point.x())
             height = width / DRAG_ASPECT_RATIO
@@ -546,6 +521,32 @@ class RegionSelectorDialog(QDialog):
                 current_y = self.start_point.y() + height
             else:
                 current_y = self.start_point.y() - height
+        else:
+            if is_square_key_pressed:
+                size = max(abs(current_x - self.start_point.x()), abs(current_y - self.start_point.y()))
+                if current_x >= self.start_point.x():
+                    current_x = self.start_point.x() + size
+                else:
+                    current_x = self.start_point.x() - size
+                    
+                if current_y >= self.start_point.y():
+                    current_y = self.start_point.y() + size
+                else:
+                    current_y = self.start_point.y() - size
+                    
+            elif is_width_key_pressed and self.fixed_width is not None:
+                # 너비 고정
+                if current_x >= self.start_point.x():
+                    current_x = self.start_point.x() + self.fixed_width
+                else:
+                    current_x = self.start_point.x() - self.fixed_width
+            
+            elif is_height_key_pressed and self.fixed_height is not None:
+                # 높이 고정
+                if current_y >= self.start_point.y():
+                    current_y = self.start_point.y() + self.fixed_height
+                else:
+                    current_y = self.start_point.y() - self.fixed_height
         
         # 다른 비율 조정 코드도 동일...
         

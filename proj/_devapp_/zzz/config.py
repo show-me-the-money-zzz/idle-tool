@@ -52,10 +52,10 @@ DEFAULT_TESSERACT_PATH = rf"D:\tool\Tesseract-OCR\{DEFAULT_TESSERACT_EXEFILENAME
 OCR_LANGUAGE = "kor+eng"     # OCR 인식 언어
 
 # 드래그 관련 단축키 설정
-DRAG_FIXED_WIDTH_KEY = "F"   # 너비 고정 (W키)
-DRAG_FIXED_HEIGHT_KEY = "G"  # 높이 고정 (H키)
-DRAG_KEEP_SQUARE_KEY = "E"   # 정사각형 비율 유지 (S키)
-DRAG_ASPECT_RATIO_KEY = "R"  # 특정 비율 유지 (R키)
+DRAG_FIXED_WIDTH_KEY = "shift"   # 너비 고정
+DRAG_FIXED_HEIGHT_KEY = "ctrl"  # 높이 고정
+DRAG_KEEP_SQUARE_KEY = "alt"   # 정사각형 비율 유지
+DRAG_ASPECT_RATIO_KEY = "ctrl+alt"  # 특정 비율 유지 (R키)
 DRAG_ASPECT_RATIO = 16/9     # 비율 유지 시 가로 대 세로 비율 (16:9)
 DRAG_ASPECT_RATIO_TEXT = "16:9" # DRAG_ASPECT_RATIO 출력을 위한 문자열값
 
