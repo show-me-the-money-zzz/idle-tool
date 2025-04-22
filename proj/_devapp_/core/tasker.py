@@ -122,11 +122,12 @@ class Tasker(QObject):
                     return
                 
                 await self.Task_GS23_RF()
-                # task = self.running_task[self.running_task_steps]
-                
-                # if "matching" == task: await self.Matching(task)
-                
-                # elif "waiting" == task: await self.Waiting(task)
+
+                # for step_key in self.running_task_steps:
+                #     task = self.running_task[step_key]
+
+                #     if "matching" == task: await self.Matching(task)
+                #     elif "waiting" == task: await self.Waiting(task)
                 
                 # self.logframe_addlog.emit("foo~~")
                 await self.async_helper.sleep(0)
