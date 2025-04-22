@@ -51,7 +51,7 @@ class Tasker(QObject):
             
         self.is_running = True
         
-        self.current_task = self.async_helper.run_task(self.Process_Loop())
+        self.current_task = self.async_helper.run_task(self.Loop())
         
         self.logframe_addnotice.emit("Tasker: 작업이 시작되었습니다.")
         return True
@@ -71,7 +71,38 @@ class Tasker(QObject):
         self.logframe_addnotice.emit("Tasker: 작업이 중지되었습니다.")
         return True
     
-    async def Process_Loop(self):
+    async def Task_GS23_RF(self):
+        limit_score = 50
+        
+        try:
+            matching = self.match_image_in_zone("메뉴_좌상", "메뉴_좌상-맵")
+            # matching = self.match_image_in_zone("우상단메뉴", "우상단메뉴-인벤")
+            # print(matching)
+            score = matching["score_percent"]
+            if limit_score <= score:
+                self.logframe_addlog.emit(f"ZONE:{matching["zone"]}에서 IMG:{matching["image"]} 찾음 ({score:.1f}%)}}")
+            
+            # if matching["matched"] and limit_score <= score:
+            if limit_score <= score:
+                x, y = matching["click"]
+                # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
+                WindowUtil.click_at_position(x, y)
+                self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
+                
+            # matching = self.match_image_in_zone("메뉴_마을", "메뉴_마을-잡화")
+            # # matching = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
+            # self.logframe_addlog.emit(f"{matching}")
+            # # score = matching["score_percent"]
+            # # self.logframe_addnotice.emit("ㅋㅋㅋ")
+            
+            # if 50 <= score:
+        
+        except Exception as e:
+            self.logframe_adderror.emit(f"이미지 매칭 오류: {str(e)}")
+            
+    async def Loop(self):
+        # self.logframe_adderror.emit("시작")
+        
         try:
             while self.is_running:
                 if not WindowUtil.update_window_info():
@@ -79,8 +110,12 @@ class Tasker(QObject):
                     self.status_changed.emit("창이 닫혔습니다.")
                     return
                 
-                self.logframe_addlog.emit("foo~~")
+                await self.Task_GS23_RF()
+                
+                # self.logframe_addlog.emit("foo~~")
                 await self.async_helper.sleep(0)
+                
+            # self.logframe_adderror.emit("끝")
                 
         except asyncio.CancelledError:
             # 작업 취소 처리
@@ -89,7 +124,7 @@ class Tasker(QObject):
             # 예외 처리
             self.logframe_adderror.emit(f"작업 중 오류 발생: {str(e)}")
     
-    def match_image_in_zone(self, sct, zone_key, image_key, limit_score):
+    def match_image_in_zone(self, zone_key, image_key):
         """
         zone 영역 안에 image 이미지가 존재하는지 검사하는 OpenCV 템플릿 매칭
 
@@ -119,7 +154,7 @@ class Tasker(QObject):
             raise FileNotFoundError(f"템플릿 이미지가 존재하지 않음: {imageitem.file}")
         
         # 전체 화면 캡처
-        full_img = self.capture_manager.capture_full_window_cv2(sct)
+        full_img = self.capture_manager.capture_full_window_cv2(self.sct)
         if full_img is None:
             raise ValueError("화면 캡처 실패")
         
@@ -149,8 +184,8 @@ class Tasker(QObject):
             전체 화면에서의 절대 위치를 구하려면 zone의 좌표를 더해야 함
         """
         
-        threshold = limit_score * 0.01
-        matched = max_val >= threshold
+        # threshold = limit_score * 0.01
+        # matched = max_val >= threshold
         
         target_x = zoneitem.x + max_loc[0]
         target_y = zoneitem.y + max_loc[1]
@@ -160,7 +195,7 @@ class Tasker(QObject):
         score_percent = score_2 * 100.0
         
         return {
-            "matched": matched,
+            # "matched": matched,
             "score": score_2,
             "score_percent": score_percent,
             "zone": zone_key,
