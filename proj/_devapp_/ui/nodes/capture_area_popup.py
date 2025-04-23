@@ -152,6 +152,9 @@ class CaptureAreaPopup(QDialog):
 
         settings_layout.addLayout(coords_layout)
 
+        for spin in (self.x_spin, self.y_spin, self.width_spin, self.height_spin):
+            spin.editingFinished.connect(self.update_area_preview)
+
        # 동작 버튼들 가로 배치
         action_buttons_layout = QHBoxLayout()
 
