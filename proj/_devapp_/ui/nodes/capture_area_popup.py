@@ -155,7 +155,8 @@ class CaptureAreaPopup(QDialog):
         settings_layout.addLayout(coords_layout)
 
         for spin in (self.x_spin, self.y_spin, self.width_spin, self.height_spin):
-            spin.editingFinished.connect(self.update_area_preview)
+            # spin.editingFinished.connect(self.update_area_preview)
+            spin.editingFinished.connect(lambda: None)
 
        # 동작 버튼들 가로 배치
         action_buttons_layout = QHBoxLayout()
@@ -546,6 +547,12 @@ class CaptureAreaPopup(QDialog):
         
         # 색상 프레임 표시/숨김
         self.mouse_color_frame.setVisible(is_checked)
+        
+        if is_checked:
+            x = self.click_x_spin.value()
+            y = self.click_y_spin.value()
+            if 0 == x and 0 == y:
+                self.set_click_to_center()
 
     def set_click_to_center(self):
         """클릭 위치를 영역의 중앙으로 설정"""
