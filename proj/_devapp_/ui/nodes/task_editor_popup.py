@@ -386,7 +386,8 @@ class TaskEditorPopup(QDialog):
         fail_step_layout.addWidget(fail_step_label)
         
         # 샘플 항목 생성
-        fail_step_items = [f"단계{i}" for i in range(1, 31)]
+        fail_step_items = [ "" ]
+        fail_step_items += [ f"단계{i}" for i in range(1, 31)]
         self.fail_step_combo = SearchableComboBox(items=fail_step_items)
         self.fail_step_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         fail_step_layout.addWidget(self.fail_step_combo)
