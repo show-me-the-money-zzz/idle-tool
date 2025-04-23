@@ -60,6 +60,8 @@ class CaptureAreaPopup(QDialog):
         # 타이머 변수 (None으로 초기화)
         self._read_timer = None
 
+        self.selected_color_index = 0   # 현재 선택된 색상 버튼 인덱스
+
         self._setup_ui()
         
         # 이동 타이머 추가
@@ -339,9 +341,46 @@ class CaptureAreaPopup(QDialog):
         
         self.on_capture_type_changed(CaptureMode.IMAGE)
         
+        self._setup_ui_additions()
+
         if not RELEASE_APP:
             # 테스트용 색상 추가
             self.test_add_colors()
+            
+    def _setup_ui_additions(self):
+        # 색상 버튼 이벤트 연결
+        for i, btn in enumerate(self.mouse_color_buttons):
+            btn.clicked.connect(lambda checked=False, idx=i: self.select_mouse_color(idx))
+        
+        # 기본적으로 첫 번째 색상 버튼 선택
+        self.select_mouse_color(0)
+        
+        # # 수동 좌표 변경 시 미리보기 업데이트
+        # self.click_x_spin.valueChanged.connect(self.update_area_preview)
+        # self.click_y_spin.valueChanged.connect(self.update_area_preview)
+        
+        # 체크박스 상태 변경 시 미리보기 업데이트
+        self.edit_check.stateChanged.connect(self.update_area_preview)
+        self.show_check.stateChanged.connect(self.update_area_preview)
+        
+    def select_mouse_color(self, index):
+        """마우스 색상 선택"""
+        # 모든 버튼의 테두리 초기화
+        for btn in self.mouse_color_buttons:
+            btn.setStyleSheet(btn.styleSheet().replace("border: 3px solid black;", "border: 1px solid gray;"))
+        
+        # 선택된 버튼 테두리 강조
+        if 0 <= index < len(self.mouse_color_buttons):
+            selected_btn = self.mouse_color_buttons[index]
+            style = selected_btn.styleSheet()
+            style = style.replace("border: 1px solid gray;", "border: 3px solid black;")
+            selected_btn.setStyleSheet(style)
+            
+            # 현재 선택된 색상 인덱스 저장
+            self.selected_color_index = index
+            
+            # 미리보기 업데이트 (원 색상 반영)
+            self.update_area_preview()
 
     def test_add_colors(self):
         """테스트용 색상 추가"""
@@ -742,22 +781,77 @@ class CaptureAreaPopup(QDialog):
                 # PIL 이미지를 QImage로 변환
                 self.preview_image = resized_img
                 q_image = ImageQt.ImageQt(resized_img)
-                self.preview_pixmap = QPixmap.fromImage(q_image)
+                
+                # QPixmap으로 변환하여 그리기 가능하게 함
+                pixmap = QPixmap.fromImage(q_image)
+                
+                # 원 그리기 여부 확인
+                should_draw_circle = self.edit_check.isChecked() and self.show_check.isChecked()
+                
+                if should_draw_circle:
+                    # QPainter 생성
+                    painter = QPainter(pixmap)
+                    
+                    # 클릭 좌표 설정
+                    click_x = self.click_x_spin.value()
+                    click_y = self.click_y_spin.value()
+                    
+                    # 좌표를 미리보기 이미지 스케일에 맞게 조정
+                    scaled_x = int(click_x * scale_ratio)
+                    scaled_y = int(click_y * scale_ratio)
+                    
+                    # 원 크기 설정 (픽셀)
+                    circle_radius = 10
+                    
+                    # 현재 선택된 색상 버튼 가져오기
+                    if hasattr(self, 'selected_color_index') and 0 <= self.selected_color_index < len(self.mouse_color_buttons):
+                        color_btn = self.mouse_color_buttons[self.selected_color_index]
+                    else:
+                        color_btn = self.mouse_color_buttons[0]  # 기본값은 첫 번째 색상
+                    
+                    # 스타일시트에서 색상 코드 추출
+                    import re
+                    color_str = color_btn.styleSheet()
+                    color_match = re.search(r'background-color:\s*([^;]+)', color_str)
+                    
+                    if color_match:
+                        color_hex = color_match.group(1).strip()
+                        # QColor로 변환
+                        color = QColor(color_hex)
+                    else:
+                        # 기본 색상 (빨간색)
+                        color = QColor(255, 0, 0)
+                    
+                    # 반투명 원 그리기 설정
+                    color.setAlpha(200)  # 투명도 설정 (0-255)
+                    painter.setPen(Qt.NoPen)  # 테두리 없음
+                    painter.setBrush(color)
+                    
+                    # 원 그리기
+                    painter.drawEllipse(scaled_x - circle_radius//2, scaled_y - circle_radius//2, 
+                                    circle_radius, circle_radius)
+                    
+                    # 페인터 종료
+                    painter.end()
+                
+                # 이미지 저장
+                self.preview_pixmap = pixmap
 
                 # 레이블에 이미지 표시 (중앙 정렬)
                 self.preview_label.setPixmap(self.preview_pixmap)
                 self.preview_label.setAlignment(Qt.AlignCenter)
                 
-                # # 추출 버튼 활성화
-                # self.extract_color_btn.setEnabled(True)  # 이미지가 있으면 색상 추출 활성화
-                
                 self.status_signal.emit("영역 미리보기가 업데이트되었습니다.")
                 
             except Exception as e:
                 QMessageBox.critical(self, "미리보기 오류", f"미리보기 생성 중 오류: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 
         except Exception as e:
             QMessageBox.critical(self, "미리보기 오류", f"미리보기 생성 중 오류: {str(e)}")
+            import traceback
+            traceback.print_exc()
 
     def apply_settings(self):
         """설정 적용 및 저장"""
