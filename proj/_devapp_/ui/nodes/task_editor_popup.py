@@ -19,7 +19,7 @@ class TaskEditorPopup(QDialog):
     def __init__(self, parent=None, task_data=None):
         super().__init__(parent)
         self.setWindowTitle("작업 편집기")
-        self.resize(800, 1000)
+        self.resize(720, 1000)
         
         # 작업 데이터 초기화
         self.task_data = task_data or {}
@@ -120,7 +120,7 @@ class TaskEditorPopup(QDialog):
         automation_layout.addWidget(right_content)
         
         # 상단 그룹을 레이아웃에 추가
-        layout.addWidget(automation_group)
+        layout.addWidget(automation_group, 1)  # 비율 1
         
         # 하단 - 단계 목록 그룹 (왼쪽 패널의 내용을 기본 탭에 포함)
         step_group = QGroupBox("단계 목록")
@@ -137,8 +137,9 @@ class TaskEditorPopup(QDialog):
         
         step_layout.addLayout(search_layout)
         
-        # 단계 리스트
+        # 단계 리스트 - 높이 증가
         self.step_list = QListWidget()
+        self.step_list.setMinimumHeight(160)  # 최소 높이 설정 추가
         self.step_list.addItems([f"단계{i+1}" for i in range(10)])
         # 선택 변경 시 버튼 상태 업데이트를 위한 이벤트 연결
         self.step_list.itemSelectionChanged.connect(self.update_step_buttons_state)
@@ -167,8 +168,8 @@ class TaskEditorPopup(QDialog):
         
         step_layout.addLayout(buttons_layout)
         
-        # 하단 그룹을 레이아웃에 추가
-        layout.addWidget(step_group)
+        # 하단 그룹을 레이아웃에 추가 - 비율 증가
+        layout.addWidget(step_group, 2)  # 비율 2로 증가
     
     def _setup_preview_tab(self):
         """프리뷰 탭 구성"""
