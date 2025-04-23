@@ -173,36 +173,49 @@ class TaskEditorPopup(QDialog):
     
     def _create_left_panel(self):
         """왼쪽 패널 - 단계 목록 생성"""
-        group = QGroupBox("조회/설정 도구")
+        group = QGroupBox("단계 목록")
         layout = QVBoxLayout(group)
         
-        # 아이콘 버튼들
-        icons_frame = QFrame()
-        icons_layout = QVBoxLayout(icons_frame)
-        icons_layout.setContentsMargins(0, 0, 0, 0)
+        # 검색 영역 (레이블과 입력 필드를 수평으로 배치)
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(QLabel("검색"))
         
-        self.icon_buttons = []
-        for icon_name in ["도구1", "도구2", "도구3"]:
-            btn = QPushButton(icon_name)
-            self.icon_buttons.append(btn)
-            icons_layout.addWidget(btn)
+        # 검색 입력 필드 추가
+        self.taskstep_search = QLineEdit()
+        self.taskstep_search.setPlaceholderText("단계 검색...")
+        search_layout.addWidget(self.taskstep_search)
         
-        layout.addWidget(icons_frame)
+        layout.addLayout(search_layout)
         
-        # 검색창
-        self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("검색어를 입력하세요")
-        layout.addWidget(self.search_input)
+        # 단계 리스트
+        self.step_list = QListWidget()
+        self.step_list.addItems([f"단계{i+1}" for i in range(10)])
+        # 선택 변경 시 버튼 상태 업데이트를 위한 이벤트 연결
+        self.step_list.itemSelectionChanged.connect(self.update_step_buttons_state)
+        layout.addWidget(self.step_list)
         
-        # 메인 리스트
-        self.task_list = QListWidget()
-        self.task_list.addItems([f"작업{i+1}" for i in range(10)])
-        layout.addWidget(self.task_list)
+        # 버튼 그룹군
+        buttons_layout = QHBoxLayout()
         
-        # 하단 드롭다운
-        self.filter_combo = QComboBox()
-        self.filter_combo.addItems(["필터1", "필터2", "필터3"])
-        layout.addWidget(self.filter_combo)
+        # + 버튼
+        self.add_step_btn = QPushButton("✚")
+        self.add_step_btn.setToolTip("단계 추가")
+        self.add_step_btn.setFixedWidth(32)
+        self.add_step_btn.clicked.connect(self.add_step)
+        buttons_layout.addWidget(self.add_step_btn)
+        
+        # - 버튼 (초기에는 비활성화)
+        self.remove_step_btn = QPushButton("━")
+        self.remove_step_btn.setToolTip("선택한 단계 삭제")
+        self.remove_step_btn.setFixedWidth(32)
+        self.remove_step_btn.setEnabled(False)  # 초기에는 비활성화
+        self.remove_step_btn.clicked.connect(self.remove_step)
+        buttons_layout.addWidget(self.remove_step_btn)
+        
+        # 여백 추가
+        buttons_layout.addStretch(1)
+        
+        layout.addLayout(buttons_layout)
         
         return group
     
@@ -286,6 +299,38 @@ class TaskEditorPopup(QDialog):
         layout.addWidget(self.apply_btn)
         
         return group
+
+    def update_step_buttons_state(self):
+        """단계 선택 상태에 따라 버튼 활성화 상태 업데이트"""
+        # 선택된 항목이 있는지 확인
+        has_selection = len(self.step_list.selectedItems()) > 0
+        
+        # 삭제 버튼 활성화/비활성화
+        self.remove_step_btn.setEnabled(has_selection)
+
+    def add_step(self):
+        """새 단계 추가"""
+        # 현재 항목 수 확인
+        count = self.step_list.count()
+        
+        # 새 항목 추가
+        self.step_list.addItem(f"새 단계 {count+1}")
+        
+        # 새 항목 선택
+        self.step_list.setCurrentRow(count)
+
+    def remove_step(self):
+        """선택한 단계 삭제"""
+        # 현재 선택된 행 가져오기
+        current_row = self.step_list.currentRow()
+        
+        # 유효한 행이 선택되었는지 확인
+        if current_row >= 0:
+            # 항목 삭제
+            self.step_list.takeItem(current_row)
+            
+            # 버튼 상태 업데이트
+            self.update_step_buttons_state()
     
     def save_task(self):
         """작업 저장"""
