@@ -23,10 +23,6 @@ class TaskEditorPopup(QDialog):
         
         # UI 설정
         self._setup_ui()
-        
-        # 데이터 로드 (있는 경우)
-        if task_data:
-            self._load_task_data()
     
     def _setup_ui(self):
         """UI 구성 설정"""
@@ -39,12 +35,12 @@ class TaskEditorPopup(QDialog):
         # 첫 번째 탭 - 설정 1
         self.tab_settings1 = QWidget()
         self._setup_settings1_tab()
-        self.tabs.addTab(self.tab_settings1, "설정1")
+        self.tabs.addTab(self.tab_settings1, "기본")
         
         # 두 번째 탭 - 설정 2
         self.tab_settings2 = QWidget()
         self._setup_settings2_tab()
-        self.tabs.addTab(self.tab_settings2, "설정2")
+        self.tabs.addTab(self.tab_settings2, "프리뷰")
         
         # 메인 레이아웃에 탭 추가
         main_layout.addWidget(self.tabs)
@@ -265,37 +261,6 @@ class TaskEditorPopup(QDialog):
         
         return group
     
-    def _load_task_data(self):
-        """작업 데이터 로드"""
-        # 예시: 데이터가 있으면 UI에 채우기
-        if 'name' in self.task_data:
-            self.name_input.setText(self.task_data['name'])
-        if 'description' in self.task_data:
-            self.description_input.setText(self.task_data['description'])
-        # 필요에 따라 다른 필드도 추가
-    
     def save_task(self):
         """작업 저장"""
-        # 입력값 검증
-        if not self.name_input.text().strip():
-            QMessageBox.warning(self, "입력 오류", "이름을 입력해주세요.")
-            return
-        
-        # 작업 데이터 수집
-        task_data = {
-            'name': self.name_input.text(),
-            'type': self.type_combo.currentText(),
-            'description': self.description_input.toPlainText(),
-            'main_type': self.main_type_combo.currentText(),
-            'zone': self.zone_combo.currentText(),
-            'image': self.image_select_combo.currentText(),
-            'option1_enabled': self.option1_check.isChecked(),
-            'option2': self.option2_combo.currentText(),
-            # 필요한 다른 필드 추가
-        }
-        
-        # 시그널 발생 - 부모 위젯에 데이터 전달
-        self.task_saved_signal.emit(task_data)
-        
-        # 창 닫기
         self.accept()
