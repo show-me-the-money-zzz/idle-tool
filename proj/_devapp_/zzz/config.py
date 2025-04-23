@@ -41,7 +41,7 @@ LOOP_TEXT_KEYWORD = [
     "[지역]종류", "[지역]이름",
 ] # stores.def_info 에서 Update_Value 변경해줘야
 LOOP_IMAGE_KEYWORD = [
-    "[스탯]물약-엥꼬",
+    # "[스탯]물약-엥꼬",
 ]
 
 DRAG_ZOOM_FACTOR = 4 # 영역 드래그 미리보기 ZOOM 확대 배율
