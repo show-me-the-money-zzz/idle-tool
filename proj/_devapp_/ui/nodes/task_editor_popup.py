@@ -406,11 +406,18 @@ class TaskEditorPopup(QDialog):
         next_step_layout.addWidget(self.next_step_combo)
         
         # 추가 버튼
-        self.add_next_step_btn = QPushButton("+")
+        self.add_next_step_btn = QPushButton("✚")
         self.add_next_step_btn.setFixedWidth(30)
         self.add_next_step_btn.setToolTip("다음 단계 추가")
         self.add_next_step_btn.clicked.connect(self.add_next_step)
         next_step_layout.addWidget(self.add_next_step_btn)
+        
+        self.remove_next_step_btn = QPushButton("━")
+        self.remove_next_step_btn.setFixedWidth(30)
+        self.remove_next_step_btn.setToolTip("선택한 다음 단계 삭제")
+        self.remove_next_step_btn.setEnabled(False)  # 초기에는 비활성화
+        self.remove_next_step_btn.clicked.connect(self.remove_next_step)
+        next_step_layout.addWidget(self.remove_next_step_btn)
         
         layout.addLayout(next_step_layout)
         
@@ -424,21 +431,6 @@ class TaskEditorPopup(QDialog):
         
         next_steps_list_layout.addWidget(self.next_steps_list)
         
-        # 삭제 버튼 레이아웃
-        buttons_layout = QHBoxLayout()
-        
-        # 여백 추가
-        buttons_layout.addStretch(1)
-        
-        # 삭제 버튼
-        self.remove_next_step_btn = QPushButton("-")
-        self.remove_next_step_btn.setFixedWidth(30)
-        self.remove_next_step_btn.setToolTip("선택한 다음 단계 삭제")
-        self.remove_next_step_btn.setEnabled(False)  # 초기에는 비활성화
-        self.remove_next_step_btn.clicked.connect(self.remove_next_step)
-        buttons_layout.addWidget(self.remove_next_step_btn)
-        
-        next_steps_list_layout.addLayout(buttons_layout)
         layout.addLayout(next_steps_list_layout)
         
         # 여백 추가
@@ -446,7 +438,7 @@ class TaskEditorPopup(QDialog):
         
         # 참고 레이블 추가 (최하단)
         guide_layout = QHBoxLayout()
-        guide_label = QLabel("※단계 정보는 단계 목록 항목 선택시 변경됩니다")
+        guide_label = QLabel("※검색 가능")
         guide_label.setStyleSheet("color: gray; font-size: 9pt;")  # 작은 회색 텍스트
         guide_layout.addWidget(guide_label)
         guide_layout.addStretch(1)  # 오른쪽 여백 추가
