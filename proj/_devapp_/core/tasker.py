@@ -163,7 +163,8 @@ class Tasker(QObject):
         
         if isSuccess:
             if "" != step.finded_click:
-                x, y = matched["click_image"] if "image" == step.finded_click else matched["click_zone"]
+                click_key = "click_image" if "image" == step.finded_click else "click_zone"
+                x, y = matched[click_key]
                 # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
                 self.Click(x, y, f"{taskkey}-{stepkey}")
 
