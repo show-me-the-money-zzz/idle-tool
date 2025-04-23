@@ -208,7 +208,7 @@ class AppUI(QMainWindow):
             from ui.nodes.capture_area_popup import CaptureAreaPopup
             
             # 현재 설정된 캡처 설정 정보
-            current_settings = self.capture_settings
+            # current_settings = self.capture_settings
             
             # 팝업 창 생성
             popup = CaptureAreaPopup(
@@ -219,10 +219,10 @@ class AppUI(QMainWindow):
                 self.on_capture_popup_close
             )
             
-            # 현재 설정된 값이 있으면 팝업에 설정
-            if current_settings:
-                x, y, width, height, interval = current_settings
-                popup.set_capture_info(x, y, width, height, interval)
+            # # 현재 설정된 값이 있으면 팝업에 설정
+            # if current_settings:
+            #     x, y, width, height, interval = current_settings
+            #     popup.set_capture_info(x, y, width, height, interval)
                 
             # 모달 다이얼로그로 표시 (exec() 사용)
             popup.exec()  # show() 대신 exec() 사용
@@ -236,11 +236,11 @@ class AppUI(QMainWindow):
         """캡처 영역 설정 팝업이 닫힐 때의 콜백"""
         if settings:
             # 캡처 설정 저장
-            self.capture_settings = settings
+            # self.capture_settings = settings
             
             # 상태바에 설정 정보 표시
-            x, y, width, height, interval = settings
-            status_msg = f"캡처 영역 설정: X={x}, Y={y}, 너비={width}, 높이={height}, 간격={interval}초"
+            x, y, width, height, clickx, clicky, interval = settings
+            status_msg = f"캡처 영역 설정: X={x}, Y={y}, 너비={width}, 클릭x={clickx}, 클릭y={clicky}, 높이={height}, 간격={interval}초"
             self.status_changed.emit(status_msg)
     
     @Slot()

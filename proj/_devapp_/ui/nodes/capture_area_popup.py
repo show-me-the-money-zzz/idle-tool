@@ -886,14 +886,16 @@ class CaptureAreaPopup(QDialog):
             if not capture_info:
                 return
             
-            x, y, width, height, interval = capture_info
+            x, y, width, height, clickx, clicky, interval = capture_info
             key = self.key_input.text()
             
             if not key:
                 QMessageBox.critical(self, "오류", "KEY를 입력하세요.")
                 return
  
-            areas.Add_TextArea(key, {"x": x, "y": y, "width": width, "height": height})
+            areas.Add_TextArea(key, {"x": x, "y": y, "width": width, "height": height,
+                                     "clickx": clickx, "clicky": clicky,
+                                     })
                 
             # 설정 저장
             self.capture_settings = capture_info
@@ -917,7 +919,7 @@ class CaptureAreaPopup(QDialog):
             if not capture_info:
                 return
             
-            x, y, width, height, _ = capture_info
+            x, y, width, height, clickx, clicky, _ = capture_info
             
             # 창이 유효한지 확인
             if not WindowUtil.is_window_valid():
@@ -990,7 +992,8 @@ class CaptureAreaPopup(QDialog):
             areas.Add_ImageArea(key, {
                 "x": x, "y": y, 
                 "width": width, "height": height,
-                "file": stored_path
+                "file": stored_path,
+                "clickx": clickx, "clicky": clicky,
             })
             
             self.status_signal.emit(f"이미지가 저장되었습니다: {file_path}")
@@ -1011,14 +1014,16 @@ class CaptureAreaPopup(QDialog):
             if not capture_info:
                 return
             
-            x, y, width, height, _ = capture_info
+            x, y, width, height, clickx, clicky, _ = capture_info
             key = self.key_input.text()
             
             if not key:
                 QMessageBox.critical(self, "오류", "KEY를 입력하세요.")
                 return
  
-            areas.Add_ZoneArea(key, {"x": x, "y": y, "width": width, "height": height})
+            areas.Add_ZoneArea(key, {"x": x, "y": y, "width": width, "height": height,
+                                     "clickx": clickx, "clicky": clicky,
+                                     })
                 
             # 설정 저장
             self.capture_settings = capture_info
@@ -1043,10 +1048,15 @@ class CaptureAreaPopup(QDialog):
             height = self.height_spin.value()
             interval = float(self.log_dock.interval_spin.value())
             
+            clickx = self.click_x_spin.value()
+            clicky = self.click_y_spin.value()
+            
             if width <= 0 or height <= 0 or interval <= 0:
                 raise ValueError("너비, 높이, 간격은 양수여야 합니다.")
                 
-            return (x, y, width, height, interval)
+            return (x, y, width, height, clickx, clicky
+                    , interval
+                    )
         except ValueError as e:
             QMessageBox.critical(self, "입력 오류", f"올바른 값을 입력해주세요: {str(e)}")
             return None

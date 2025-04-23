@@ -6,6 +6,8 @@ class BaseAreaItem:
     y: int
     width: int
     height: int
+    clickx: int
+    clicky: int
     
     @property
     def CenterX(self): return self.x + self.width // 2
@@ -13,4 +15,4 @@ class BaseAreaItem:
     def CneterY(self): return self.y + self.height // 2
     
     @property
-    def ClickPoint(self): return (int(self.CenterX), int(self.CneterY))
+    def ClickPoint(self): return (self.clickx, self.clicky)
