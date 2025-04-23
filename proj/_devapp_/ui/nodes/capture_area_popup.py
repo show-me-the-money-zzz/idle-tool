@@ -204,6 +204,75 @@ class CaptureAreaPopup(QDialog):
         work_layout.addStretch(1)
 
         main_layout.addWidget(work_group)
+
+        # 마우스 클릭 그룹 추가
+        mouse_group = QGroupBox("마우스 클릭")
+        mouse_layout = QHBoxLayout(mouse_group)
+
+        # "수정" 체크박스
+        self.edit_check = QCheckBox("수정")
+        self.edit_check.stateChanged.connect(self.update_mouse_controls_state)
+        mouse_layout.addWidget(self.edit_check)
+
+        # X 좌표
+        mouse_layout.addWidget(QLabel("X"))
+        self.click_x_spin = QSpinBox()
+        self.click_x_spin.setRange(0, 9999)
+        self.click_x_spin.setFixedWidth(64)
+        self.click_x_spin.setEnabled(False)  # 초기에는 비활성화
+        mouse_layout.addWidget(self.click_x_spin)
+
+        # Y 좌표
+        mouse_layout.addWidget(QLabel("Y"))
+        self.click_y_spin = QSpinBox()
+        self.click_y_spin.setRange(0, 9999)
+        self.click_y_spin.setFixedWidth(64)
+        self.click_y_spin.setEnabled(False)  # 초기에는 비활성화
+        mouse_layout.addWidget(self.click_y_spin)
+
+        # "중앙" 버튼 추가
+        self.center_btn = QPushButton("중앙")
+        self.center_btn.setEnabled(False)  # 초기에는 비활성화
+        self.center_btn.clicked.connect(self.set_click_to_center)
+        mouse_layout.addWidget(self.center_btn)
+
+        # 여백 추가
+        mouse_layout.addStretch(1)
+
+        # 색상 버튼 프레임 (수정 모드일 때만 표시)
+        self.mouse_color_frame = QFrame()
+        mouse_color_layout = QHBoxLayout(self.mouse_color_frame)
+        mouse_color_layout.setContentsMargins(0, 0, 0, 0)
+        mouse_color_layout.setSpacing(2)
+
+        # "표시" 체크박스 (색상 버튼 옆에 배치)
+        self.show_check = QCheckBox("표시")
+        self.show_check.setChecked(True)  # 기본값은 체크 상태
+        self.show_check.setEnabled(False)  # 초기에는 비활성화
+        mouse_color_layout.addWidget(self.show_check)
+
+        # 색상 버튼 생성 함수
+        def create_mouse_color_button(color_hex):
+            btn = QPushButton()
+            btn.setFixedSize(24, 24)
+            btn.setStyleSheet(f"background-color: {color_hex}; border: 1px solid gray;")
+            # 버튼 클릭 이벤트 처리 추가 필요
+            return btn
+
+        # 색상 버튼 추가
+        self.mouse_color_buttons = []
+        mouse_colors = ["#ff0000", "#00ff00", "#ffff00"]
+        for color in mouse_colors:
+            btn = create_mouse_color_button(color)
+            self.mouse_color_buttons.append(btn)
+            mouse_color_layout.addWidget(btn)
+
+        # 색상 프레임 추가
+        mouse_layout.addWidget(self.mouse_color_frame)
+        self.mouse_color_frame.setVisible(False)  # 초기에는 숨김
+
+        # 메인 레이아웃에 마우스 클릭 그룹 추가
+        main_layout.addWidget(mouse_group)
         
         # 미리보기 영역
         preview_group = QGroupBox("영역 미리보기")
@@ -417,6 +486,37 @@ class CaptureAreaPopup(QDialog):
                 # 위치 및 크기 설정
                 self.log_dock.setGeometry(new_x, new_y, dock_width, dock_height)
             # 도킹된 상태에서는 위치 설정이 필요 없음 (자동으로 관리됨)
+
+    # 체크박스 상태에 따라 컨트롤 상태 업데이트하는 메서드 추가
+    def update_mouse_controls_state(self):
+        # 수정 체크박스 상태 확인
+        is_checked = self.edit_check.isChecked()
+        
+        # 스핀박스 활성화/비활성화
+        self.click_x_spin.setEnabled(is_checked)
+        self.click_y_spin.setEnabled(is_checked)
+        self.center_btn.setEnabled(is_checked)
+        self.show_check.setEnabled(is_checked)
+        
+        # 색상 프레임 표시/숨김
+        self.mouse_color_frame.setVisible(is_checked)
+
+    def set_click_to_center(self):
+        """클릭 위치를 영역의 중앙으로 설정"""
+        if not self.edit_check.isChecked():
+            return
+            
+        # 영역 너비와 높이 가져오기
+        width = self.width_spin.value()
+        height = self.height_spin.value()
+        
+        # 중앙 좌표 계산
+        center_x = width // 2
+        center_y = height // 2
+        
+        # 클릭 좌표 설정
+        self.click_x_spin.setValue(center_x)
+        self.click_y_spin.setValue(center_y)
             
     def moveEvent(self, event):
         """창 이동 시 로그 창도 함께 이동"""
