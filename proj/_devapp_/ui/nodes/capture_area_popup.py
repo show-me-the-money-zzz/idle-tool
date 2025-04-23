@@ -231,6 +231,12 @@ class CaptureAreaPopup(QDialog):
         self.click_y_spin.setFixedWidth(64)
         self.click_y_spin.setEnabled(False)  # 초기에는 비활성화
         mouse_layout.addWidget(self.click_y_spin)
+        
+        # "업데이트" 버튼 추가
+        self.click_pos_update = QPushButton("적용")
+        self.click_pos_update.setEnabled(False)  # 초기에는 비활성화
+        self.click_pos_update.clicked.connect(self.update_area_preview)
+        mouse_layout.addWidget(self.click_pos_update)
 
         # "중앙" 버튼 추가
         self.center_btn = QPushButton("중앙")
@@ -534,6 +540,7 @@ class CaptureAreaPopup(QDialog):
         # 스핀박스 활성화/비활성화
         self.click_x_spin.setEnabled(is_checked)
         self.click_y_spin.setEnabled(is_checked)
+        self.click_pos_update.setEnabled(is_checked)
         self.center_btn.setEnabled(is_checked)
         self.show_check.setEnabled(is_checked)
         
@@ -556,6 +563,8 @@ class CaptureAreaPopup(QDialog):
         # 클릭 좌표 설정
         self.click_x_spin.setValue(center_x)
         self.click_y_spin.setValue(center_y)
+        
+        self.update_area_preview()
             
     def moveEvent(self, event):
         """창 이동 시 로그 창도 함께 이동"""
