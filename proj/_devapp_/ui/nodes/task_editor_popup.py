@@ -48,14 +48,14 @@ class TaskEditorPopup(QDialog):
         # 메인 레이아웃에 탭 추가
         main_layout.addWidget(self.tabs)
         
-        # 중앙 영역 - 메인 컨텐츠 (2개의 영역으로 분할)
-        center_layout = QHBoxLayout()
+        # 중앙 영역 - 단계 정보 부분
+        center_layout = QVBoxLayout()  # 수직 레이아웃으로 변경
         
-        # 중앙 영역 - 메인 설정 패널
+        # 단계 기본정보 패널
         self.center_panel = self._create_center_panel()
-        center_layout.addWidget(self.center_panel, 2)  # 비율 2
+        center_layout.addWidget(self.center_panel)
         
-        # 오른쪽 영역 - 상세 설정
+        # 단계 추가정보 패널 (기본정보 아래에 배치)
         self.right_panel = self._create_right_panel()
         center_layout.addWidget(self.right_panel)
         
