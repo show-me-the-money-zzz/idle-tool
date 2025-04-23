@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass, field
+import operator
+import re
 
 from grinder_utils import finder, system
 
@@ -76,11 +78,45 @@ class TaskStep:
     next_step: list[str]
     fail_step: str
     comment: str
+
+    def evaluate_score_condition(self, actual: float) -> bool:
+        """점수 조건 평가: '<=65'는 '실제 점수가 65 이상이면 참'으로 해석"""
+        match = re.match(r"(<=|>=|<|>|==|!=)?\s*(\d+(?:\.\d+)?)", self.score.strip())
+        if not match:
+            return False
+
+        op_str, value = match.groups()
+        value = float(value)
+        
+        # 점수 조건 해석 (매칭 방향과 반대로 해석)
+        # <= : 실제 점수가 기준값 이상이면 성공
+        # >= : 실제 점수가 기준값 이하이면 성공
+        # <  : 실제 점수가 기준값 초과이면 성공
+        # >  : 실제 점수가 기준값 미만이면 성공
+        
+        if op_str == "<=":
+            return actual >= value
+        elif op_str == ">=":
+            return actual <= value
+        elif op_str == "<":
+            return actual > value
+        elif op_str == ">":
+            return actual < value
+        elif op_str == "==":
+            return actual == value
+        elif op_str == "!=":
+            return actual != value
+        else:
+            # 연산자가 지정되지 않은 경우 (기본값으로 동등 비교)
+            return actual == value
 @dataclass
 class Task:
     tasks: dict[str, TaskStep]
     start_key: str
     comment: str
+
+    def Get_Task(self, key, default=None):
+        return self.tasks.get(key, default)
 
 # 인터페이스 함수 정의
 Add_Task = Tasks.add
@@ -117,11 +153,36 @@ def initialize():
     Tasks.save()
 
     # Print_Data()
-    Print_Data2()
+    # Print_Data2()
+    Print_Score()
+
+def Print_Score():
+    hunting = Get_Task("사냥1")
+    eval = hunting.Get_Task("타켓몹")
+    print(f"{eval.score}")
+    val = [ 30, 45, 60, 65, 70 ]
+    for v in val:
+        result = eval.evaluate_score_condition(v)
+        print(f"{v}: {result}")
+    eval = hunting.Get_Task("몹까지이동")
+    print(f"{eval.score}")
+    for v in val:
+        result = eval.evaluate_score_condition(v)
+        print(f"{v}: {result}")
+    eval = hunting.Get_Task("월드맵아이콘클릭")
+    print(f"{eval.score}")
+    for v in val:
+        result = eval.evaluate_score_condition(v)
+        print(f"{v}: {result}")
 
 def Print_Data2():
     hunting = Get_Task("사냥1")
     print(f"{hunting}")
+    click_worldmap = hunting.Get_Task("월드맵아이콘클릭")
+    print(f"{click_worldmap}")
+
+    err = hunting.Get_Task("err")
+    print(f"{err}")
 
 def Print_Data():
     # system.PrintDEV(f"{_GetAll_Tasks()}")
