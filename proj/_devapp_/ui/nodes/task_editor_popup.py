@@ -124,8 +124,8 @@ class TaskEditorPopup(QDialog):
         
         # 시작 단계 키 (QLineEdit)
         start_key_layout = QHBoxLayout()
-        start_key_layout.addWidget(QLabel("시작 단계 키:"))
-        self.start_key_input = QLineEdit("기본 키")
+        start_key_layout.addWidget(QLabel("시작 단계:"))
+        self.start_key_input = QLineEdit("")
         self.start_key_input.setEnabled(False)
         start_key_layout.addWidget(self.start_key_input)
         right_layout.addLayout(start_key_layout)
@@ -254,7 +254,23 @@ class TaskEditorPopup(QDialog):
         # 오른쪽 여백 추가
         type_layout.addStretch(1)
         
+        # "시작 단계로 설정" 체크박스를 타입 행의 오른쪽 끝으로 이동
+        self.start_step_checkbox = QCheckBox("시작 단계로 설정")
+        type_layout.addWidget(self.start_step_checkbox)
+        
         layout.addLayout(type_layout)
+        
+        # 이름 입력 필드 (타입과 영역 사이에 추가)
+        name_layout = QHBoxLayout()
+        name_label = QLabel("이름:")
+        name_label.setFixedWidth(min_label_width)
+        name_layout.addWidget(name_label)
+        
+        self.step_name_edit = QLineEdit()
+        self.step_name_edit.setPlaceholderText("단계 이름을 입력하세요")
+        name_layout.addWidget(self.step_name_edit)
+        
+        layout.addLayout(name_layout)
         
         # 영역 선택 - 검색 가능한 콤보박스로 변경
         zone_layout = QHBoxLayout()
