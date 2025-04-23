@@ -109,6 +109,34 @@ class TaskStep:
         else:
             # 연산자가 지정되지 않은 경우 (기본값으로 동등 비교)
             return actual == value
+        
+    def Print_Score(self) -> str:
+        """점수 조건을 한글로 설명하는 함수"""
+        match = re.match(r"(<=|>=|<|>|==|!=)?\s*(\d+(?:\.\d+)?)", self.score.strip())
+        if not match:
+            return "유효하지 않은 점수 조건"
+
+        op_str, value = match.groups()
+        
+        # 연산자가 없을 경우 기본값 설정
+        if not op_str:
+            op_str = "=="
+        
+        # 연산자에 따른 한글 설명
+        if op_str == "<=":
+            return f"{value}% 이상"
+        elif op_str == ">=":
+            return f"{value}% 이하"
+        elif op_str == "<":
+            return f"{value}% 초과"
+        elif op_str == ">":
+            return f"{value}% 미만"
+        elif op_str == "==":
+            return f"{value}% 정확히"
+        elif op_str == "!=":
+            return f"{value}% 아님"
+        else:
+            return f"{value}%"
 @dataclass
 class Task:
     tasks: dict[str, TaskStep]
@@ -154,12 +182,12 @@ def initialize():
 
     # Print_Data()
     # Print_Data2()
-    Print_Score()
+    # Print_Score()
 
 def Print_Score():
     val = [ 30, 45, 60, 65, 70 ]
     hunting = Get_Task("사냥1")
-    step_kesy = [ "타켓몹", "몹까지이동", "월드맵아이콘클릭" ]
+    step_kesy = [ "잡화상점이동", "몹까지이동", "월드맵아이콘클릭" ]
 
     for stepkey in step_kesy:
         eval = hunting.Get_Step(stepkey)
