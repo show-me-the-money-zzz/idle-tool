@@ -50,6 +50,9 @@ def Load_Stores():
     from stores import areas
     areas.initialize()
 
+    from stores import task_manager
+    task_manager.initialize()
+
 if __name__ == "__main__":
     try:
         main()
