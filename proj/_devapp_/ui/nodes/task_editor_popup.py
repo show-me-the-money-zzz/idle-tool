@@ -223,15 +223,18 @@ class TaskEditorPopup(QDialog):
         group = QGroupBox("단계 기본정보")
         layout = QVBoxLayout(group)
         
+        # 최소 레이블 너비 계산 (가장 긴 레이블에 맞춤)
+        min_label_width = 60  # 기본값
+        
         # 타입 선택 - 레이블 폭 조절 및 콤보박스 확장
         type_layout = QHBoxLayout()
         type_label = QLabel("타입:")
-        type_label.setFixedWidth(type_label.sizeHint().width())  # 텍스트 길이에 맞춤
+        type_label.setFixedWidth(min_label_width)
         type_layout.addWidget(type_label)
         
         self.main_type_combo = QComboBox()
         self.main_type_combo.addItems(["이미지", "zone", "텍스트"])
-        self.main_type_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # 가로 확장
+        self.main_type_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         type_layout.addWidget(self.main_type_combo)
         
         layout.addLayout(type_layout)
@@ -239,12 +242,12 @@ class TaskEditorPopup(QDialog):
         # 영역 선택 - 레이블 폭 조절 및 콤보박스 확장
         zone_layout = QHBoxLayout()
         zone_label = QLabel("영역:")
-        zone_label.setFixedWidth(type_label.sizeHint().width())  # 타입 레이블과 같은 폭 유지
+        zone_label.setFixedWidth(min_label_width)
         zone_layout.addWidget(zone_label)
         
         self.zone_combo = QComboBox()
         self.zone_combo.addItems(["영역1", "영역2", "영역3"])
-        self.zone_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # 가로 확장
+        self.zone_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         zone_layout.addWidget(self.zone_combo)
         
         layout.addLayout(zone_layout)
@@ -252,65 +255,62 @@ class TaskEditorPopup(QDialog):
         # 이미지 선택 - 레이블 폭 조절 및 콤보박스 확장
         image_layout = QHBoxLayout()
         image_label = QLabel("이미지:")
-        image_label.setFixedWidth(type_label.sizeHint().width())  # 타입 레이블과 같은 폭 유지
+        image_label.setFixedWidth(min_label_width)
         image_layout.addWidget(image_label)
         
         self.image_select_combo = QComboBox()
         self.image_select_combo.addItems(["이미지1", "이미지2", "이미지3"])
-        self.image_select_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # 가로 확장
+        self.image_select_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         image_layout.addWidget(self.image_select_combo)
         
         layout.addLayout(image_layout)
         
-        # 유사도 영역 - SpinBox로 변경 및 비교 연산자 콤보박스 추가
+        # 유사도 영역 - SpinBox와 콤보박스 크기 조정
         similarity_layout = QHBoxLayout()
         similarity_label = QLabel("유사도:")
-        similarity_label.setFixedWidth(type_label.sizeHint().width())  # 타입 레이블과 같은 폭 유지
+        similarity_label.setFixedWidth(min_label_width)
         similarity_layout.addWidget(similarity_label)
         
-        # SpinBox로 변경 (0~100.00, 1.0씩 증가)
+        # SpinBox 폭 절반으로 조정
         self.similarity_spin = QDoubleSpinBox()
         self.similarity_spin.setRange(0, 100.00)
         self.similarity_spin.setSingleStep(1.0)
         self.similarity_spin.setDecimals(2)
-        self.similarity_spin.setValue(80.00)  # 기본값
-        self.similarity_spin.setFixedWidth(120)
+        self.similarity_spin.setValue(80.00)
+        self.similarity_spin.setMaximumWidth(100)  # 폭 제한
         similarity_layout.addWidget(self.similarity_spin)
         
-        # 비교 연산자 콤보박스 추가
+        # 비교 연산자 콤보박스 폭 조정
         self.comparison_combo = QComboBox()
         self.comparison_combo.addItems(["이상", "초과", "이하", "미만", "일치", "다른"])
-        self.comparison_combo.setFixedWidth(120)
+        self.comparison_combo.setMaximumWidth(100)  # 폭 제한
         similarity_layout.addWidget(self.comparison_combo)
         
-        # "현재 게임에서" 버튼 추가
+        # 오른쪽 여백 추가
+        similarity_layout.addStretch(1)
+        
+        # "현재 게임에서" 버튼 추가 (오른쪽 정렬)
         self.current_game_btn = QPushButton("현재 게임에서")
+        self.current_game_btn.setMaximumWidth(120)  # 폭 제한
         similarity_layout.addWidget(self.current_game_btn)
         
         layout.addLayout(similarity_layout)
         
-        # 클릭 선택 영역
+        # 클릭 선택 영역 (빈 값 허용)
         click_layout = QHBoxLayout()
         click_label = QLabel("클릭:")
-        click_label.setFixedWidth(type_label.sizeHint().width())  # 타입 레이블과 같은 폭 유지
+        click_label.setFixedWidth(min_label_width)
         click_layout.addWidget(click_label)
         
         self.click_type_combo = QComboBox()
-        self.click_type_combo.addItems(["이미지", "영역"])
-        self.click_type_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # 가로 확장
+        self.click_type_combo.addItems(["", "이미지", "영역"])  # 빈 값 추가
+        self.click_type_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         click_layout.addWidget(self.click_type_combo)
         
         layout.addLayout(click_layout)
         
-        # 하단 버튼들
-        buttons_layout = QHBoxLayout()
-        self.find_btn = QPushButton("찾아보기")
-        buttons_layout.addWidget(self.find_btn)
-        self.image_btn = QPushButton("이미지")
-        buttons_layout.addWidget(self.image_btn)
-        buttons_layout.addStretch(1)  # 오른쪽 여백 추가
-        
-        layout.addLayout(buttons_layout)
+        # 여백 추가 (하단 버튼 삭제)
+        layout.addStretch(1)
         
         return group
     
