@@ -228,16 +228,31 @@ class TaskEditorPopup(QDialog):
         # 최소 레이블 너비 계산 (가장 긴 레이블에 맞춤)
         min_label_width = 60  # 기본값
         
-        # 타입 선택 - 레이블 폭 조절 및 콤보박스 확장
+        # 타입 선택 - 레이블 폭 조절 및 콤보박스 항목 길이에 맞춤
         type_layout = QHBoxLayout()
         type_label = QLabel("타입:")
         type_label.setFixedWidth(min_label_width)
         type_layout.addWidget(type_label)
         
         self.main_type_combo = QComboBox()
-        self.main_type_combo.addItems(["이미지", "zone", "텍스트"])
-        self.main_type_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        type_items = ["이미지", "zone", "텍스트"]
+        self.main_type_combo.addItems(type_items)
+        
+        # 항목 최대 길이에 맞게 너비 계산
+        fm = self.main_type_combo.fontMetrics()
+        max_width = 0
+        for item in type_items:
+            width = fm.horizontalAdvance(item) + 30  # 약간의 여백 추가
+            if width > max_width:
+                max_width = width
+        self.main_type_combo.setMinimumWidth(max_width)
+        
+        # SizePolicy 설정 - 최소 너비 유지, 확장 안함
+        self.main_type_combo.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         type_layout.addWidget(self.main_type_combo)
+        
+        # 오른쪽 여백 추가
+        type_layout.addStretch(1)
         
         layout.addLayout(type_layout)
         
@@ -306,15 +321,37 @@ class TaskEditorPopup(QDialog):
         click_label.setFixedWidth(min_label_width)
         click_layout.addWidget(click_label)
         
+        # 클릭 콤보박스 항목 길이에 맞춤
+        click_items = ["", "이미지", "영역"]
         self.click_type_combo = QComboBox()
-        self.click_type_combo.addItems(["", "이미지", "영역"])  # 빈 값 추가
-        self.click_type_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.click_type_combo.addItems(click_items)
+        
+        # 항목 최대 길이에 맞게 너비 계산
+        fm = self.click_type_combo.fontMetrics()
+        max_width = 0
+        for item in click_items:
+            width = fm.horizontalAdvance(item) + 30  # 약간의 여백 추가
+            if width > max_width:
+                max_width = width
+        self.click_type_combo.setMinimumWidth(max_width)
+        
+        # SizePolicy 설정 - 최소 너비 유지, 확장 안함
+        self.click_type_combo.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         click_layout.addWidget(self.click_type_combo)
+        
+        # 오른쪽 여백 추가
+        click_layout.addStretch(1)
         
         layout.addLayout(click_layout)
         
-        # 여백 추가 (하단 버튼 삭제)
-        layout.addStretch(1)
+        # 가이드 레이블 추가 (최하단)
+        guide_layout = QHBoxLayout()
+        guide_label = QLabel("※영역 / 이미지는 검색 가능")
+        guide_label.setStyleSheet("color: gray; font-size: 9pt;")  # 작은 회색 텍스트
+        guide_layout.addWidget(guide_label)
+        guide_layout.addStretch(1)  # 오른쪽 여백 추가
+        
+        layout.addLayout(guide_layout)
         
         return group
     
