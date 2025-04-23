@@ -11,13 +11,16 @@ class ControlFrame(QFrame):
     RUNNER_BUTTON_STOP_TEXT = "스캔 🟥"
     
     def __init__(self, parent, status_signal, toggle_capture_callback, 
-                 apply_interval_callback, open_popup_callback):
+                 apply_interval_callback,
+                 open_popup_callback, openpopup_taskeditor
+                 ):
         super().__init__(parent)
         self.parent = parent
         self.status_signal = status_signal
         self.toggle_capture_callback = toggle_capture_callback
         self.apply_interval_callback = apply_interval_callback
         self.open_popup_callback = open_popup_callback
+        self.openpopup_taskeditor = openpopup_taskeditor
         
         self.setup_ui()
     
@@ -38,6 +41,12 @@ class ControlFrame(QFrame):
         # 여백 추가
         spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         layout.addItem(spacer)
+        
+        # 아이템 생성 버튼
+        self.create_task_btn = QPushButton("자동화 생성")
+        self.create_task_btn.setStyleSheet(CSS.BUTTON_APPLY2)
+        self.create_task_btn.clicked.connect(self.openpopup_taskeditor)
+        layout.addWidget(self.create_task_btn)
         
         # 아이템 생성 버튼
         self.create_item_btn = QPushButton("아이템 생성")

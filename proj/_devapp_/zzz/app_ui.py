@@ -153,7 +153,8 @@ class AppUI(QMainWindow):
                                           self.status_changed,
                                           self.toggle_capture,
                                           self.apply_interval,
-                                          self.open_capture_area_popup
+                                          self.open_capture_area_popup,
+                                          self.OpenPopup_TaskEditor
                                           )
         self.main_layout.addWidget(self.control_frame)
         
@@ -224,6 +225,26 @@ class AppUI(QMainWindow):
             #     x, y, width, height, interval = current_settings
             #     popup.set_capture_info(x, y, width, height, interval)
                 
+            # 모달 다이얼로그로 표시 (exec() 사용)
+            popup.exec()  # show() 대신 exec() 사용
+                
+        except Exception as e:
+            QMessageBox.critical(self, "오류", f"캡처 영역 설정 창을 열 수 없습니다: {str(e)}")
+            import traceback
+            traceback.print_exc()  # 콘솔에 상세 오류 출력
+    
+    def OpenPopup_TaskEditor(self):
+        if not WindowUtil.is_window_valid():
+            QMessageBox.critical(self, "오류", "먼저 창에 연결해주세요.")
+            return
+        
+        try:
+            from ui.nodes.task_editor_popup import TaskEditorPopup
+            # 팝업 창 생성
+            popup = TaskEditorPopup(
+                self,
+            )
+            
             # 모달 다이얼로그로 표시 (exec() 사용)
             popup.exec()  # show() 대신 exec() 사용
                 
