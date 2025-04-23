@@ -130,6 +130,7 @@ class Tasker(QObject):
 
                 for step_key in self.running_task_steps:
                     step = self.running_task.Get_Step(step_key)
+                    # print(f"step.seq= {step.seq}")
                     if None == step:
                         self.stop_tasks()
                         self.logframe_adderror.emit(f"{task_key}-{step_key} 단계가 유효하지 않습니다.")
