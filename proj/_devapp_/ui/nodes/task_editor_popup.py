@@ -2,7 +2,8 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout,
                              QLabel, QLineEdit, QPushButton, QComboBox, 
                              QListWidget, QTabWidget, QWidget, QTextEdit,
                              QGroupBox, QFrame, QCheckBox, QScrollArea,
-                             QGridLayout, QApplication, QMessageBox)
+                             QGridLayout, QApplication, QMessageBox,
+                             QDoubleSpinBox, QSizePolicy)  # QDoubleSpinBox와 QSizePolicy 추가
 from PySide6.QtGui import QIcon, QFont
 from PySide6.QtCore import Qt, Signal
 import sys
@@ -48,7 +49,7 @@ class TaskEditorPopup(QDialog):
         # 중앙 영역 - 메인 컨텐츠 (2개의 영역으로 분할)
         center_layout = QHBoxLayout()
         
-        # 중앙 영역 - 메인 설정 패널 (녹색 테두리)
+        # 중앙 영역 - 메인 설정 패널
         self.center_panel = self._create_center_panel()
         center_layout.addWidget(self.center_panel, 2)  # 비율 2
         
@@ -217,45 +218,89 @@ class TaskEditorPopup(QDialog):
         layout.addWidget(preview_display_group, 1)  # 비율 1로 늘어남
     
     def _create_center_panel(self):
-        """중앙 패널 - 메인 설정 영역"""
-        # 프레임으로 구현하여 테두리 설정
-        frame = QFrame()
-        frame.setFrameShape(QFrame.StyledPanel)
-        frame.setStyleSheet("border: 1px solid green;")
-        layout = QVBoxLayout(frame)
+        """중앙 패널 - 단계 기본정보 영역"""
+        # GroupBox로 변경
+        group = QGroupBox("단계 기본정보")
+        layout = QVBoxLayout(group)
         
-        # 타입 선택
+        # 타입 선택 - 레이블 폭 조절 및 콤보박스 확장
         type_layout = QHBoxLayout()
-        type_layout.addWidget(QLabel("타입:"))
+        type_label = QLabel("타입:")
+        type_label.setFixedWidth(type_label.sizeHint().width())  # 텍스트 길이에 맞춤
+        type_layout.addWidget(type_label)
+        
         self.main_type_combo = QComboBox()
         self.main_type_combo.addItems(["이미지", "zone", "텍스트"])
+        self.main_type_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # 가로 확장
         type_layout.addWidget(self.main_type_combo)
+        
         layout.addLayout(type_layout)
         
-        # 영역 선택
+        # 영역 선택 - 레이블 폭 조절 및 콤보박스 확장
         zone_layout = QHBoxLayout()
-        zone_layout.addWidget(QLabel("영역:"))
+        zone_label = QLabel("영역:")
+        zone_label.setFixedWidth(type_label.sizeHint().width())  # 타입 레이블과 같은 폭 유지
+        zone_layout.addWidget(zone_label)
+        
         self.zone_combo = QComboBox()
         self.zone_combo.addItems(["영역1", "영역2", "영역3"])
+        self.zone_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # 가로 확장
         zone_layout.addWidget(self.zone_combo)
+        
         layout.addLayout(zone_layout)
         
-        # 이미지 선택
+        # 이미지 선택 - 레이블 폭 조절 및 콤보박스 확장
         image_layout = QHBoxLayout()
-        image_layout.addWidget(QLabel("이미지:"))
+        image_label = QLabel("이미지:")
+        image_label.setFixedWidth(type_label.sizeHint().width())  # 타입 레이블과 같은 폭 유지
+        image_layout.addWidget(image_label)
+        
         self.image_select_combo = QComboBox()
         self.image_select_combo.addItems(["이미지1", "이미지2", "이미지3"])
+        self.image_select_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # 가로 확장
         image_layout.addWidget(self.image_select_combo)
+        
         layout.addLayout(image_layout)
         
-        # 테스트 영역
-        test_layout = QHBoxLayout()
-        test_layout.addWidget(QLabel("유닛 테스트:"))
-        self.test_input = QLineEdit("30")
-        test_layout.addWidget(self.test_input)
-        self.test_check = QCheckBox("체크")
-        test_layout.addWidget(self.test_check)
-        layout.addLayout(test_layout)
+        # 유사도 영역 - SpinBox로 변경 및 비교 연산자 콤보박스 추가
+        similarity_layout = QHBoxLayout()
+        similarity_label = QLabel("유사도:")
+        similarity_label.setFixedWidth(type_label.sizeHint().width())  # 타입 레이블과 같은 폭 유지
+        similarity_layout.addWidget(similarity_label)
+        
+        # SpinBox로 변경 (0~100.00, 1.0씩 증가)
+        self.similarity_spin = QDoubleSpinBox()
+        self.similarity_spin.setRange(0, 100.00)
+        self.similarity_spin.setSingleStep(1.0)
+        self.similarity_spin.setDecimals(2)
+        self.similarity_spin.setValue(80.00)  # 기본값
+        self.similarity_spin.setFixedWidth(120)
+        similarity_layout.addWidget(self.similarity_spin)
+        
+        # 비교 연산자 콤보박스 추가
+        self.comparison_combo = QComboBox()
+        self.comparison_combo.addItems(["이상", "초과", "이하", "미만", "일치", "다른"])
+        self.comparison_combo.setFixedWidth(120)
+        similarity_layout.addWidget(self.comparison_combo)
+        
+        # "현재 게임에서" 버튼 추가
+        self.current_game_btn = QPushButton("현재 게임에서")
+        similarity_layout.addWidget(self.current_game_btn)
+        
+        layout.addLayout(similarity_layout)
+        
+        # 클릭 선택 영역
+        click_layout = QHBoxLayout()
+        click_label = QLabel("클릭:")
+        click_label.setFixedWidth(type_label.sizeHint().width())  # 타입 레이블과 같은 폭 유지
+        click_layout.addWidget(click_label)
+        
+        self.click_type_combo = QComboBox()
+        self.click_type_combo.addItems(["이미지", "영역"])
+        self.click_type_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # 가로 확장
+        click_layout.addWidget(self.click_type_combo)
+        
+        layout.addLayout(click_layout)
         
         # 하단 버튼들
         buttons_layout = QHBoxLayout()
@@ -263,9 +308,11 @@ class TaskEditorPopup(QDialog):
         buttons_layout.addWidget(self.find_btn)
         self.image_btn = QPushButton("이미지")
         buttons_layout.addWidget(self.image_btn)
+        buttons_layout.addStretch(1)  # 오른쪽 여백 추가
+        
         layout.addLayout(buttons_layout)
         
-        return frame
+        return group
     
     def _create_right_panel(self):
         """오른쪽 패널 - 상세 설정"""
