@@ -101,27 +101,33 @@ class TaskEditorPopup(QDialog):
         """기본 탭 구성"""
         layout = QHBoxLayout(self.tab_basic)
         
-        # 자동화 목록 왼쪽에 배치
-        self.automation_list = QListWidget()
-        self.automation_list.addItems([f"자동화 항목 {i+1}" for i in range(10)])
-        
         # 자동화 목록 그룹
         automation_group = QGroupBox("자동화 목록")
         automation_layout = QHBoxLayout(automation_group)
         
-        # 왼쪽에 목록, 오른쪽에 시작 단계 키와 설명을 배치
+        # 왼쪽 - 자동화 목록
+        self.automation_list = QListWidget()
+        self.automation_list.addItems([f"자동화 항목 {i+1}" for i in range(10)])
         automation_layout.addWidget(self.automation_list)
         
         # 오른쪽 내용을 담을 위젯
         right_content = QWidget()
         right_layout = QVBoxLayout(right_content)
         
-        # 시작 단계 키 (비활성화된 레이블)
+        # 검색창 추가 (시작 단계 키 위에 배치)
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(QLabel("검색:"))
+        self.automation_search = QLineEdit()
+        self.automation_search.setPlaceholderText("검색어 입력...")
+        search_layout.addWidget(self.automation_search)
+        right_layout.addLayout(search_layout)
+        
+        # 시작 단계 키 (QLineEdit)
         start_key_layout = QHBoxLayout()
         start_key_layout.addWidget(QLabel("시작 단계 키:"))
-        self.start_key_label = QLabel("기본 키")
-        self.start_key_label.setEnabled(False)
-        start_key_layout.addWidget(self.start_key_label)
+        self.start_key_input = QLineEdit("기본 키")
+        self.start_key_input.setEnabled(False)
+        start_key_layout.addWidget(self.start_key_input)
         right_layout.addLayout(start_key_layout)
         
         # 설명 입력
