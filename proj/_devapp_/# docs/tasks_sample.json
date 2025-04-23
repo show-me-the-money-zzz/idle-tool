@@ -2,6 +2,7 @@
   "사냥1": {
     "steps": {
       "잡화상점이동": {
+        "seq": 0,
         "waiting": 0,
         "type": "matching",
         "zone": "마을상인메뉴",
@@ -15,6 +16,7 @@
         "comment": "<마을상인메뉴>에서 <잡화상인> 찾아서 90% 이상이면 성공. 성공시에 클릭. 실패했을때 <월드맵아이콘클릭> 단계로"
       },
       "잡화상점 확인": {
+        "seq": 1,
         "waiting": 1.0,
         "type": "matching",
         "zone": "팝업타이틀",
@@ -28,6 +30,7 @@
         "comment": "1.0초 대기 후(waiting) 찾기. 찾으면 다음 단계. 못찾으면 반복 (잡화상점 확인)"
       },
       "표준치료제찾기": {
+        "seq": 2,
         "waiting": 0.0,
         "type": "matching",
         "zone": "잡화상점목록",
@@ -40,11 +43,12 @@
         "fail_step": "",
         "comment": ""
       },
-      "표준치료제-구매": {
+      "표준치료제-구매계산기": {
+        "seq": 3,
         "waiting": 1.0,
         "type": "matching",
-        "zone": "계산기",
-        "image": "MAX",
+        "zone": "잡화상인-계산기",
+        "image": "잡화상인-계산기-MAX",
         "score": "<=90",
         "finded_click": "image",
         "next_step": [
@@ -54,10 +58,11 @@
         "comment": ""
       },
       "구매확인버튼": {
+        "seq": 4,
         "waiting": 0.5,
         "type": "matching",
-        "zone": "계산기-구매",
-        "image": "구매버튼",
+        "zone": "잡화상인-계산기-구매",
+        "image": "잡화상인-계산기-구매버튼",
         "score": "<=90",
         "finded_click": "image",
         "next_step": [
@@ -67,6 +72,7 @@
         "comment": "zone:계산기 범위안에 들면 대체해도 되지만 효율을 위한"
       },
       "상점나가기": {
+        "seq": 5,
         "waiting": 0.5,
         "type": "matching",
         "zone": "팝업타이틀",
@@ -80,6 +86,7 @@
         "comment": ""
       },
       "사냥가기위한월드맵켜기": {
+        "seq": 6,
         "waiting": 1.0,
         "type": "matching",
         "zone": "메뉴_좌상",
@@ -93,6 +100,7 @@
         "comment": "월드맵아이콘클릭에서 복사"
       },
       "사냥터결정": {
+        "seq": 7,
         "waiting": 1.0,
         "type": "matching",
         "zone": "월드맵",
@@ -106,6 +114,7 @@
         "comment": ""
       },
       "타켓몹": {
+        "seq": 8,
         "waiting": 1.0,
         "type": "matching",
         "zone": "몹리스트",
@@ -119,6 +128,7 @@
         "comment": ""
       },
       "몹까지이동": {
+        "seq": 9,
         "waiting": 1.0,
         "type": "matching",
         "zone": "월드맵",
@@ -132,6 +142,7 @@
         "comment": "여기까지 사냥은 애매함. 도착 확인은 가로 중앙 약간 하단의 '이동 중 0m로 해야하는지'"
       },
       "월드맵아이콘클릭": {
+        "seq": 10,
         "waiting": 0.0,
         "type": "matching",
         "zone": "메뉴_좌상",

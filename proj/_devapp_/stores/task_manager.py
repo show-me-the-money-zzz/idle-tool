@@ -69,6 +69,7 @@ Tasks = TaskManager("Task 데이터", "tasks.json")
 
 @dataclass
 class TaskStep:
+    seq: int
     waiting: float
     type: str
     zone: str
