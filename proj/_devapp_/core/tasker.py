@@ -169,7 +169,7 @@ class Tasker(QObject):
 
             self.running_task_steps = step.next_step
         else:
-            self.running_task_steps = step.fail_step
+            self.running_task_steps = [ step.fail_step ]
             
     async def Waiting(self, step: TaskMan.TaskStep):
         self.logframe_addlog.emit(f"<잠깐대기> {step.waiting} 초")
