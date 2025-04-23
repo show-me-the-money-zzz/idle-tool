@@ -8,6 +8,8 @@ from PySide6.QtGui import QIcon, QFont
 from PySide6.QtCore import Qt, Signal
 import sys
 
+from ui.component.searchable_comboBox import SearchableComboBox
+
 class TaskEditorPopup(QDialog):
     """작업 편집기 팝업 창"""
     
@@ -239,27 +241,29 @@ class TaskEditorPopup(QDialog):
         
         layout.addLayout(type_layout)
         
-        # 영역 선택 - 레이블 폭 조절 및 콤보박스 확장
+        # 영역 선택 - 검색 가능한 콤보박스로 변경
         zone_layout = QHBoxLayout()
         zone_label = QLabel("영역:")
         zone_label.setFixedWidth(min_label_width)
         zone_layout.addWidget(zone_label)
         
-        self.zone_combo = QComboBox()
-        self.zone_combo.addItems(["영역1", "영역2", "영역3"])
+        # 많은 샘플 항목 생성
+        zone_items = [f"영역{i}" for i in range(1, 31)]
+        self.zone_combo = SearchableComboBox(items=zone_items)
         self.zone_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         zone_layout.addWidget(self.zone_combo)
         
         layout.addLayout(zone_layout)
         
-        # 이미지 선택 - 레이블 폭 조절 및 콤보박스 확장
+        # 이미지 선택 - 검색 가능한 콤보박스로 변경
         image_layout = QHBoxLayout()
         image_label = QLabel("이미지:")
         image_label.setFixedWidth(min_label_width)
         image_layout.addWidget(image_label)
         
-        self.image_select_combo = QComboBox()
-        self.image_select_combo.addItems(["이미지1", "이미지2", "이미지3"])
+        # 많은 샘플 항목 생성
+        image_items = [f"이미지{i}" for i in range(1, 31)]
+        self.image_select_combo = SearchableComboBox(items=image_items)
         self.image_select_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         image_layout.addWidget(self.image_select_combo)
         
