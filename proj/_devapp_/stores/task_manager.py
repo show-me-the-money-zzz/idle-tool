@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import Optional
+from dataclasses import dataclass, field
 
 from grinder_utils import finder, system
 
@@ -74,4 +75,22 @@ Save_Tasks = Tasks.save
 def initialize():
     Tasks.save()
 
-    system.PrintDEV(f"{GetAll_Tasks()}")
+    Print_Data()
+
+def Print_Data():
+    # system.PrintDEV(f"{_GetAll_Tasks()}")
+    hunting1 = Get_Task("사냥1")
+    # system.PrintDEV(f"{hunting1}")
+    hunting1_steps= hunting1["steps"]
+    # system.PrintDEV(f"{hunting1_steps}")
+    for key, data in hunting1_steps.items():
+        system.PrintDEV(f"[{key}]: {data}")
+    # move_zaphwa = hunting1_steps["잡화상점이동"]
+    # system.PrintDEV(f"{move_zaphwa}")
+    # click_worldmap = hunting1_steps["월드맵아이콘클릭"]
+    # system.PrintDEV(f"{click_worldmap}")
+
+    hunting1_startkey= hunting1["start_key"]
+    hunting1_comment= hunting1["comment"]
+    system.PrintDEV(f"start_key: {hunting1_startkey}")
+    system.PrintDEV(f"comment: {hunting1_comment}")
