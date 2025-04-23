@@ -16,6 +16,7 @@ from stores.areas import *
 import stores.sanner as Scanner
 from zzz.config import LOOP_TEXT_KEYWORD
 import zzz.hotkey as HotKey
+import stores.task_manager as TaskMan
 
 class Tasker(QObject):
     """
@@ -108,11 +109,15 @@ class Tasker(QObject):
             
     def Make_Task_GS23_RF(self): return {}
     
-    running_task = {}
+    running_task = None
     running_task_steps = []
     async def Loop(self):
         # self.logframe_adderror.emit("시작")
-        self.running_task = self.Make_Task_GS23_RF()
+        task_key = "사냥1"
+        hunting_tasks = TaskMan.Get_Task(task_key)
+        # print(f"{hunting_tasks}")
+        self.running_task = hunting_tasks
+        self.running_task_steps = [ hunting_tasks.start_key ]
         
         try:
             while self.is_running:
@@ -121,13 +126,16 @@ class Tasker(QObject):
                     self.status_changed.emit("창이 닫혔습니다.")
                     return
                 
-                await self.Task_GS23_RF()
+                # await self.Task_GS23_RF()
 
-                # for step_key in self.running_task_steps:
-                #     task = self.running_task[step_key]
+                for step_key in self.running_task_steps:
+                    step = self.running_task.Get_Step(step_key)
+                    if None == step:
+                        self.stop_tasks()
+                        self.logframe_adderror.emit(f"{task_key}-{step_key} 단계가 유효하지 않습니다.")
 
-                #     if "matching" == task: await self.Matching(task)
-                #     elif "waiting" == task: await self.Waiting(task)
+                    if "matching" == step.type: await self.Matching(step, task_key, step_key)
+                    elif "waiting" == step.type: await self.Waiting(step)
                 
                 # self.logframe_addlog.emit("foo~~")
                 await self.async_helper.sleep(0)
@@ -141,28 +149,32 @@ class Tasker(QObject):
             # 예외 처리
             self.logframe_adderror.emit(f"작업 중 오류 발생: {str(e)}")
             
-    async def Matching(self, task):
-        zone = task["zone"]
-        image = task["image"]
-        task_score = task["score"]
+    async def Matching(self, step: TaskMan.TaskStep, taskkey, stepkey):
+        if 0.0 < step.waiting:
+            self.logframe_addlog.emit(f"[[잠깐]] {step.waiting} 초")
+            await self.async_helper.sleep(step.waiting)
         
-        matched = self.match_image_in_zone(zone, image, task_score)
+        matched = self.match_image_in_zone(step.zone, step.image)
         matched_score = matched["score_percent"]
-        isSuccess = task_score <= matched_score
+        isSuccess = step.evaluate_score_condition(matched_score)
         
         resulttext = "성공" if isSuccess else "실패"
-        self.logframe_addlog.emit(f"<매칭> {zone} ZONE의 {zone} IMAGE 근접도 {task_score}% 이상: {matched_score}%로 {resulttext}")
+        self.logframe_addlog.emit(f"[[매칭]] {step.zone} ZONE의 {step.image} IMAGE 근접도 {step.Print_Score()}: {matched_score}%로 {resulttext}")
         
         if isSuccess:
-            self.running_task_steps = task["next_step"]
+            if step.finded_click:
+                x, y = matched["click"]
+                # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
+                self.Click(x, y, f"{taskkey}-{stepkey}")
+
+            self.running_task_steps = step.next_step
         else:
-            self.running_task_steps = task["fail_step"]
+            self.running_task_steps = step.fail_step
             
-    async def Waiting(self, task):
-        sec = task["sec"]
-        self.logframe_addlog.emit(f"<잠깐대기> {sec} 초")
+    async def Waiting(self, step: TaskMan.TaskStep):
+        self.logframe_addlog.emit(f"<잠깐대기> {step.waiting} 초")
         
-        await self.async_helper.sleep(sec)
+        await self.async_helper.sleep(step.waiting)
     
     def match_image_in_zone(self, zone_key, image_key):
         """
@@ -292,6 +304,12 @@ class Tasker(QObject):
             "image": image_key,
             "position": (zoneitem.x + max_loc[0], zoneitem.y + max_loc[1]) if matched else None
         }
+
+    def Click(self, x, y, caller=""):
+        WindowUtil.click_at_position(x, y)
+        logtext = f"[[마우스 클릭]] ({x}, {y})"
+        if "" != caller: logtext += f" {caller}"
+        self.logframe_addlog.emit(logtext)
     
     def __del__(self):
         """소멸자"""
