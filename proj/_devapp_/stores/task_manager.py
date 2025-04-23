@@ -65,21 +65,67 @@ class TaskManager:
 # 전역 인스턴스 정의 (areas.py 방식)
 Tasks = TaskManager("Task 데이터", "tasks.json")
 
+@dataclass
+class TaskStep:
+    waiting: float
+    type: str
+    zone: str
+    image: str
+    score: str
+    finded_click: bool
+    next_step: list[str]
+    fail_step: str
+    comment: str
+@dataclass
+class Task:
+    tasks: dict[str, TaskStep]
+    start_key: str
+    comment: str
+
 # 인터페이스 함수 정의
 Add_Task = Tasks.add
 Delete_Task = Tasks.delete
-Get_Task = Tasks.get
-GetAll_Tasks = Tasks.all
+_Get_Task = Tasks.get
+def Get_Task(key, default=None):
+    data = Tasks.get(key, default)
+    # print("seq 1")
+    if not data:
+        return default
+
+    # print("seq 2")
+    # # step dict를 TaskStep 객체로 변환
+    # print(data["steps"].items())
+    step_dict = {}
+    for key, val in data["steps"].items():
+        # print(f"[{key}] {val}")
+        step_dict[key] = TaskStep(**val)
+    # print(f"{step_dict}")
+    # print("seq 3")
+
+    ret = Task(
+        tasks=step_dict,
+        # tasks = {},
+
+        start_key=data["start_key"],
+        comment=data.get("comment", "")
+    )
+    return ret
+_GetAll_Tasks = Tasks.all
 Save_Tasks = Tasks.save
 
 def initialize():
     Tasks.save()
 
-    Print_Data()
+    # Print_Data()
+    Print_Data2()
+
+def Print_Data2():
+    hunting = Get_Task("사냥1")
+    print(f"{hunting}")
 
 def Print_Data():
     # system.PrintDEV(f"{_GetAll_Tasks()}")
-    hunting1 = Get_Task("사냥1")
+    hunting1 = _Get_Task("사냥1")
     # system.PrintDEV(f"{hunting1}")
     hunting1_steps= hunting1["steps"]
     # system.PrintDEV(f"{hunting1_steps}")
