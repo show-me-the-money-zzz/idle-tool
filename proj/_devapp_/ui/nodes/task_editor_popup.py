@@ -45,12 +45,8 @@ class TaskEditorPopup(QDialog):
         # 메인 레이아웃에 탭 추가
         main_layout.addWidget(self.tabs)
         
-        # 중앙 영역 - 메인 컨텐츠 (3개의 영역으로 분할)
+        # 중앙 영역 - 메인 컨텐츠 (2개의 영역으로 분할)
         center_layout = QHBoxLayout()
-        
-        # 왼쪽 영역 - 단계 목록
-        self.left_panel = self._create_left_panel()
-        center_layout.addWidget(self.left_panel)
         
         # 중앙 영역 - 메인 설정 패널 (녹색 테두리)
         self.center_panel = self._create_center_panel()
@@ -99,9 +95,10 @@ class TaskEditorPopup(QDialog):
     
     def _setup_basic_tab(self):
         """기본 탭 구성"""
-        layout = QHBoxLayout(self.tab_basic)
+        # 전체 레이아웃은 수직으로 배치
+        layout = QVBoxLayout(self.tab_basic)
         
-        # 자동화 목록 그룹
+        # 상단 - 자동화 목록 그룹 (가로로 배치)
         automation_group = QGroupBox("자동화 목록")
         automation_layout = QHBoxLayout(automation_group)
         
@@ -137,8 +134,56 @@ class TaskEditorPopup(QDialog):
         
         automation_layout.addWidget(right_content)
         
-        # 전체 레이아웃에 추가
+        # 상단 그룹을 레이아웃에 추가
         layout.addWidget(automation_group)
+        
+        # 하단 - 단계 목록 그룹 (왼쪽 패널의 내용을 기본 탭에 포함)
+        step_group = QGroupBox("단계 목록")
+        step_layout = QVBoxLayout(step_group)
+        
+        # 검색 영역 (레이블과 입력 필드를 수평으로 배치)
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(QLabel("검색"))
+        
+        # 검색 입력 필드 추가
+        self.taskstep_search = QLineEdit()
+        self.taskstep_search.setPlaceholderText("단계 검색...")
+        search_layout.addWidget(self.taskstep_search)
+        
+        step_layout.addLayout(search_layout)
+        
+        # 단계 리스트
+        self.step_list = QListWidget()
+        self.step_list.addItems([f"단계{i+1}" for i in range(10)])
+        # 선택 변경 시 버튼 상태 업데이트를 위한 이벤트 연결
+        self.step_list.itemSelectionChanged.connect(self.update_step_buttons_state)
+        step_layout.addWidget(self.step_list)
+        
+        # 버튼 그룹군
+        buttons_layout = QHBoxLayout()
+        
+        # + 버튼
+        self.add_step_btn = QPushButton("✚")
+        self.add_step_btn.setToolTip("단계 추가")
+        self.add_step_btn.setFixedWidth(32)
+        self.add_step_btn.clicked.connect(self.add_step)
+        buttons_layout.addWidget(self.add_step_btn)
+        
+        # - 버튼 (초기에는 비활성화)
+        self.remove_step_btn = QPushButton("━")
+        self.remove_step_btn.setToolTip("선택한 단계 삭제")
+        self.remove_step_btn.setFixedWidth(32)
+        self.remove_step_btn.setEnabled(False)  # 초기에는 비활성화
+        self.remove_step_btn.clicked.connect(self.remove_step)
+        buttons_layout.addWidget(self.remove_step_btn)
+        
+        # 여백 추가
+        buttons_layout.addStretch(1)
+        
+        step_layout.addLayout(buttons_layout)
+        
+        # 하단 그룹을 레이아웃에 추가
+        layout.addWidget(step_group)
     
     def _setup_preview_tab(self):
         """프리뷰 탭 구성"""
@@ -170,54 +215,6 @@ class TaskEditorPopup(QDialog):
         preview_display_layout.addWidget(self.preview_display)
         
         layout.addWidget(preview_display_group, 1)  # 비율 1로 늘어남
-    
-    def _create_left_panel(self):
-        """왼쪽 패널 - 단계 목록 생성"""
-        group = QGroupBox("단계 목록")
-        layout = QVBoxLayout(group)
-        
-        # 검색 영역 (레이블과 입력 필드를 수평으로 배치)
-        search_layout = QHBoxLayout()
-        search_layout.addWidget(QLabel("검색"))
-        
-        # 검색 입력 필드 추가
-        self.taskstep_search = QLineEdit()
-        self.taskstep_search.setPlaceholderText("단계 검색...")
-        search_layout.addWidget(self.taskstep_search)
-        
-        layout.addLayout(search_layout)
-        
-        # 단계 리스트
-        self.step_list = QListWidget()
-        self.step_list.addItems([f"단계{i+1}" for i in range(10)])
-        # 선택 변경 시 버튼 상태 업데이트를 위한 이벤트 연결
-        self.step_list.itemSelectionChanged.connect(self.update_step_buttons_state)
-        layout.addWidget(self.step_list)
-        
-        # 버튼 그룹군
-        buttons_layout = QHBoxLayout()
-        
-        # + 버튼
-        self.add_step_btn = QPushButton("✚")
-        self.add_step_btn.setToolTip("단계 추가")
-        self.add_step_btn.setFixedWidth(32)
-        self.add_step_btn.clicked.connect(self.add_step)
-        buttons_layout.addWidget(self.add_step_btn)
-        
-        # - 버튼 (초기에는 비활성화)
-        self.remove_step_btn = QPushButton("━")
-        self.remove_step_btn.setToolTip("선택한 단계 삭제")
-        self.remove_step_btn.setFixedWidth(32)
-        self.remove_step_btn.setEnabled(False)  # 초기에는 비활성화
-        self.remove_step_btn.clicked.connect(self.remove_step)
-        buttons_layout.addWidget(self.remove_step_btn)
-        
-        # 여백 추가
-        buttons_layout.addStretch(1)
-        
-        layout.addLayout(buttons_layout)
-        
-        return group
     
     def _create_center_panel(self):
         """중앙 패널 - 메인 설정 영역"""
