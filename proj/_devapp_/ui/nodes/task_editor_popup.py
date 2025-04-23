@@ -32,15 +32,15 @@ class TaskEditorPopup(QDialog):
         # 상단 영역 - 탭 위젯
         self.tabs = QTabWidget()
         
-        # 첫 번째 탭 - 설정 1
-        self.tab_settings1 = QWidget()
-        self._setup_settings1_tab()
-        self.tabs.addTab(self.tab_settings1, "기본")
+        # 첫 번째 탭 - 기본
+        self.tab_basic = QWidget()
+        self._setup_basic_tab()
+        self.tabs.addTab(self.tab_basic, "기본")
         
-        # 두 번째 탭 - 설정 2
-        self.tab_settings2 = QWidget()
-        self._setup_settings2_tab()
-        self.tabs.addTab(self.tab_settings2, "프리뷰")
+        # 두 번째 탭 - 프리뷰
+        self.tab_preview = QWidget()
+        self._setup_preview_tab()
+        self.tabs.addTab(self.tab_preview, "프리뷰")
         
         # 메인 레이아웃에 탭 추가
         main_layout.addWidget(self.tabs)
@@ -97,53 +97,73 @@ class TaskEditorPopup(QDialog):
         
         main_layout.addLayout(buttons_layout)
     
-    def _setup_settings1_tab(self):
-        """설정1 탭 구성"""
-        layout = QVBoxLayout(self.tab_settings1)
+    def _setup_basic_tab(self):
+        """기본 탭 구성"""
+        layout = QHBoxLayout(self.tab_basic)
         
-        # 설정 그룹
-        settings_group = QGroupBox("기본 설정")
-        settings_layout = QGridLayout(settings_group)
+        # 자동화 목록 왼쪽에 배치
+        self.automation_list = QListWidget()
+        self.automation_list.addItems([f"자동화 항목 {i+1}" for i in range(10)])
         
-        # 이름 설정
-        settings_layout.addWidget(QLabel("이름:"), 0, 0)
-        self.name_input = QLineEdit()
-        settings_layout.addWidget(self.name_input, 0, 1, 1, 3)
+        # 자동화 목록 그룹
+        automation_group = QGroupBox("자동화 목록")
+        automation_layout = QHBoxLayout(automation_group)
         
-        # 유형 설정
-        settings_layout.addWidget(QLabel("유형:"), 1, 0)
-        self.type_combo = QComboBox()
-        self.type_combo.addItems(["유형1", "유형2", "유형3"])
-        settings_layout.addWidget(self.type_combo, 1, 1)
+        # 왼쪽에 목록, 오른쪽에 시작 단계 키와 설명을 배치
+        automation_layout.addWidget(self.automation_list)
+        
+        # 오른쪽 내용을 담을 위젯
+        right_content = QWidget()
+        right_layout = QVBoxLayout(right_content)
+        
+        # 시작 단계 키 (비활성화된 레이블)
+        start_key_layout = QHBoxLayout()
+        start_key_layout.addWidget(QLabel("시작 단계 키:"))
+        self.start_key_label = QLabel("기본 키")
+        self.start_key_label.setEnabled(False)
+        start_key_layout.addWidget(self.start_key_label)
+        right_layout.addLayout(start_key_layout)
         
         # 설명 입력
-        settings_layout.addWidget(QLabel("설명:"), 2, 0)
-        self.description_input = QTextEdit()
-        settings_layout.addWidget(self.description_input, 2, 1, 1, 3)
+        right_layout.addWidget(QLabel("설명:"))
+        self.task_description = QTextEdit()
+        right_layout.addWidget(self.task_description)
         
-        layout.addWidget(settings_group)
-        layout.addStretch(1)  # 남은 공간 채우기
+        automation_layout.addWidget(right_content)
+        
+        # 전체 레이아웃에 추가
+        layout.addWidget(automation_group)
     
-    def _setup_settings2_tab(self):
-        """설정2 탭 구성"""
-        layout = QVBoxLayout(self.tab_settings2)
+    def _setup_preview_tab(self):
+        """프리뷰 탭 구성"""
+        layout = QVBoxLayout(self.tab_preview)
         
-        # 추가 설정 그룹
-        advanced_group = QGroupBox("고급 설정")
-        advanced_layout = QGridLayout(advanced_group)
+        # 프리뷰 설정 그룹
+        preview_settings_group = QGroupBox("프리뷰 설정")
+        preview_settings_layout = QGridLayout(preview_settings_group)
         
-        # 옵션 설정들
-        advanced_layout.addWidget(QLabel("옵션1:"), 0, 0)
-        self.option1_check = QCheckBox("활성화")
-        advanced_layout.addWidget(self.option1_check, 0, 1)
+        # 프리뷰 옵션들
+        preview_settings_layout.addWidget(QLabel("표시 옵션:"), 0, 0)
+        self.preview_option_combo = QComboBox()
+        self.preview_option_combo.addItems(["옵션1", "옵션2", "옵션3"])
+        preview_settings_layout.addWidget(self.preview_option_combo, 0, 1)
         
-        advanced_layout.addWidget(QLabel("옵션2:"), 1, 0)
-        self.option2_combo = QComboBox()
-        self.option2_combo.addItems(["설정1", "설정2", "설정3"])
-        advanced_layout.addWidget(self.option2_combo, 1, 1)
+        preview_settings_layout.addWidget(QLabel("갱신 주기:"), 1, 0)
+        self.refresh_rate_combo = QComboBox()
+        self.refresh_rate_combo.addItems(["빠름", "보통", "느림"])
+        preview_settings_layout.addWidget(self.refresh_rate_combo, 1, 1)
         
-        layout.addWidget(advanced_group)
-        layout.addStretch(1)  # 남은 공간 채우기
+        layout.addWidget(preview_settings_group)
+        
+        # 프리뷰 화면
+        preview_display_group = QGroupBox("프리뷰 화면")
+        preview_display_layout = QVBoxLayout(preview_display_group)
+        self.preview_display = QTextEdit()
+        self.preview_display.setReadOnly(True)
+        self.preview_display.setPlaceholderText("여기에 프리뷰가 표시됩니다.")
+        preview_display_layout.addWidget(self.preview_display)
+        
+        layout.addWidget(preview_display_group, 1)  # 비율 1로 늘어남
     
     def _create_left_panel(self):
         """왼쪽 패널 - 단계 목록 생성"""
