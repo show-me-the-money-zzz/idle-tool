@@ -372,34 +372,120 @@ class TaskEditorPopup(QDialog):
         return group
     
     def _create_right_panel(self):
-        """오른쪽 패널 - 상세 설정"""
-        group = QGroupBox("상세 설정")
+        """오른쪽 패널 - 단계 추가정보"""
+        group = QGroupBox("단계 추가정보")
         layout = QVBoxLayout(group)
         
-        # 설정 옵션
-        layout.addWidget(QLabel("설정 옵션:"))
-        self.settings_combo = QComboBox()
-        self.settings_combo.addItems(["옵션1", "옵션2", "옵션3"])
-        layout.addWidget(self.settings_combo)
+        # 최소 레이블 너비 계산 (가장 긴 레이블에 맞춤)
+        min_label_width = 80  # 기본값 - "실패 후 단계:"에 맞게 조정
         
-        # 설정값
-        value_layout = QHBoxLayout()
-        value_layout.addWidget(QLabel("설정값:"))
-        self.setting_value = QLineEdit()
-        value_layout.addWidget(self.setting_value)
-        layout.addLayout(value_layout)
+        # 실패 후 단계 - 검색 가능한 콤보박스
+        fail_step_layout = QHBoxLayout()
+        fail_step_label = QLabel("실패 후 단계:")
+        fail_step_label.setFixedWidth(min_label_width)
+        fail_step_layout.addWidget(fail_step_label)
         
-        # 설명 영역
-        layout.addWidget(QLabel("설명:"))
-        self.settings_desc = QTextEdit()
-        self.settings_desc.setPlaceholderText("설정에 대한 설명")
-        layout.addWidget(self.settings_desc)
+        # 샘플 항목 생성
+        fail_step_items = [f"단계{i}" for i in range(1, 31)]
+        self.fail_step_combo = SearchableComboBox(items=fail_step_items)
+        self.fail_step_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        fail_step_layout.addWidget(self.fail_step_combo)
         
-        # 적용 버튼
-        self.apply_btn = QPushButton("적용")
-        layout.addWidget(self.apply_btn)
+        layout.addLayout(fail_step_layout)
+        
+        # 다음 단계 - 검색 가능한 콤보박스
+        next_step_layout = QHBoxLayout()
+        next_step_label = QLabel("다음 단계:")
+        next_step_label.setFixedWidth(min_label_width)
+        next_step_layout.addWidget(next_step_label)
+        
+        # 샘플 항목 생성
+        next_step_items = [f"단계{i}" for i in range(1, 31)]
+        self.next_step_combo = SearchableComboBox(items=next_step_items)
+        self.next_step_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        next_step_layout.addWidget(self.next_step_combo)
+        
+        # 추가 버튼
+        self.add_next_step_btn = QPushButton("+")
+        self.add_next_step_btn.setFixedWidth(30)
+        self.add_next_step_btn.setToolTip("다음 단계 추가")
+        self.add_next_step_btn.clicked.connect(self.add_next_step)
+        next_step_layout.addWidget(self.add_next_step_btn)
+        
+        layout.addLayout(next_step_layout)
+        
+        # 다음 단계 목록 - QListWidget
+        next_steps_list_layout = QVBoxLayout()
+        self.next_steps_list = QListWidget()
+        self.next_steps_list.setMinimumHeight(100)  # 최소 높이 설정
+        
+        # 리스트 항목 선택 시 삭제 버튼 활성화를 위한 연결
+        self.next_steps_list.itemSelectionChanged.connect(self.update_next_step_buttons_state)
+        
+        next_steps_list_layout.addWidget(self.next_steps_list)
+        
+        # 삭제 버튼 레이아웃
+        buttons_layout = QHBoxLayout()
+        
+        # 여백 추가
+        buttons_layout.addStretch(1)
+        
+        # 삭제 버튼
+        self.remove_next_step_btn = QPushButton("-")
+        self.remove_next_step_btn.setFixedWidth(30)
+        self.remove_next_step_btn.setToolTip("선택한 다음 단계 삭제")
+        self.remove_next_step_btn.setEnabled(False)  # 초기에는 비활성화
+        self.remove_next_step_btn.clicked.connect(self.remove_next_step)
+        buttons_layout.addWidget(self.remove_next_step_btn)
+        
+        next_steps_list_layout.addLayout(buttons_layout)
+        layout.addLayout(next_steps_list_layout)
+        
+        # 여백 추가
+        layout.addStretch(1)
+        
+        # 참고 레이블 추가 (최하단)
+        guide_layout = QHBoxLayout()
+        guide_label = QLabel("※단계 정보는 단계 목록 항목 선택시 변경됩니다")
+        guide_label.setStyleSheet("color: gray; font-size: 9pt;")  # 작은 회색 텍스트
+        guide_layout.addWidget(guide_label)
+        guide_layout.addStretch(1)  # 오른쪽 여백 추가
+        
+        layout.addLayout(guide_layout)
         
         return group
+
+    # 다음단계 관련 메서드 추가
+    def add_next_step(self):
+        """다음 단계 추가"""
+        current_text = self.next_step_combo.currentText()
+        if current_text:
+            # 중복 확인
+            for i in range(self.next_steps_list.count()):
+                if self.next_steps_list.item(i).text() == current_text:
+                    return  # 이미 있는 항목이면 추가하지 않음
+            
+            # 새 항목 추가
+            self.next_steps_list.addItem(current_text)
+
+    def remove_next_step(self):
+        """선택한 다음 단계 삭제"""
+        selected_items = self.next_steps_list.selectedItems()
+        if selected_items:
+            for item in selected_items:
+                row = self.next_steps_list.row(item)
+                self.next_steps_list.takeItem(row)
+            
+            # 버튼 상태 업데이트
+            self.update_next_step_buttons_state()
+
+    def update_next_step_buttons_state(self):
+        """다음 단계 항목 선택 상태에 따라 버튼 활성화 상태 업데이트"""
+        # 선택된 항목이 있는지 확인
+        has_selection = len(self.next_steps_list.selectedItems()) > 0
+        
+        # 삭제 버튼 활성화/비활성화
+        self.remove_next_step_btn.setEnabled(has_selection)
 
     def update_step_buttons_state(self):
         """단계 선택 상태에 따라 버튼 활성화 상태 업데이트"""
