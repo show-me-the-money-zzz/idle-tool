@@ -19,7 +19,7 @@ class TaskEditorPopup(QDialog):
     def __init__(self, parent=None, task_data=None):
         super().__init__(parent)
         self.setWindowTitle("작업 편집기")
-        self.resize(800, 600)
+        self.resize(800, 1000)
         
         # 작업 데이터 초기화
         self.task_data = task_data or {}
@@ -61,26 +61,8 @@ class TaskEditorPopup(QDialog):
         
         main_layout.addLayout(center_layout, 4)  # 비율 4
         
-        # 하단 영역 - 미리보기
-        preview_group = QGroupBox("미리보기")
-        preview_layout = QVBoxLayout(preview_group)
-        self.preview_text = QTextEdit()
-        self.preview_text.setReadOnly(True)
-        self.preview_text.setPlaceholderText("미리보기 내용이 여기에 표시됩니다.")
-        preview_layout.addWidget(self.preview_text)
-        
-        main_layout.addWidget(preview_group)
-        
         # 최하단 - 버튼 영역
         buttons_layout = QHBoxLayout()
-        
-        # 이미지 타입 선택
-        image_selection_layout = QHBoxLayout()
-        image_selection_layout.addWidget(QLabel("이미지:"))
-        self.image_combo = QComboBox()
-        self.image_combo.addItems(["이미지 없음", "이미지1", "이미지2", "이미지3"])
-        image_selection_layout.addWidget(self.image_combo)
-        buttons_layout.addLayout(image_selection_layout)
         
         # 오른쪽에 공간 추가
         buttons_layout.addStretch(1)
