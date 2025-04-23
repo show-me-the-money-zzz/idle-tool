@@ -7,7 +7,7 @@
         "zone": "마을상인메뉴",
         "image": "마을상인-잡화",
         "score": "<=90",
-        "finded_click": true,
+        "finded_click": "image",
         "next_step": [
           "잡화상점 확인"
         ],
@@ -20,7 +20,7 @@
         "zone": "팝업타이틀",
         "image": "잡화상점-타이틀",
         "score": "<=75",
-        "finded_click": false,
+        "finded_click": "",
         "next_step": [
           "표준치료제찾기"
         ],
@@ -33,7 +33,7 @@
         "zone": "잡화상점목록",
         "image": "표준치료제",
         "score": "<=90",
-        "finded_click": true,
+        "finded_click": "image",
         "next_step": [
           "표준치료제-구매계산기"
         ],
@@ -46,7 +46,7 @@
         "zone": "계산기",
         "image": "MAX",
         "score": "<=90",
-        "finded_click": true,
+        "finded_click": "image",
         "next_step": [
           "구매확인버튼"
         ],
@@ -59,7 +59,7 @@
         "zone": "계산기-구매",
         "image": "구매버튼",
         "score": "<=90",
-        "finded_click": true,
+        "finded_click": "image",
         "next_step": [
           "구매확인버튼"
         ],
@@ -72,7 +72,7 @@
         "zone": "팝업타이틀",
         "image": "나가기아이콘",
         "score": "<=90",
-        "finded_click": true,
+        "finded_click": "image",
         "next_step": [
           "사냥고고싱"
         ],
@@ -85,7 +85,7 @@
         "zone": "메뉴_좌상",
         "image": "메뉴_좌상-월드맵",
         "score": "<=65",
-        "finded_click": true,
+        "finded_click": "image",
         "next_step": [
           "사냥터결정"
         ],
@@ -98,7 +98,7 @@
         "zone": "월드맵",
         "image": "아이콘",
         "score": "<=65",
-        "finded_click": true,
+        "finded_click": "image",
         "next_step": [
           "타켓몹"
         ],
@@ -111,7 +111,7 @@
         "zone": "몹리스트",
         "image": "XX 몹",
         "score": "<=65",
-        "finded_click": true,
+        "finded_click": "image",
         "next_step": [
           "몹까지이동"
         ],
@@ -124,7 +124,7 @@
         "zone": "월드맵",
         "image": "도보이동",
         "score": "< 30",
-        "finded_click": true,
+        "finded_click": "image",
         "next_step": [
           "도착확인"
         ],
@@ -137,7 +137,7 @@
         "zone": "메뉴_좌상",
         "image": "메뉴_좌상-월드맵",
         "score": "> 45",
-        "finded_click": true,
+        "finded_click": "image",
         "next_step": [
           "마을확인하고 대기"
         ],

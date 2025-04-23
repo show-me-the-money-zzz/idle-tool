@@ -15,4 +15,4 @@ class BaseAreaItem:
     def CneterY(self): return self.y + self.height // 2
     
     @property
-    def ClickPoint(self): return (self.clickx, self.clicky)
+    def ClickPoint(self): return (self.x + self.clickx, self.y + self.clicky)

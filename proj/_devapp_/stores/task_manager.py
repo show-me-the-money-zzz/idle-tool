@@ -74,7 +74,7 @@ class TaskStep:
     zone: str
     image: str
     score: str
-    finded_click: bool
+    finded_click: str
     next_step: list[str]
     fail_step: str
     comment: str

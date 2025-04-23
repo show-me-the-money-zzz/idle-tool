@@ -162,8 +162,8 @@ class Tasker(QObject):
         self.logframe_addlog.emit(f"[[매칭]] {step.zone} ZONE의 {step.image} IMAGE 근접도 {step.Print_Score()}: {matched_score}%로 {resulttext}")
         
         if isSuccess:
-            if step.finded_click:
-                x, y = matched["click"]
+            if "" != step.finded_click:
+                x, y = matched["click_image"] if "image" == step.finded_click else matched["click_zone"]
                 # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
                 self.Click(x, y, f"{taskkey}-{stepkey}")
 
@@ -256,7 +256,9 @@ class Tasker(QObject):
             # "position": (target_x, target_y) if matched else None,
             # "click": (imageitem.ClickX, imageitem.ClickY) if matched else None,
             "position": (target_x, target_y),
-            "click": imageitem.ClickPoint,
+            
+            "click_zone": zoneitem.ClickPoint,
+            "click_image": imageitem.ClickPoint,
         }
         
     def match_image_in_zone_with_screenshot(self, zone_key: str, image_key: str, screenshot_path: str) -> Dict[str, Any]:
