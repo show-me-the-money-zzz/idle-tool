@@ -115,7 +115,7 @@ class Task:
     start_key: str
     comment: str
 
-    def Get_Task(self, key, default=None):
+    def Get_Step(self, key, default=None):
         return self.tasks.get(key, default)
 
 # 인터페이스 함수 정의
@@ -157,31 +157,25 @@ def initialize():
     Print_Score()
 
 def Print_Score():
-    hunting = Get_Task("사냥1")
-    eval = hunting.Get_Task("타켓몹")
-    print(f"{eval.score}")
     val = [ 30, 45, 60, 65, 70 ]
-    for v in val:
-        result = eval.evaluate_score_condition(v)
-        print(f"{v}: {result}")
-    eval = hunting.Get_Task("몹까지이동")
-    print(f"{eval.score}")
-    for v in val:
-        result = eval.evaluate_score_condition(v)
-        print(f"{v}: {result}")
-    eval = hunting.Get_Task("월드맵아이콘클릭")
-    print(f"{eval.score}")
-    for v in val:
-        result = eval.evaluate_score_condition(v)
-        print(f"{v}: {result}")
+    hunting = Get_Task("사냥1")
+    step_kesy = [ "타켓몹", "몹까지이동", "월드맵아이콘클릭" ]
+
+    for stepkey in step_kesy:
+        eval = hunting.Get_Step(stepkey)
+        if None != eval:
+            print(f"{stepkey}: {eval.score}")
+            for v in val:
+                result = eval.evaluate_score_condition(v)
+                print(f"{v}: {result}")
 
 def Print_Data2():
     hunting = Get_Task("사냥1")
     print(f"{hunting}")
-    click_worldmap = hunting.Get_Task("월드맵아이콘클릭")
+    click_worldmap = hunting.Get_Step("월드맵아이콘클릭")
     print(f"{click_worldmap}")
 
-    err = hunting.Get_Task("err")
+    err = hunting.Get_Step("err")
     print(f"{err}")
 
 def Print_Data():
