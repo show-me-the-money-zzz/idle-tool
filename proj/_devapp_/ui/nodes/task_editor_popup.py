@@ -52,6 +52,8 @@ class TaskEditorPopup(QDialog):
         # self.automation_list.addItem("하하호호")  # DEV TEST
         # self.automation_list.addItem("즐겁다")  # DEV TEST
         
+        self.waiting_spin.setValue(0.0)
+        
         self.zone_combo.clear()
         self.zone_combo.addItem("")
         for keys in Areas.GetAll_ZoneAreas().keys():
@@ -729,6 +731,7 @@ class TaskEditorPopup(QDialog):
         
         # self.main_type_combo
         self.start_step_checkbox.setChecked(False)
+        self.waiting_spin.setValue(0.00)
         self.step_name_edit.setText("")
         
         self.zone_combo.setCurrentText("")
@@ -765,6 +768,7 @@ class TaskEditorPopup(QDialog):
         self.selectedTaskStep = (key, step)        
         
         self.start_step_checkbox.setChecked(key == task.start_key)
+        self.waiting_spin.setValue(step.waiting)
         self.step_name_edit.setText(key)
         
         self.zone_combo.setCurrentText(step.zone)
