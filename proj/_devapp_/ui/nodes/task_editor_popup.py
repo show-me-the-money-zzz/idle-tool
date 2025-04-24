@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout,
                              QListWidget, QTabWidget, QWidget, QTextEdit,
                              QGroupBox, QFrame, QCheckBox, QScrollArea,
                              QGridLayout, QApplication, QMessageBox,
-                             QDoubleSpinBox, QSizePolicy)  # QDoubleSpinBox와 QSizePolicy 추가
+                             QDoubleSpinBox, QSizePolicy, QInputDialog)
 from PySide6.QtGui import QIcon, QFont
 from PySide6.QtCore import Qt, Signal
 import sys
@@ -87,10 +87,55 @@ class TaskEditorPopup(QDialog):
         automation_group = QGroupBox("자동화 목록")
         automation_layout = QHBoxLayout(automation_group)
         
-        # 왼쪽 - 자동화 목록
+        # 왼쪽 영역 - 자동화 목록과 버튼들을 수직으로 배치
+        left_content = QWidget()
+        left_layout = QVBoxLayout(left_content)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # 자동화 목록
         self.automation_list = QListWidget()
         self.automation_list.addItems([f"자동화 항목 {i+1}" for i in range(10)])
-        automation_layout.addWidget(self.automation_list)
+        
+        # 항목을 더블 클릭하면 수정 가능하도록 설정
+        self.automation_list.itemDoubleClicked.connect(self.edit_automation_item)
+        
+        # 선택 변경 시 삭제 버튼 활성화
+        self.automation_list.itemSelectionChanged.connect(self.update_automation_buttons_state)
+        
+        left_layout.addWidget(self.automation_list)
+        
+        # 버튼 그룹 - 자동화 목록 하단
+        automation_buttons_layout = QHBoxLayout()
+        
+        # + 버튼
+        self.add_automation_btn = QPushButton("✚")
+        self.add_automation_btn.setToolTip("자동화 추가")
+        self.add_automation_btn.setFixedWidth(32)
+        self.add_automation_btn.clicked.connect(self.add_automation)
+        automation_buttons_layout.addWidget(self.add_automation_btn)
+        
+        # - 버튼 (초기에는 비활성화)
+        self.remove_automation_btn = QPushButton("━")
+        self.remove_automation_btn.setToolTip("선택한 자동화 삭제")
+        self.remove_automation_btn.setFixedWidth(32)
+        self.remove_automation_btn.setEnabled(False)  # 초기에는 비활성화
+        self.remove_automation_btn.clicked.connect(self.remove_automation)
+        automation_buttons_layout.addWidget(self.remove_automation_btn)
+        
+        # 편집 버튼 추가
+        self.edit_automation_btn = QPushButton("✎")
+        self.edit_automation_btn.setToolTip("선택한 자동화 이름 편집")
+        self.edit_automation_btn.setFixedWidth(32)
+        self.edit_automation_btn.setEnabled(False)  # 초기에는 비활성화
+        self.edit_automation_btn.clicked.connect(lambda: self.edit_automation_item(self.automation_list.currentItem()))
+        automation_buttons_layout.addWidget(self.edit_automation_btn)
+        
+        # 여백 추가
+        automation_buttons_layout.addStretch(1)
+        
+        left_layout.addLayout(automation_buttons_layout)
+        
+        automation_layout.addWidget(left_content)
         
         # 오른쪽 내용을 담을 위젯
         right_content = QWidget()
@@ -101,6 +146,7 @@ class TaskEditorPopup(QDialog):
         search_layout.addWidget(QLabel("검색:"))
         self.automation_search = QLineEdit()
         self.automation_search.setPlaceholderText("검색어 입력...")
+        self.automation_search.textChanged.connect(self.filter_automation_list)
         search_layout.addWidget(self.automation_search)
         right_layout.addLayout(search_layout)
         
@@ -133,6 +179,7 @@ class TaskEditorPopup(QDialog):
         # 검색 입력 필드 추가
         self.taskstep_search = QLineEdit()
         self.taskstep_search.setPlaceholderText("단계 검색...")
+        self.taskstep_search.textChanged.connect(self.filter_step_list)
         search_layout.addWidget(self.taskstep_search)
         
         step_layout.addLayout(search_layout)
@@ -430,6 +477,74 @@ class TaskEditorPopup(QDialog):
         layout.addLayout(guide_layout)
         
         return group
+
+    # 자동화 목록 관련 메서드 추가
+    def update_automation_buttons_state(self):
+        """자동화 항목 선택 상태에 따라 버튼 활성화 상태 업데이트"""
+        has_selection = len(self.automation_list.selectedItems()) > 0
+        self.remove_automation_btn.setEnabled(has_selection)
+        self.edit_automation_btn.setEnabled(has_selection)
+
+    def add_automation(self):
+        """새 자동화 항목 추가"""
+        count = self.automation_list.count()
+        new_item_name = f"새 자동화 {count+1}"
+        
+        # 새 항목 추가
+        self.automation_list.addItem(new_item_name)
+        
+        # 새 항목 선택
+        self.automation_list.setCurrentRow(count)
+        
+        # 즉시 편집 모드로 전환
+        self.edit_automation_item(self.automation_list.currentItem())
+
+    def remove_automation(self):
+        """선택한 자동화 항목 삭제"""
+        current_row = self.automation_list.currentRow()
+        if current_row >= 0:
+            # 삭제 전 확인 대화상자
+            reply = QMessageBox.question(self, '자동화 삭제', 
+                                        "선택한 자동화를 삭제하시겠습니까?",
+                                        QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            
+            if reply == QMessageBox.Yes:
+                self.automation_list.takeItem(current_row)
+                self.update_automation_buttons_state()
+
+    def edit_automation_item(self, item):
+        """자동화 항목 편집"""
+        if item:
+            current_text = item.text()
+            
+            # 인라인 편집을 위해 텍스트 입력 대화상자 표시
+            new_text, ok = QInputDialog.getText(self, "자동화 이름 편집", 
+                                                "새 이름을 입력하세요:", 
+                                                QLineEdit.Normal, current_text)
+            
+            # 사용자가 확인을 누르고 텍스트가 비어있지 않으면 항목 업데이트
+            if ok and new_text.strip():
+                item.setText(new_text)
+
+    def filter_automation_list(self, text):
+        """자동화 목록 필터링"""
+        text = text.lower()
+        for i in range(self.automation_list.count()):
+            item = self.automation_list.item(i)
+            if text in item.text().lower():
+                item.setHidden(False)
+            else:
+                item.setHidden(True)
+
+    def filter_step_list(self, text):
+        """단계 목록 필터링"""
+        text = text.lower()
+        for i in range(self.step_list.count()):
+            item = self.step_list.item(i)
+            if text in item.text().lower():
+                item.setHidden(False)
+            else:
+                item.setHidden(True)
 
     # 다음단계 관련 메서드 추가
     def add_next_step(self):
