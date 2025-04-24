@@ -25,6 +25,8 @@ class TaskEditorPopup(QDialog):
         
         # 작업 데이터 초기화
         self.tasks = TaskMan.GetAll_Tasks()
+        self.selectedTask = None
+        self.selectedTaskStep = None
         # for key, task in self.tasks.items():
         #     # print(f"[{key}]")
         #     print(f"[{key}] {task}")
@@ -512,6 +514,11 @@ class TaskEditorPopup(QDialog):
         self.step_list.clear()
         self.start_key_input.setText("")
         self.task_description.setText("")
+        self.start_step_checkbox.setChecked(False)
+        self.step_name_edit.setText("")
+        
+        self.selectedTask = None
+        #여기까지 초기화
         
         items = self.automation_list.selectedItems()
         has_selection = len(items) > 0
@@ -520,18 +527,25 @@ class TaskEditorPopup(QDialog):
         
         selectedItem = items[0]
         # print(selectedItem.text())
-        task = self.tasks.get(selectedItem.text())
+        key = selectedItem.text()
+        task = self.tasks.get(key)
         # print(f"{task}")
         
         if not task:
             return
-            
-        self.start_key_input.setText(task.start_key)
-        self.task_description.setText(task.comment)
         
-        for key in task.tasks.keys():
-            self.step_list.addItem(key)
+        self.selectedTask = TaskMan.Task(
+            tasks=task.tasks,
+            start_key=task.start_key,
+            comment=task.comment,
+        )
 
+        self.start_key_input.setText(self.selectedTask.start_key)
+        self.task_description.setText(self.selectedTask.comment)
+        
+        for key in self.selectedTask.tasks.keys():
+            self.step_list.addItem(key)
+        
     def add_automation(self):
         """새 자동화 항목 추가"""
         count = self.automation_list.count()
@@ -631,10 +645,30 @@ class TaskEditorPopup(QDialog):
     def update_step_buttons_state(self):
         """단계 선택 상태에 따라 버튼 활성화 상태 업데이트"""
         # 선택된 항목이 있는지 확인
-        has_selection = len(self.step_list.selectedItems()) > 0
+        
+        # self.main_type_combo
+        self.start_step_checkbox.setChecked(False)
+        self.step_name_edit.setText("")
+        
+        items = self.step_list.selectedItems()
+        has_selection = len(items) > 0
         
         # 삭제 버튼 활성화/비활성화
         self.remove_step_btn.setEnabled(has_selection)
+        
+        selectedItem = items[0]
+        key = selectedItem.text()
+        # print(key)
+        step = self.selectedTask.tasks.get(key)
+        # print(f"{step}")
+        
+        if not step:
+            return
+        
+        self.selectedTaskStep = step    #복사하기
+        
+        self.start_step_checkbox.setChecked(key == self.selectedTask.start_key)
+        self.step_name_edit.setText(key)
 
     def add_step(self):
         """새 단계 추가"""
