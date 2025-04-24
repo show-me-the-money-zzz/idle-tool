@@ -709,6 +709,8 @@ class TaskEditorPopup(QDialog):
         
         self.similarity_spin.setValue(70.0)
         self.comparison_combo.setCurrentIndex(0)
+        
+        self.click_type_combo.setCurrentIndex(0)
         # 여기까지 초기화
         
         items = self.step_list.selectedItems()
@@ -742,6 +744,12 @@ class TaskEditorPopup(QDialog):
         # print(f"({num}, {op}, {op_text}): {TaskMan.TaskStep.operator_to_desc(op)}")
         self.similarity_spin.setValue(float(num))
         self.comparison_combo.setCurrentText(op_text)
+        
+        # click_items = ["", "이미지", "영역"]
+        click_type = ""
+        if "image" == step.finded_click: click_type = "이미지"
+        elif "zone" == step.finded_click: click_type = "영역"
+        self.click_type_combo.setCurrentText(click_type)
 
     def add_step(self):
         """새 단계 추가"""
