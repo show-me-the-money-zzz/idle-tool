@@ -32,17 +32,21 @@ class TaskEditorPopup(QDialog):
         # UI 설정
         self._setup_ui()
         
-        self.initialize_automation_list()
+        self.initialize_data()
         
-    def initialize_automation_list(self):
+    def initialize_data(self):
         """작업 목록 초기화"""
-        # 기존 항목 모두 제거
-        self.automation_list.clear()
+        
+        self.automation_list.clear() # 기존 항목 모두 제거
+        self.step_list.clear()  # 단계 리스트 초기화
         
         # 작업 데이터에서 키 가져와서 추가
         for key in self.tasks.keys():
+        # for taskkey, steps in self.tasks.items():
             # addItem 사용 - 문자열 그대로 추가
             self.automation_list.addItem(key)
+        # self.automation_list.addItem("하하호호")  # DEV TEST
+        # self.automation_list.addItem("즐겁다")  # DEV TEST
     
     def _setup_ui(self):
         """UI 구성 설정"""
@@ -120,7 +124,7 @@ class TaskEditorPopup(QDialog):
         # # self.automation_list.addItems(["사냥1"])  # 리스트 형태로 전달
         
         # 항목을 더블 클릭하면 수정 가능하도록 설정
-        self.automation_list.itemDoubleClicked.connect(self.edit_automation_item)
+        self.automation_list.itemDoubleClicked.connect(lambda: self.edit_automation_item(self.automation_list.currentItem(), False))
         
         # 선택 변경 시 삭제 버튼 활성화
         self.automation_list.itemSelectionChanged.connect(self.update_automation_buttons_state)
@@ -147,10 +151,10 @@ class TaskEditorPopup(QDialog):
         
         # 편집 버튼 추가
         self.edit_automation_btn = QPushButton("✎")
-        self.edit_automation_btn.setToolTip("선택한 자동화 편집")
+        self.edit_automation_btn.setToolTip("선택한 자동화 이름 편집")
         self.edit_automation_btn.setFixedWidth(32)
         self.edit_automation_btn.setEnabled(False)  # 초기에는 비활성화
-        self.edit_automation_btn.clicked.connect(lambda: self.edit_automation_item(self.automation_list.currentItem()))
+        self.edit_automation_btn.clicked.connect(lambda: self.edit_automation_item(self.automation_list.currentItem(), False))
         automation_buttons_layout.addWidget(self.edit_automation_btn)
         
         # 여백 추가
@@ -209,8 +213,7 @@ class TaskEditorPopup(QDialog):
         
         # 단계 리스트 - 높이 증가
         self.step_list = QListWidget()
-        self.step_list.setMinimumHeight(300)  # 최소 높이 설정 추가
-        self.step_list.addItems([f"단계{i+1}" for i in range(10)])
+        self.step_list.setMinimumHeight(160)  # 최소 높이 설정 추가
         # 선택 변경 시 버튼 상태 업데이트를 위한 이벤트 연결
         self.step_list.itemSelectionChanged.connect(self.update_step_buttons_state)
         step_layout.addWidget(self.step_list)
@@ -504,9 +507,21 @@ class TaskEditorPopup(QDialog):
     # 자동화 목록 관련 메서드 추가
     def update_automation_buttons_state(self):
         """자동화 항목 선택 상태에 따라 버튼 활성화 상태 업데이트"""
-        has_selection = len(self.automation_list.selectedItems()) > 0
+        self.step_list.clear()
+        
+        items = self.automation_list.selectedItems()
+        has_selection = len(items) > 0
         self.remove_automation_btn.setEnabled(has_selection)
         self.edit_automation_btn.setEnabled(has_selection)
+        
+        selectedItem = items[0]
+        # print(selectedItem.text())
+        task = self.tasks.get(selectedItem.text())
+        # print(f"{task}")
+        if not task: return
+        
+        for key in task.tasks.keys():
+            self.step_list.addItem(key)
 
     def add_automation(self):
         """새 자동화 항목 추가"""
