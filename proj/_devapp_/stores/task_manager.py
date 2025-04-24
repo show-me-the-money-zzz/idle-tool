@@ -180,7 +180,8 @@ def GetAll_Tasks() -> dict[str, Task]:
     raw = Tasks.all()
     results: dict[str, Task] = {}
 
-    for key, data in raw.items():
+    # for key, data in raw.items():
+    for key in raw.keys():
         try:
             results[key] = Get_Task(key)
         except Exception as e:
