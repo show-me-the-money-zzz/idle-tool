@@ -333,7 +333,7 @@ class TaskEditorPopup(QDialog):
         self.main_type_combo = QComboBox()
         type_items = ["영역-이미지 매칭",
                     #   "기다리기", "클릭",
-                      ]
+                    ]
         self.main_type_combo.addItems(type_items)
         
         # 항목 최대 길이에 맞게 너비 계산
@@ -358,7 +358,26 @@ class TaskEditorPopup(QDialog):
         
         layout.addLayout(type_layout)
         
-        # 이름 입력 필드 (타입과 영역 사이에 추가)
+        # "잠깐만~" 입력 필드 추가 (타입과 이름 사이에 추가)
+        waiting_layout = QHBoxLayout()
+        waiting_label = QLabel("잠깐만~")
+        waiting_label.setFixedWidth(min_label_width)
+        waiting_layout.addWidget(waiting_label)
+        
+        # SpinBox 설정 (100.00 ~ 0.00, 1.0씩 변경)
+        self.waiting_spin = QDoubleSpinBox()
+        self.waiting_spin.setRange(0.00, 100.00)  # 0.00 ~ 100.00 사이
+        self.waiting_spin.setSingleStep(1.0)      # 1.0 단위로 변경
+        self.waiting_spin.setDecimals(2)          # 소수점 2자리까지 표시
+        self.waiting_spin.setValue(1.00)          # 기본값 설정
+        waiting_layout.addWidget(self.waiting_spin)
+        
+        # 오른쪽 여백 추가
+        waiting_layout.addStretch(1)
+        
+        layout.addLayout(waiting_layout)
+        
+        # 이름 입력 필드 (잠깐만~과 영역 사이에 배치)
         name_layout = QHBoxLayout()
         name_label = QLabel("이름:")
         name_label.setFixedWidth(min_label_width)
