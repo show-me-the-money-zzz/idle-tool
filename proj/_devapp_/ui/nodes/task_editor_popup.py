@@ -586,12 +586,12 @@ class TaskEditorPopup(QDialog):
             if not task:
                 return
             
-            self.selectedTask = task
+            self.selectedTask = (key, task)
             
-            self.start_key_input.setText(self.selectedTask.start_key)
-            self.task_description.setText(self.selectedTask.comment)
+            self.start_key_input.setText(task.start_key)
+            self.task_description.setText(task.comment)
             
-            for key in self.selectedTask.tasks.keys():
+            for key in task.tasks.keys():
                 self.step_list.addItem(key)
         else:
             # 선택된 항목이 없으면 이름 편집 필드 비우기
@@ -719,19 +719,20 @@ class TaskEditorPopup(QDialog):
         selectedItem = items[0]
         key = selectedItem.text()
         # print(key)
-        step = self.selectedTask.tasks.get(key)
+        taskkey, task = self.selectedTask
+        step = task.tasks.get(key)
         # print(f"{step}")
         
         if not step:
             return
         
-        self.selectedTaskStep = step
+        self.selectedTaskStep = (key, step)
         
-        self.start_step_checkbox.setChecked(key == self.selectedTask.start_key)
+        self.start_step_checkbox.setChecked(key == task.start_key)
         self.step_name_edit.setText(key)
         
-        self.zone_combo.setCurrentText(self.selectedTaskStep.zone)
-        self.image_select_combo.setCurrentText(self.selectedTaskStep.image)
+        self.zone_combo.setCurrentText(step.zone)
+        self.image_select_combo.setCurrentText(step.image)
 
     def add_step(self):
         """새 단계 추가"""
