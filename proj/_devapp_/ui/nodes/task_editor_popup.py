@@ -97,7 +97,7 @@ class TaskEditorPopup(QDialog):
         self.automation_list.addItems([f"자동화 항목 {i+1}" for i in range(10)])
         
         # 항목을 더블 클릭하면 수정 가능하도록 설정
-        self.automation_list.itemDoubleClicked.connect(self.edit_automation_item)
+        self.automation_list.itemDoubleClicked.connect(lambda: self.edit_automation_item(self.automation_list.currentItem(), False))
         
         # 선택 변경 시 삭제 버튼 활성화
         self.automation_list.itemSelectionChanged.connect(self.update_automation_buttons_state)
@@ -127,7 +127,7 @@ class TaskEditorPopup(QDialog):
         self.edit_automation_btn.setToolTip("선택한 자동화 이름 편집")
         self.edit_automation_btn.setFixedWidth(32)
         self.edit_automation_btn.setEnabled(False)  # 초기에는 비활성화
-        self.edit_automation_btn.clicked.connect(lambda: self.edit_automation_item(self.automation_list.currentItem()))
+        self.edit_automation_btn.clicked.connect(lambda: self.edit_automation_item(self.automation_list.currentItem(), False))
         automation_buttons_layout.addWidget(self.edit_automation_btn)
         
         # 여백 추가
@@ -497,7 +497,7 @@ class TaskEditorPopup(QDialog):
         self.automation_list.setCurrentRow(count)
         
         # 즉시 편집 모드로 전환
-        self.edit_automation_item(self.automation_list.currentItem())
+        self.edit_automation_item(self.automation_list.currentItem(), True)
 
     def remove_automation(self):
         """선택한 자동화 항목 삭제"""
@@ -512,14 +512,17 @@ class TaskEditorPopup(QDialog):
                 self.automation_list.takeItem(current_row)
                 self.update_automation_buttons_state()
 
-    def edit_automation_item(self, item):
+    def edit_automation_item(self, item, isNew):
         """자동화 항목 편집"""
         if item:
             current_text = item.text()
             
+            text_title = "자동화 추가" if isNew else "자동화 이름 편집"
+            text_conts = "새 이름을 입력하세요:" if isNew else "변경할 이름을 입력하세요"
+            
             # 인라인 편집을 위해 텍스트 입력 대화상자 표시
-            new_text, ok = QInputDialog.getText(self, "자동화 이름 편집", 
-                                                "새 이름을 입력하세요:", 
+            new_text, ok = QInputDialog.getText(self, text_title,
+                                                text_conts, 
                                                 QLineEdit.Normal, current_text)
             
             # 사용자가 확인을 누르고 텍스트가 비어있지 않으면 항목 업데이트
