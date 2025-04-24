@@ -11,6 +11,7 @@ import sys
 from ui.component.searchable_comboBox import SearchableComboBox
 
 import stores.task_manager as TaskMan
+import stores.areas as Areas
 
 class TaskEditorPopup(QDialog):
     """작업 편집기 팝업 창"""
@@ -49,6 +50,17 @@ class TaskEditorPopup(QDialog):
             self.automation_list.addItem(key)
         # self.automation_list.addItem("하하호호")  # DEV TEST
         # self.automation_list.addItem("즐겁다")  # DEV TEST
+        
+        self.zone_combo.clear()
+        self.zone_combo.addItem("")
+        for keys in Areas.GetAll_ZoneAreas().keys():
+            self.zone_combo.addItem(keys)
+        
+        self.image_select_combo.clear()
+        self.image_select_combo.addItem("")
+        for keys in Areas.GetAll_ImageAreas().keys():
+            self.image_select_combo.addItem(keys)
+            
     
     def _setup_ui(self):
         """UI 구성 설정"""
@@ -517,6 +529,9 @@ class TaskEditorPopup(QDialog):
         self.start_step_checkbox.setChecked(False)
         self.step_name_edit.setText("")
         
+        self.zone_combo.setCurrentText("")
+        self.image_select_combo.setCurrentText("")
+        
         self.selectedTask = None
         #여기까지 초기화
         
@@ -650,11 +665,17 @@ class TaskEditorPopup(QDialog):
         self.start_step_checkbox.setChecked(False)
         self.step_name_edit.setText("")
         
+        self.zone_combo.setCurrentText("")
+        self.image_select_combo.setCurrentText("")
+        
         items = self.step_list.selectedItems()
         has_selection = len(items) > 0
         
         # 삭제 버튼 활성화/비활성화
         self.remove_step_btn.setEnabled(has_selection)
+        
+        if not has_selection:
+            return
         
         selectedItem = items[0]
         key = selectedItem.text()
@@ -669,6 +690,9 @@ class TaskEditorPopup(QDialog):
         
         self.start_step_checkbox.setChecked(key == self.selectedTask.start_key)
         self.step_name_edit.setText(key)
+        
+        self.zone_combo.setCurrentText(self.selectedTaskStep.zone)
+        self.image_select_combo.setCurrentText(self.selectedTaskStep.image)
 
     def add_step(self):
         """새 단계 추가"""
