@@ -508,6 +508,8 @@ class TaskEditorPopup(QDialog):
     def update_automation_buttons_state(self):
         """자동화 항목 선택 상태에 따라 버튼 활성화 상태 업데이트"""
         self.step_list.clear()
+        self.start_key_input.setText("")
+        self.task_description.setText("")
         
         items = self.automation_list.selectedItems()
         has_selection = len(items) > 0
@@ -518,7 +520,12 @@ class TaskEditorPopup(QDialog):
         # print(selectedItem.text())
         task = self.tasks.get(selectedItem.text())
         # print(f"{task}")
-        if not task: return
+        
+        if not task:
+            return
+            
+        self.start_key_input.setText(task.start_key)
+        self.task_description.setText(task.comment)
         
         for key in task.tasks.keys():
             self.step_list.addItem(key)
