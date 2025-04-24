@@ -176,6 +176,16 @@ def Get_Task(key, default=None):
     )
     return ret
 _GetAll_Tasks = Tasks.all
+def GetAll_Tasks() -> dict[str, Task]:
+    raw = Tasks.all()
+    results: dict[str, Task] = {}
+
+    for key, data in raw.items():
+        try:
+            results[key] = Get_Task(key)
+        except Exception as e:
+            print(f"[Task Load Error] '{key}' 변환 실패: {e}")
+    return results
 Save_Tasks = Tasks.save
 
 def initialize():
