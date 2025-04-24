@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout,
 from PySide6.QtGui import QIcon, QFont
 from PySide6.QtCore import Qt, Signal
 import sys
+# import copy
 
 from ui.component.searchable_comboBox import SearchableComboBox
 
@@ -519,10 +520,14 @@ class TaskEditorPopup(QDialog):
         layout.addLayout(guide_layout)
         
         return group
-
+        
     # 자동화 목록 관련 메서드 추가
     def update_automation_buttons_state(self):
         """자동화 항목 선택 상태에 따라 버튼 활성화 상태 업데이트"""
+        self.Check_Modify()
+        
+        self.selectedTask = None
+        
         self.step_list.clear()
         self.start_key_input.setText("")
         self.task_description.setText("")
@@ -532,7 +537,6 @@ class TaskEditorPopup(QDialog):
         self.zone_combo.setCurrentText("")
         self.image_select_combo.setCurrentText("")
         
-        self.selectedTask = None
         #여기까지 초기화
         
         items = self.automation_list.selectedItems()
@@ -549,11 +553,12 @@ class TaskEditorPopup(QDialog):
         if not task:
             return
         
-        self.selectedTask = TaskMan.Task(
-            tasks=task.tasks,
-            start_key=task.start_key,
-            comment=task.comment,
-        )
+        # self.selectedTask = TaskMan.Task(
+        #     tasks=task.tasks,
+        #     start_key=task.start_key,
+        #     comment=task.comment,
+        # )
+        self.selectedTask = task
 
         self.start_key_input.setText(self.selectedTask.start_key)
         self.task_description.setText(self.selectedTask.comment)
@@ -659,7 +664,10 @@ class TaskEditorPopup(QDialog):
 
     def update_step_buttons_state(self):
         """단계 선택 상태에 따라 버튼 활성화 상태 업데이트"""
+        modify = self.Check_Modify()
+
         # 선택된 항목이 있는지 확인
+        self.selectedTaskStep = None
         
         # self.main_type_combo
         self.start_step_checkbox.setChecked(False)
@@ -686,7 +694,7 @@ class TaskEditorPopup(QDialog):
         if not step:
             return
         
-        self.selectedTaskStep = step    #복사하기
+        self.selectedTaskStep = step
         
         self.start_step_checkbox.setChecked(key == self.selectedTask.start_key)
         self.step_name_edit.setText(key)
@@ -717,6 +725,27 @@ class TaskEditorPopup(QDialog):
             
             # 버튼 상태 업데이트
             self.update_step_buttons_state()
+            
+    def Check_Modify(self):
+        return False
+            
+    # # dataclass는 내부적으로 __eq__()를 제공하므로 객체 비교가 가능
+    # def is_task_modified(self): return self.selectedTask != self.originalTask
+    # def is_step_modified(self): return self.selectedTaskStep != self.originalTaskStep
+
+    def OpenPopup_WarningSave(self):
+        reply = QMessageBox.question(
+            self,
+            "변경 내용 확인",
+            "변경된 내용이 있습니다. 저장하시겠습니까?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        # print(reply)
+        return (True if QMessageBox.Yes == reply else False)
+        # if reply == QMessageBox.No:
+            # return
+        # self.reject()
     
     def save_task(self):
         """작업 저장"""
