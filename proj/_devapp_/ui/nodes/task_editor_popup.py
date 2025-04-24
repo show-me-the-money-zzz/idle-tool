@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout,
                              QGridLayout, QApplication, QMessageBox,
                              QDoubleSpinBox, QSizePolicy, QInputDialog)
 from PySide6.QtGui import QIcon, QFont
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QEvent
 import sys
 # import copy
 
@@ -139,45 +139,55 @@ class TaskEditorPopup(QDialog):
         # # self.automation_list.addItems(["사냥1"])  # 리스트 형태로 전달
         
         # 항목을 더블 클릭하면 수정 가능하도록 설정
-        self.automation_list.itemDoubleClicked.connect(lambda: self.edit_automation_item(self.automation_list.currentItem(), False))
+        # self.automation_list.itemDoubleClicked.connect(lambda: self.edit_automation_item(self.automation_list.currentItem(), False))
         
         # 선택 변경 시 삭제 버튼 활성화
         self.automation_list.itemSelectionChanged.connect(self.update_automation_buttons_state)
+        # Enter 키 이벤트 처리를 위한 이벤트 필터 설치
+        self.automation_list.installEventFilter(self)
         
         left_layout.addWidget(self.automation_list)
         
         # 버튼 그룹 - 자동화 목록 하단
         automation_buttons_layout = QHBoxLayout()
         
-        # + 버튼
+        # 자동화 이름 편집 필드 추가
+        self.automation_name_edit = QLineEdit()
+        self.automation_name_edit.setPlaceholderText("자동화 이름 입력...")
+        automation_buttons_layout.addWidget(self.automation_name_edit, 1)  # 가중치 1로 설정하여 확장되게 함
+        
+        # 버튼 컨테이너 (우측 정렬을 위한)
+        button_container = QHBoxLayout()
+        button_container.setContentsMargins(0, 0, 0, 0)
+        button_container.setSpacing(2)  # 버튼 간 간격 축소
+        
+        # + 버튼 (크기 축소)
         self.add_automation_btn = QPushButton("✚")
         self.add_automation_btn.setToolTip("자동화 추가")
-        self.add_automation_btn.setFixedWidth(32)
+        self.add_automation_btn.setFixedWidth(24)  # 크기 축소
+        self.add_automation_btn.setFixedHeight(24) # 크기 축소
         self.add_automation_btn.clicked.connect(self.add_automation)
-        automation_buttons_layout.addWidget(self.add_automation_btn)
+        button_container.addWidget(self.add_automation_btn)
         
-        # - 버튼 (초기에는 비활성화)
+        # - 버튼 (크기 축소, 초기에는 비활성화)
         self.remove_automation_btn = QPushButton("━")
         self.remove_automation_btn.setToolTip("선택한 자동화 삭제")
-        self.remove_automation_btn.setFixedWidth(32)
+        self.remove_automation_btn.setFixedWidth(24)  # 크기 축소
+        self.remove_automation_btn.setFixedHeight(24) # 크기 축소
         self.remove_automation_btn.setEnabled(False)  # 초기에는 비활성화
         self.remove_automation_btn.clicked.connect(self.remove_automation)
-        automation_buttons_layout.addWidget(self.remove_automation_btn)
+        button_container.addWidget(self.remove_automation_btn)
         
-        # 편집 버튼 추가
-        self.edit_automation_btn = QPushButton("✎")
-        self.edit_automation_btn.setToolTip("선택한 자동화 이름 편집")
-        self.edit_automation_btn.setFixedWidth(32)
-        self.edit_automation_btn.setEnabled(False)  # 초기에는 비활성화
-        self.edit_automation_btn.clicked.connect(lambda: self.edit_automation_item(self.automation_list.currentItem(), False))
-        automation_buttons_layout.addWidget(self.edit_automation_btn)
-        
-        # 여백 추가
-        automation_buttons_layout.addStretch(1)
+        # 버튼 컨테이너를 메인 레이아웃에 추가
+        automation_buttons_layout.addLayout(button_container)
         
         left_layout.addLayout(automation_buttons_layout)
         
         automation_layout.addWidget(left_content)
+        
+        # # 자동화 이름 적용 버튼 핸들러 추가
+        # self.automation_name_edit.returnPressed.connect(self.apply_automation_name)
+        self.automation_name_edit.returnPressed.connect(lambda: None)
         
         # 오른쪽 내용을 담을 위젯
         right_content = QWidget()
@@ -209,6 +219,9 @@ class TaskEditorPopup(QDialog):
         
         # 상단 그룹을 레이아웃에 추가
         layout.addWidget(automation_group, 1)  # 비율 1
+        
+        # 하단 그룹은 변경 없이 유지...
+        # (이하 코드는 동일)
         
         # 하단 - 단계 목록 그룹 (왼쪽 패널의 내용을 기본 탭에 포함)
         step_group = QGroupBox("단계 목록")
@@ -258,6 +271,17 @@ class TaskEditorPopup(QDialog):
         
         # 하단 그룹을 레이아웃에 추가 - 비율 증가
         layout.addWidget(step_group, 2)  # 비율 2로 증가
+        
+    # 클래스 내에 이벤트 필터 메서드 추가
+    def eventFilter(self, obj, event):
+        # automation_list에서 Enter 키를 눌렀을 때의 동작 처리
+        if obj == self.automation_list and event.type() == QEvent.KeyPress:
+            if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+                # Enter 키 이벤트를 소비하고 false 반환하여 기본 동작 막기
+                return True
+    
+        # 기본 이벤트 처리로 돌아가기
+        return super().eventFilter(obj, event)
     
     def _setup_preview_tab(self):
         """프리뷰 탭 구성"""
@@ -521,6 +545,14 @@ class TaskEditorPopup(QDialog):
         
         return group
         
+    def apply_automation_name(self):
+        """자동화 이름을 현재 선택된 항목에 적용"""
+        current_item = self.automation_list.currentItem()
+        if current_item:
+            new_name = self.automation_name_edit.text().strip()
+            if new_name:
+                current_item.setText(new_name)
+            
     # 자동화 목록 관련 메서드 추가
     def update_automation_buttons_state(self):
         """자동화 항목 선택 상태에 따라 버튼 활성화 상태 업데이트"""
@@ -537,34 +569,33 @@ class TaskEditorPopup(QDialog):
         self.zone_combo.setCurrentText("")
         self.image_select_combo.setCurrentText("")
         
-        #여기까지 초기화
+        # 여기까지 초기화
         
         items = self.automation_list.selectedItems()
         has_selection = len(items) > 0
         self.remove_automation_btn.setEnabled(has_selection)
-        self.edit_automation_btn.setEnabled(has_selection)
         
-        selectedItem = items[0]
-        # print(selectedItem.text())
-        key = selectedItem.text()
-        task = self.tasks.get(key)
-        # print(f"{task}")
-        
-        if not task:
-            return
-        
-        # self.selectedTask = TaskMan.Task(
-        #     tasks=task.tasks,
-        #     start_key=task.start_key,
-        #     comment=task.comment,
-        # )
-        self.selectedTask = task
-
-        self.start_key_input.setText(self.selectedTask.start_key)
-        self.task_description.setText(self.selectedTask.comment)
-        
-        for key in self.selectedTask.tasks.keys():
-            self.step_list.addItem(key)
+        # 선택된 항목이 있으면 이름 편집 필드에 표시
+        if has_selection:
+            selectedItem = items[0]
+            self.automation_name_edit.setText(selectedItem.text())
+            
+            key = selectedItem.text()
+            task = self.tasks.get(key)
+            
+            if not task:
+                return
+            
+            self.selectedTask = task
+            
+            self.start_key_input.setText(self.selectedTask.start_key)
+            self.task_description.setText(self.selectedTask.comment)
+            
+            for key in self.selectedTask.tasks.keys():
+                self.step_list.addItem(key)
+        else:
+            # 선택된 항목이 없으면 이름 편집 필드 비우기
+            self.automation_name_edit.clear()
         
     def add_automation(self):
         """새 자동화 항목 추가"""
