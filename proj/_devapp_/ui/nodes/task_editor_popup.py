@@ -61,7 +61,8 @@ class TaskEditorPopup(QDialog):
         self.image_select_combo.addItem("")
         for keys in Areas.GetAll_ImageAreas().keys():
             self.image_select_combo.addItem(keys)
-            
+        self.fail_step_combo.clear()
+        self.next_step_combo.clear()
     
     def _setup_ui(self):
         """UI 구성 설정"""
@@ -483,9 +484,9 @@ class TaskEditorPopup(QDialog):
         fail_step_layout.addWidget(fail_step_label)
         
         # 샘플 항목 생성
-        fail_step_items = [ "" ]
-        fail_step_items += [ f"단계{i}" for i in range(1, 31)]
-        self.fail_step_combo = SearchableComboBox(items=fail_step_items)
+        # fail_step_items = [ "" ]
+        # fail_step_items += [ f"단계{i}" for i in range(1, 31)]
+        self.fail_step_combo = SearchableComboBox(items=[ "" ])
         self.fail_step_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         fail_step_layout.addWidget(self.fail_step_combo)
         
@@ -498,8 +499,8 @@ class TaskEditorPopup(QDialog):
         next_step_layout.addWidget(next_step_label)
         
         # 샘플 항목 생성
-        next_step_items = [f"단계{i}" for i in range(1, 31)]
-        self.next_step_combo = SearchableComboBox(items=next_step_items)
+        # next_step_items = [f"단계{i}" for i in range(1, 31)]
+        self.next_step_combo = SearchableComboBox(items=[ "" ])
         self.next_step_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         next_step_layout.addWidget(self.next_step_combo)
         
@@ -569,6 +570,9 @@ class TaskEditorPopup(QDialog):
         self.zone_combo.setCurrentText("")
         self.image_select_combo.setCurrentText("")
         
+        self.fail_step_combo.clear()
+        self.next_step_combo.clear()
+        
         # 여기까지 초기화
         
         items = self.automation_list.selectedItems()
@@ -591,8 +595,12 @@ class TaskEditorPopup(QDialog):
             self.start_key_input.setText(task.start_key)
             self.task_description.setText(task.comment)
             
+            self.fail_step_combo.addItem("")
+            self.next_step_combo.addItem("")
             for key in task.tasks.keys():
                 self.step_list.addItem(key)
+                self.fail_step_combo.addItem(key)
+                self.next_step_combo.addItem(key)
         else:
             # 선택된 항목이 없으면 이름 편집 필드 비우기
             self.automation_name_edit.clear()
@@ -711,6 +719,9 @@ class TaskEditorPopup(QDialog):
         self.comparison_combo.setCurrentIndex(0)
         
         self.click_type_combo.setCurrentIndex(0)
+        
+        self.next_steps_list.clear()
+        
         # 여기까지 초기화
         
         items = self.step_list.selectedItems()
@@ -750,6 +761,10 @@ class TaskEditorPopup(QDialog):
         if "image" == step.finded_click: click_type = "이미지"
         elif "zone" == step.finded_click: click_type = "영역"
         self.click_type_combo.setCurrentText(click_type)
+        
+        self.fail_step_combo.setCurrentText(step.fail_step)
+        for nextstep in step.next_step:
+            self.next_steps_list.addItem(nextstep)
 
     def add_step(self):
         """새 단계 추가"""
