@@ -80,64 +80,77 @@ class TaskStep:
     fail_step: str
     comment: str
 
-    def evaluate_score_condition(self, actual: float) -> bool:
-        """점수 조건 평가: '<=65'는 '실제 점수가 65 이상이면 참'으로 해석"""
+    def parse_score(self) -> tuple:
+        """score 문자열을 (숫자, 연산자, 설명) 형태의 튜플로 반환"""
         match = re.match(r"(<=|>=|<|>|==|!=)?\s*(\d+(?:\.\d+)?)", self.score.strip())
         if not match:
-            return False
-
-        op_str, value = match.groups()
-        value = float(value)
-        
-        # 점수 조건 해석 (매칭 방향과 반대로 해석)
-        # <= : 실제 점수가 기준값 이상이면 성공
-        # >= : 실제 점수가 기준값 이하이면 성공
-        # <  : 실제 점수가 기준값 초과이면 성공
-        # >  : 실제 점수가 기준값 미만이면 성공
-        
-        if op_str == "<=":
-            return actual >= value
-        elif op_str == ">=":
-            return actual <= value
-        elif op_str == "<":
-            return actual > value
-        elif op_str == ">":
-            return actual < value
-        elif op_str == "==":
-            return actual == value
-        elif op_str == "!=":
-            return actual != value
-        else:
-            # 연산자가 지정되지 않은 경우 (기본값으로 동등 비교)
-            return actual == value
-        
-    def Print_Score(self) -> str:
-        """점수 조건을 한글로 설명하는 함수"""
-        match = re.match(r"(<=|>=|<|>|==|!=)?\s*(\d+(?:\.\d+)?)", self.score.strip())
-        if not match:
-            return "유효하지 않은 점수 조건"
+            return (0, "==", "일치")
 
         op_str, value = match.groups()
         
         # 연산자가 없을 경우 기본값 설정
         if not op_str:
             op_str = "=="
+            
+        return (float(value), op_str, self.operator_to_desc(op_str))
+    
+    @staticmethod
+    def operator_to_desc(op_str: str) -> str:
+        """연산자 문자열을 설명 문자열로 변환"""
+        op_map = {
+            "<=": "이상",
+            ">=": "이하",
+            "<": "초과",
+            ">": "미만",
+            "==": "일치",
+            "!=": "다른"
+        }
+        return op_map.get(op_str, "일치")
+    
+    @staticmethod
+    def desc_to_operator(desc: str) -> str:
+        """설명 문자열을 연산자 문자열로 변환"""
+        desc_map = {
+            "이상": "<=",
+            "이하": ">",
+            "초과": "<",
+            "미만": ">",
+            "일치": "==",
+            "다른": "!="
+        }
+        return desc_map.get(desc, "==")
+    
+    @staticmethod
+    def make_score_string(value: float, desc: str) -> str:
+        """숫자와 설명을 받아 score 문자열 생성"""
+        op_str = TaskStep.desc_to_operator(desc)
+        return f"{op_str}{value}"
+
+    def evaluate_score_condition(self, actual: float) -> bool:
+        """점수 조건 평가: '<=65'는 '실제 점수가 65 이상이면 참'으로 해석"""
+        value, op_str, _ = self.parse_score()
         
-        # 연산자에 따른 한글 설명
+        # 점수 조건 해석 (매칭 방향과 반대로 해석)
         if op_str == "<=":
-            return f"{value}% 이상"
+            return actual >= value
         elif op_str == ">=":
-            return f"{value}% 이하"
-        elif op_str == "<":
-            return f"{value}% 초과"
+            return actual <= value
         elif op_str == ">":
-            return f"{value}% 미만"
+            return actual < value
+        elif op_str == "<":
+            return actual > value
         elif op_str == "==":
-            return f"{value}% 정확히"
+            return actual == value
         elif op_str == "!=":
-            return f"{value}% 아님"
+            return actual != value
         else:
-            return f"{value}%"
+            return actual == value
+        
+    def Print_Score(self) -> str:
+        """점수 조건을 한글로 설명하는 함수"""
+        value, _, desc = self.parse_score()
+        return f"{value}% {desc}"
+    
 @dataclass
 class Task:
     tasks: dict[str, TaskStep]
