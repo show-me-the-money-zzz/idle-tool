@@ -7,8 +7,8 @@ import ui.css as CSS
 class ControlFrame(QFrame):
     """캡처 제어 프레임"""
     
-    RUNNER_BUTTON_START_TEXT = "스캔 ▶️" 
-    RUNNER_BUTTON_STOP_TEXT = "스캔 🟥"
+    RUNNER_BUTTON_START_TEXT = "일해라 ▶️" 
+    RUNNER_BUTTON_STOP_TEXT = "쉬어라 🟥"
     
     def __init__(self, parent, status_signal, toggle_capture_callback, 
                  apply_interval_callback,
