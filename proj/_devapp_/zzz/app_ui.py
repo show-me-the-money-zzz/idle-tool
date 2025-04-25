@@ -225,8 +225,8 @@ class AppUI(QMainWindow):
             #     x, y, width, height, interval = current_settings
             #     popup.set_capture_info(x, y, width, height, interval)
                 
-            # 모달 다이얼로그로 표시 (exec() 사용)
-            popup.exec()  # show() 대신 exec() 사용
+            # popup.exec()  # 모달 다이얼로그로 표시. 블로킹
+            popup.show()    #모달리스
                 
         except Exception as e:
             QMessageBox.critical(self, "오류", f"캡처 영역 설정 창을 열 수 없습니다: {str(e)}")
@@ -245,8 +245,8 @@ class AppUI(QMainWindow):
                 self,
             )
             
-            # 모달 다이얼로그로 표시 (exec() 사용)
-            popup.exec()  # show() 대신 exec() 사용
+            popup.show()
+            # popup.exec()    # 부모 창 제어권 뺏음
                 
         except Exception as e:
             QMessageBox.critical(self, "오류", f"캡처 영역 설정 창을 열 수 없습니다: {str(e)}")
