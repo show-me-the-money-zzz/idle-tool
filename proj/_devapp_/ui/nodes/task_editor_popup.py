@@ -32,6 +32,12 @@ class TaskEditorPopup(QDialog):
         # for key, task in self.tasks.items():
         #     # print(f"[{key}]")
         #     print(f"[{key}] {task}")
+        # self.selected_originkey
+        # self.selected_currentkey	#task의 이름 변경 대비 (사냥1이 originkey / 사냥XX currentkey)
+        # self.selected_currenttask	# deepcopy(task) 컨트롤 변경을 일일이 업데이트
+        # # 변경 전에 저장된 데이터 있는지 확인
+        # ## selected_originkey 가 원본에 없는 key이면 추가
+        # ## 있는 key면 selected_currentkey / selected_currenttask으로 비교해서 변경사항 추적
         
         # UI 설정
         self._setup_ui()
