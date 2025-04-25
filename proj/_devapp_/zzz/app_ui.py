@@ -158,11 +158,12 @@ class AppUI(QMainWindow):
                                           )
         self.main_layout.addWidget(self.control_frame)
         
-        # 3. 입력 처리 프레임
-        self.input_handler_frame = InputHandlerFrame(self, self.status_changed)
-        # 입력 처리 프레임도 필요한 최소 높이만 사용
-        self.input_handler_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.main_layout.addWidget(self.input_handler_frame)
+        if not RELEASE_APP:
+            # 3. 입력 처리 프레임
+            self.input_handler_frame = InputHandlerFrame(self, self.status_changed)
+            # 입력 처리 프레임도 필요한 최소 높이만 사용
+            self.input_handler_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+            self.main_layout.addWidget(self.input_handler_frame)
         
         # 4. 로그 프레임 - 확장 가능하도록 설정
         self.log_frame = LogFrame(self, self.status_changed)
