@@ -650,6 +650,76 @@ class TaskEditorPopup(QDialog):
         else:
             # 선택된 항목이 없으면 이름 편집 필드 비우기
             self.automation_name_edit.clear()
+
+    def update_step_buttons_state(self):
+        """단계 선택 상태에 따라 버튼 활성화 상태 업데이트"""
+        modify = self.Check_Modify()
+
+        # 선택된 항목이 있는지 확인
+        self.selectedTaskStep = None
+        
+        # self.main_type_combo
+        self.start_step_checkbox.setChecked(False)
+        self.waiting_spin.setValue(0.00)
+        self.step_name_edit.setText("")
+        
+        self.zone_combo.setCurrentText("")
+        self.image_select_combo.setCurrentText("")
+        
+        self.similarity_spin.setValue(70.0)
+        self.comparison_combo.setCurrentIndex(0)
+        
+        self.click_type_combo.setCurrentIndex(0)
+        
+        self.next_steps_list.clear()
+        
+        self.step_description.setText("")
+        
+        # 여기까지 초기화
+        
+        items = self.step_list.selectedItems()
+        has_selection = len(items) > 0
+        
+        # 삭제 버튼 활성화/비활성화
+        self.remove_step_btn.setEnabled(has_selection)
+        
+        if not has_selection:
+            return
+        
+        selectedItem = items[0]
+        key = selectedItem.text()
+        # print(key)
+        taskkey, task = self.selectedTask
+        step = task.steps.get(key)
+        # print(f"{step}")
+        
+        if not step:
+            return
+        
+        self.selectedTaskStep = (key, step)        
+        
+        self.start_step_checkbox.setChecked(key == task.start_key)
+        self.waiting_spin.setValue(step.waiting)
+        self.step_name_edit.setText(key)
+        
+        self.zone_combo.setCurrentText(step.zone)
+        self.image_select_combo.setCurrentText(step.image)
+        
+        num, op, op_text = step.parse_score()
+        # print(f"({num}, {op}, {op_text}): {TaskMan.TaskStep.operator_to_desc(op)}")
+        self.similarity_spin.setValue(float(num))
+        self.comparison_combo.setCurrentText(op_text)
+        
+        # click_items = ["", "이미지", "영역"]
+        click_type = ""
+        if "image" == step.finded_click: click_type = "이미지"
+        elif "zone" == step.finded_click: click_type = "영역"
+        self.click_type_combo.setCurrentText(click_type)
+        
+        self.fail_step_combo.setCurrentText(step.fail_step)
+        for nextstep in step.next_step:
+            self.next_steps_list.addItem(nextstep)
+        self.step_description.setText(step.comment)
         
     def add_automation(self):
         """새 자동화 항목 추가"""
@@ -746,76 +816,6 @@ class TaskEditorPopup(QDialog):
         
         # 삭제 버튼 활성화/비활성화
         self.remove_next_step_btn.setEnabled(has_selection)
-
-    def update_step_buttons_state(self):
-        """단계 선택 상태에 따라 버튼 활성화 상태 업데이트"""
-        modify = self.Check_Modify()
-
-        # 선택된 항목이 있는지 확인
-        self.selectedTaskStep = None
-        
-        # self.main_type_combo
-        self.start_step_checkbox.setChecked(False)
-        self.waiting_spin.setValue(0.00)
-        self.step_name_edit.setText("")
-        
-        self.zone_combo.setCurrentText("")
-        self.image_select_combo.setCurrentText("")
-        
-        self.similarity_spin.setValue(70.0)
-        self.comparison_combo.setCurrentIndex(0)
-        
-        self.click_type_combo.setCurrentIndex(0)
-        
-        self.next_steps_list.clear()
-        
-        self.step_description.setText("")
-        
-        # 여기까지 초기화
-        
-        items = self.step_list.selectedItems()
-        has_selection = len(items) > 0
-        
-        # 삭제 버튼 활성화/비활성화
-        self.remove_step_btn.setEnabled(has_selection)
-        
-        if not has_selection:
-            return
-        
-        selectedItem = items[0]
-        key = selectedItem.text()
-        # print(key)
-        taskkey, task = self.selectedTask
-        step = task.steps.get(key)
-        # print(f"{step}")
-        
-        if not step:
-            return
-        
-        self.selectedTaskStep = (key, step)        
-        
-        self.start_step_checkbox.setChecked(key == task.start_key)
-        self.waiting_spin.setValue(step.waiting)
-        self.step_name_edit.setText(key)
-        
-        self.zone_combo.setCurrentText(step.zone)
-        self.image_select_combo.setCurrentText(step.image)
-        
-        num, op, op_text = step.parse_score()
-        # print(f"({num}, {op}, {op_text}): {TaskMan.TaskStep.operator_to_desc(op)}")
-        self.similarity_spin.setValue(float(num))
-        self.comparison_combo.setCurrentText(op_text)
-        
-        # click_items = ["", "이미지", "영역"]
-        click_type = ""
-        if "image" == step.finded_click: click_type = "이미지"
-        elif "zone" == step.finded_click: click_type = "영역"
-        self.click_type_combo.setCurrentText(click_type)
-        
-        self.fail_step_combo.setCurrentText(step.fail_step)
-        for nextstep in step.next_step:
-            self.next_steps_list.addItem(nextstep)
-        self.step_description.setText(step.comment)
 
     def add_step(self):
         """새 단계 추가"""
