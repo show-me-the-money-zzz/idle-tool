@@ -571,12 +571,18 @@ class TaskEditorPopup(QDialog):
         
         layout.addLayout(next_steps_list_layout)
         
-        # 여백 추가
-        layout.addStretch(1)
+        # 설명 입력 영역
+        layout.addWidget(QLabel("설명:"))
+        self.step_description = QTextEdit()
+        self.step_description.setMinimumHeight(40)  # 최소 높이 설정
+        layout.addWidget(self.step_description)
+        
+        # 여백 추가 (설명 컨트롤 추가로 여백 제거)
+        # layout.addStretch(1)
         
         # 참고 레이블 추가 (최하단)
         guide_layout = QHBoxLayout()
-        guide_label = QLabel("※검색 가능")
+        guide_label = QLabel("※실패 후 단계 / 다음 단계는 검색 가능")
         guide_label.setStyleSheet("color: gray; font-size: 9pt;")  # 작은 회색 텍스트
         guide_layout.addWidget(guide_label)
         guide_layout.addStretch(1)  # 오른쪽 여백 추가
@@ -611,6 +617,7 @@ class TaskEditorPopup(QDialog):
         
         self.fail_step_combo.clear()
         self.next_step_combo.clear()
+        self.step_description.setText("")
         
         # 여기까지 초기화
         
@@ -762,6 +769,8 @@ class TaskEditorPopup(QDialog):
         
         self.next_steps_list.clear()
         
+        self.step_description.setText("")
+        
         # 여기까지 초기화
         
         items = self.step_list.selectedItems()
@@ -806,6 +815,7 @@ class TaskEditorPopup(QDialog):
         self.fail_step_combo.setCurrentText(step.fail_step)
         for nextstep in step.next_step:
             self.next_steps_list.addItem(nextstep)
+        self.step_description.setText(step.comment)
 
     def add_step(self):
         """새 단계 추가"""
