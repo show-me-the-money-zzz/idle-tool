@@ -624,7 +624,7 @@ class TaskEditorPopup(QDialog):
             
             self.fail_step_combo.addItem("")
             self.next_step_combo.addItem("")
-            for key in task.tasks.keys():
+            for key in task.steps.keys():
                 self.step_list.addItem(key)
                 self.fail_step_combo.addItem(key)
                 self.next_step_combo.addItem(key)
@@ -765,7 +765,7 @@ class TaskEditorPopup(QDialog):
         key = selectedItem.text()
         # print(key)
         taskkey, task = self.selectedTask
-        step = task.tasks.get(key)
+        step = task.steps.get(key)
         # print(f"{step}")
         
         if not step:

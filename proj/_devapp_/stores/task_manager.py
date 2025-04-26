@@ -153,12 +153,12 @@ class TaskStep:
     
 @dataclass
 class Task:
-    tasks: dict[str, TaskStep]
+    steps: dict[str, TaskStep]
     start_key: str
     comment: str
 
     def Get_Step(self, key, default=None):
-        return self.tasks.get(key, default)
+        return self.steps.get(key, default)
 
 # 인터페이스 함수 정의
 Add_Task = Tasks.add
@@ -181,7 +181,7 @@ def Get_Task(key, default=None):
     # print("seq 3")
 
     ret = Task(
-        tasks=step_dict,
+        steps=step_dict,
         # tasks = {},
 
         start_key=data["start_key"],
