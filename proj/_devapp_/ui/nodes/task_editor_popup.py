@@ -27,6 +27,18 @@ class TaskEditorPopup(QDialog):
         
         # 작업 데이터 초기화
         self.tasks = TaskMan.GetAll_Tasks()
+        def DevTEST():
+            # for key, task in self.tasks.items():
+            #     print(f"[{key}] {task}")
+            task_keyz = self.tasks.keys()
+            # print(f"{task_keyz}")
+            사냥1 = self.tasks.get('사냥1')
+            # print(f"{사냥1}")
+            # 사냥1_keyz = 사냥1.steps.keys()
+            # print(f"{사냥1_keyz}")
+            사냥1_표준치료제찾기 = 사냥1.steps.get("표준치료제찾기")
+            print(f"{사냥1_표준치료제찾기}")
+        # DevTEST()
         self.selectedTask = None
         self.selectedTaskStep = None
         # for key, task in self.tasks.items():
