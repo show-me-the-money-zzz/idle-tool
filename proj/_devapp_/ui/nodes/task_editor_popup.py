@@ -8,11 +8,26 @@ from PySide6.QtGui import QIcon, QFont
 from PySide6.QtCore import Qt, Signal, QEvent
 import sys
 # import copy
+from dataclasses import dataclass
+from typing import Optional
 
 from ui.component.searchable_comboBox import SearchableComboBox
 
 import stores.task_manager as TaskMan
 import stores.areas as Areas
+
+@dataclass
+class SelectedTask:
+    origin_key: str #task의 이름 변경 대비 (사냥1이 origin_key / 사냥XX current_key)
+    current_key: str    
+    task: Optional[TaskMan.Task]    # deepcopy(task) 컨트롤 변경을 일일이 업데이트
+    # task: TaskMan.Task | None
+    origin_step_key: str    #step의 이름 변경 대비 (잡화상점찾기 origin_step_key / 잡화상점찾기가기 current_step_key)
+    current_step_key: str
+    
+    # # 변경 전에 저장된 데이터 있는지 확인
+    # ## selected_originkey 가 원본에 없는 key이면 추가
+    # ## 있는 key면 selected_currentkey / selected_currenttask으로 비교해서 변경사항 추적
 
 class TaskEditorPopup(QDialog):
     """작업 편집기 팝업 창"""
@@ -39,17 +54,28 @@ class TaskEditorPopup(QDialog):
             사냥1_표준치료제찾기 = 사냥1.steps.get("표준치료제찾기")
             print(f"{사냥1_표준치료제찾기}")
         # DevTest_Tasks()
+        def DevTest_Selected():
+            selectedTask = SelectedTask(
+                origin_key="aa",
+                current_key="",
+                task=None,
+                origin_step_key = "",
+                current_step_key="")
+            print(f"{selectedTask.origin_key}, {selectedTask.task}")
+            
+            selectedTask.origin_key = "사냥1"
+            selectedTask.task = self.tasks.get(selectedTask.origin_key)
+            # print(f"{selectedTask.task}")
+            selectedTask.current_key = "사냥-손창욱"    # selectedTask.task가 변경될 때 원본 데이터 대체
+            
+            selectedTask.origin_step_key = "잡화상점이동"
+            step = selectedTask.task.Get_Step(selectedTask.origin_step_key)
+            print(f"{step}")
+            selectedTask.current_step_key = "잡화상점이동해야지"    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
+        DevTest_Selected()
+        
         self.selectedTask = None
         self.selectedTaskStep = None
-        # for key, task in self.tasks.items():
-        #     # print(f"[{key}]")
-        #     print(f"[{key}] {task}")
-        # self.selected_originkey
-        # self.selected_currentkey	#task의 이름 변경 대비 (사냥1이 originkey / 사냥XX currentkey)
-        # self.selected_currenttask	# deepcopy(task) 컨트롤 변경을 일일이 업데이트
-        # # 변경 전에 저장된 데이터 있는지 확인
-        # ## selected_originkey 가 원본에 없는 key이면 추가
-        # ## 있는 key면 selected_currentkey / selected_currenttask으로 비교해서 변경사항 추적
         
         # UI 설정
         self._setup_ui()
