@@ -47,6 +47,17 @@ class SelectedTask:
     def IsExistStep(self, stepkey):
         return (None != self.task.steps.get(stepkey))
     
+    def UpdateTask_Key(self, key):
+        if "" == self.origin_key:
+            return
+        self.current_key = key
+        # print(f"task key: {self.origin_key} vs {self.current_key}")
+    def UpdateTask_Comment(self, text):
+        if "" == self.origin_key:
+            return
+        self.task.comment = text
+        # print(f"{self.task}")
+    
     def UpdateStep_NextSteps(self, widget: QListWidget):
         if "" == self.origin_key or "" == self.origin_step_key:
             return

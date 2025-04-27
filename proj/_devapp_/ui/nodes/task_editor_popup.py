@@ -90,8 +90,8 @@ class TaskEditorPopup(QDialog):
         main_layout.addLayout(buttons_layout)
         
     def Connect_ChangedUI(self):
-        # self.automation_name_edit.textChanged.connect(lambda task_name: print(f"task_name= {task_name}"))
-        # self.task_description.textChanged.connect(lambda: print(f"task_desc= {self.task_description.toPlainText()}"))
+        self.automation_name_edit.textChanged.connect(lambda task_name: self.selectedTask.UpdateTask_Key(task_name))
+        self.task_description.textChanged.connect(lambda: self.selectedTask.UpdateTask_Comment(self.task_description.toPlainText()))
         
         # self.main_type_combo.currentTextChanged.connect(lambda type: print(f"type= {type}"))
         # self.waiting_spin.valueChanged.connect(lambda waiting: print(f"waiting= {waiting}"))
