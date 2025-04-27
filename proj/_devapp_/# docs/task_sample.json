@@ -105,7 +105,7 @@
         "type": "matching",
         "zone": "월드맵",
         "image": "아이콘",
-        "score": "<=65",
+        "score": ">65",
         "finded_click": "image",
         "next_step": [
           "타켓몹"
@@ -119,7 +119,7 @@
         "type": "matching",
         "zone": "몹리스트",
         "image": "XX 몹",
-        "score": "<=65",
+        "score": "==65",
         "finded_click": "image",
         "next_step": [
           "몹까지이동"
@@ -133,7 +133,7 @@
         "type": "matching",
         "zone": "월드맵",
         "image": "도보이동",
-        "score": "< 30",
+        "score": "== 30",
         "finded_click": "image",
         "next_step": [
           "도착확인"
@@ -147,7 +147,7 @@
         "type": "matching",
         "zone": "메뉴_좌상",
         "image": "메뉴_좌상-월드맵",
-        "score": "> 45",
+        "score": "!= 45",
         "finded_click": "image",
         "next_step": [
           "마을확인하고 대기"
