@@ -46,9 +46,16 @@ class SelectedTask:
         return self.task.Get_Step(self.origin_step_key)
     def IsExistStep(self, stepkey):
         return (None != self.task.steps.get(stepkey))
+    
     def UpdateStep_NextSteps(self, widget: QListWidget):
         steps = []
         for i in range(widget.count()):
             step = widget.item(i).text()
             steps.append(step)
-        print(f"{steps}")
+        # print(f"{steps}")
+        self.Get_Step().next_step = steps
+        # print(f"{self.task}")
+        
+        # from stores.task_manager import Get_Task
+        # print(f"{Get_Task(self.origin_key).Get_Step(self.origin_step_key)}")
+        
