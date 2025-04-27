@@ -47,7 +47,8 @@ class SelectedTask:
     def IsExistStep(self, stepkey):
         return (None != self.task.steps.get(stepkey))
     def UpdateStep_NextSteps(self, widget: QListWidget):
+        steps = []
         for i in range(widget.count()):
             step = widget.item(i).text()
-            print(f"{step}")
-        print("\n")
+            steps.append(step)
+        print(f"{steps}")
