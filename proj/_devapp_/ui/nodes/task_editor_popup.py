@@ -25,45 +25,6 @@ class TaskEditorPopup(QDialog):
         self.setWindowTitle("작업 편집기")
         self.resize(720, 1000)
         
-        # 작업 데이터 초기화
-        self.tasks = TaskMan.GetAll_Tasks()
-        def DevTest_Tasks():
-            # for key, task in self.tasks.items():
-            #     print(f"[{key}] {task}")
-            task_keyz = self.tasks.keys()
-            # print(f"{task_keyz}")
-            사냥1 = self.tasks.get('사냥1')
-            # print(f"{사냥1}")
-            # 사냥1_keyz = 사냥1.steps.keys()
-            # print(f"{사냥1_keyz}")
-            사냥1_표준치료제찾기 = 사냥1.steps.get("표준치료제찾기")
-            print(f"{사냥1_표준치료제찾기}")
-        # DevTest_Tasks()
-        def DevTest_Selected():
-            selectedTask = SelectedTask(
-                origin_key="aa",
-                current_key="",
-                task=None,
-                origin_step_key = "",
-                current_step_key="")
-            print(f"{selectedTask.origin_key}, {selectedTask.task}")
-            
-            taskkey = "사냥1"
-            selectedTask.Set_Task(taskkey, self.tasks.get(taskkey))
-            # selectedTask.origin_key = "사냥1"
-            # selectedTask.task = self.tasks.get(selectedTask.origin_key)
-            # print(f"{selectedTask.task}")
-            # selectedTask.current_key = "사냥-손창욱"    # selectedTask.task가 변경될 때 원본 데이터 대체
-            selectedTask.ChangeKey_CurrentTask("사냥-손창욱")   # selectedTask.task가 변경될 때 원본 데이터 대체
-            
-            # selectedTask.origin_step_key = "잡화상점이동"
-            selectedTask.Set_StepKey("잡화상점 확인")
-            step = selectedTask.Get_Step()
-            print(f"{step}")
-            # selectedTask.current_step_key = "잡화상점이동해야지"    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
-            selectedTask.ChangeKey_CurrentStep("잡화상점이동해야지")    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
-        # DevTest_Selected()
-        
         self.selectedTask = SelectedTask(
             origin_key="",
             current_key="",
@@ -75,7 +36,7 @@ class TaskEditorPopup(QDialog):
         self._setup_ui()
         self.Connect_ChangedUI()
         
-        self.initialize_data()
+        self.Reload_Tasks()
     
     def _setup_ui(self):
         """UI 구성 설정"""
@@ -147,9 +108,50 @@ class TaskEditorPopup(QDialog):
         
         print("Connect_ChangedUI")
         
+    def Reload_Tasks(self):
+        # 작업 데이터 초기화
+        self.tasks = TaskMan.GetAll_Tasks()
+        def DevTest_Tasks():
+            # for key, task in self.tasks.items():
+            #     print(f"[{key}] {task}")
+            task_keyz = self.tasks.keys()
+            # print(f"{task_keyz}")
+            사냥1 = self.tasks.get('사냥1')
+            # print(f"{사냥1}")
+            # 사냥1_keyz = 사냥1.steps.keys()
+            # print(f"{사냥1_keyz}")
+            사냥1_표준치료제찾기 = 사냥1.steps.get("표준치료제찾기")
+            print(f"{사냥1_표준치료제찾기}")
+        # DevTest_Tasks()
+        def DevTest_Selected():
+            selectedTask = SelectedTask(
+                origin_key="aa",
+                current_key="",
+                task=None,
+                origin_step_key = "",
+                current_step_key="")
+            print(f"{selectedTask.origin_key}, {selectedTask.task}")
+            
+            taskkey = "사냥1"
+            selectedTask.Set_Task(taskkey, self.tasks.get(taskkey))
+            # selectedTask.origin_key = "사냥1"
+            # selectedTask.task = self.tasks.get(selectedTask.origin_key)
+            # print(f"{selectedTask.task}")
+            # selectedTask.current_key = "사냥-손창욱"    # selectedTask.task가 변경될 때 원본 데이터 대체
+            selectedTask.ChangeKey_CurrentTask("사냥-손창욱")   # selectedTask.task가 변경될 때 원본 데이터 대체
+            
+            # selectedTask.origin_step_key = "잡화상점이동"
+            selectedTask.Set_StepKey("잡화상점 확인")
+            step = selectedTask.Get_Step()
+            print(f"{step}")
+            # selectedTask.current_step_key = "잡화상점이동해야지"    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
+            selectedTask.ChangeKey_CurrentStep("잡화상점이동해야지")    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
+        # DevTest_Selected()
+        
+        self.initialize_data()
+        
     def initialize_data(self):
         """작업 목록 초기화"""
-        
         self.automation_list.clear() # 기존 항목 모두 제거
         self.step_list.clear()  # 단계 리스트 초기화
         
@@ -162,6 +164,7 @@ class TaskEditorPopup(QDialog):
         # self.automation_list.addItem("즐겁다")  # DEV TEST
         
         self.waiting_spin.setValue(0.0)
+        self.step_name_edit.setText("")
         
         self.zone_combo.clear()
         self.zone_combo.addItem("")
@@ -172,8 +175,13 @@ class TaskEditorPopup(QDialog):
         self.image_select_combo.addItem("")
         for keys in Areas.GetAll_ImageAreas().keys():
             self.image_select_combo.addItem(keys)
+        self.similarity_spin.setValue(80.0)
+        self.comparison_combo.setCurrentIndex(0)
+        self.click_type_combo.setCurrentIndex(0)
+        
         self.fail_step_combo.clear()
         self.next_step_combo.clear()
+        self.step_description.setText("")
         
     def _setup_basic_tab(self):
         """기본 탭 구성"""
