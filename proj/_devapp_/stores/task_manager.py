@@ -66,7 +66,7 @@ class TaskManager:
 
 
 # 전역 인스턴스 정의 (areas.py 방식)
-Tasks = TaskManager("Task 데이터", "tasks.json")
+Tasks = TaskManager("Task 데이터", "task.json")
 
 @dataclass
 class TaskStep:

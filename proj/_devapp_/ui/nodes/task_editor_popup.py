@@ -42,6 +42,8 @@ class SelectedTask:
         self.current_step_key = key
     def ChangeKey_CurrentStep(self, key):
         self.current_step_key = key
+    def Get_Step(self): #origin_step_key로 가져오기
+        return self.task.Get_Step(self.origin_step_key)
 
 class TaskEditorPopup(QDialog):
     """작업 편집기 팝업 창"""
@@ -86,10 +88,10 @@ class TaskEditorPopup(QDialog):
             selectedTask.ChangeKey_CurrentTask("사냥-손창욱")   # selectedTask.task가 변경될 때 원본 데이터 대체
             
             # selectedTask.origin_step_key = "잡화상점이동"
-            # step = selectedTask.task.Get_Step(selectedTask.origin_step_key)
-            # print(f"{step}")
+            selectedTask.Set_StepKey("잡화상점 확인")
+            step = selectedTask.Get_Step()
+            print(f"{step}")
             # selectedTask.current_step_key = "잡화상점이동해야지"    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
-            selectedTask.Set_StepKey("잡화상점이동")
             selectedTask.ChangeKey_CurrentStep("잡화상점이동해야지")    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
         DevTest_Selected()
         
