@@ -57,6 +57,13 @@ class SelectedTask:
             return
         self.task.comment = text
         # print(f"{self.task}")
+    def UpdateTask_StartStepKey(self, checked):
+        # print(f"StartStepKey({checked})")
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return ""
+        # print(f"StartStepKey({checked}): {self.origin_step_key}")
+        self.task.start_key = self.origin_step_key
+        return self.task.start_key
     
     def UpdateStep_NextSteps(self, widget: QListWidget):
         if "" == self.origin_key or "" == self.origin_step_key:

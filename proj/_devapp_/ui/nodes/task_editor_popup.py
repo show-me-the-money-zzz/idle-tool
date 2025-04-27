@@ -92,6 +92,7 @@ class TaskEditorPopup(QDialog):
     def Connect_ChangedUI(self):
         self.automation_name_edit.textChanged.connect(lambda task_name: self.selectedTask.UpdateTask_Key(task_name))
         self.task_description.textChanged.connect(lambda: self.selectedTask.UpdateTask_Comment(self.task_description.toPlainText()))
+        self.start_step_checkbox.stateChanged.connect(self.ProcessCheck_StartSetp)
         
         # self.main_type_combo.currentTextChanged.connect(lambda type: print(f"type= {type}"))
         # self.waiting_spin.valueChanged.connect(lambda waiting: print(f"waiting= {waiting}"))
@@ -107,6 +108,10 @@ class TaskEditorPopup(QDialog):
         # self.step_description.textChanged.connect(lambda: print(f"step_desc= {self.step_description.toPlainText()}"))
         
         print("Connect_ChangedUI")
+    def ProcessCheck_StartSetp(self, state):
+        startkey = self.selectedTask.UpdateTask_StartStepKey(state)
+        self.start_step_checkbox.setEnabled(False)
+        if "" != startkey: self.start_key_input.setText(startkey)
         
     def Reload_Tasks(self):
         # 작업 데이터 초기화
@@ -165,6 +170,8 @@ class TaskEditorPopup(QDialog):
         
         self.waiting_spin.setValue(0.0)
         self.step_name_edit.setText("")
+        self.start_step_checkbox.setChecked(False)
+        self.start_step_checkbox.setEnabled(False)
         
         self.zone_combo.clear()
         self.zone_combo.addItem("")
@@ -658,6 +665,7 @@ class TaskEditorPopup(QDialog):
         self.start_key_input.setText("")
         self.task_description.setText("")
         self.start_step_checkbox.setChecked(False)
+        self.start_step_checkbox.setEnabled(False)
         self.step_name_edit.setText("")
         
         self.zone_combo.setCurrentText("")
@@ -708,6 +716,7 @@ class TaskEditorPopup(QDialog):
         
         # self.main_type_combo
         self.start_step_checkbox.setChecked(False)
+        self.start_step_checkbox.setEnabled(False)
         self.waiting_spin.setValue(0.00)
         self.step_name_edit.setText("")
         
@@ -743,7 +752,10 @@ class TaskEditorPopup(QDialog):
         step = self.selectedTask.Set_StepKey(key)
         # step = self.selectedTask.Get_Step()
         
-        self.start_step_checkbox.setChecked(key == self.selectedTask.Get_StartKey())
+        isStartStep = (key == self.selectedTask.Get_StartKey())
+        self.start_step_checkbox.setChecked(isStartStep)
+        self.start_step_checkbox.setEnabled(not isStartStep)
+        
         self.waiting_spin.setValue(step.waiting)
         self.step_name_edit.setText(key)
         
