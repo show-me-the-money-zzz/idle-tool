@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout,
 from PySide6.QtGui import QIcon, QFont
 from PySide6.QtCore import Qt, Signal, QEvent
 import sys
-# import copy
+import copy
 from dataclasses import dataclass
 from typing import Optional
 
@@ -28,6 +28,20 @@ class SelectedTask:
     # # 변경 전에 저장된 데이터 있는지 확인
     # ## selected_originkey 가 원본에 없는 key이면 추가
     # ## 있는 key면 selected_currentkey / selected_currenttask으로 비교해서 변경사항 추적
+    def Set_Task(self, key, task: TaskMan.Task | None):
+        self.origin_key = key
+        self.current_key = key
+        if task:
+            self.task = copy.deepcopy(task)
+        else: self.task = None
+    def ChangeKey_CurrentTask(self, key):
+        self.current_key = key
+
+    def Set_StepKey(self, key):
+        self.origin_step_key = key
+        self.current_step_key = key
+    def ChangeKey_CurrentStep(self, key):
+        self.current_step_key = key
 
 class TaskEditorPopup(QDialog):
     """작업 편집기 팝업 창"""
@@ -63,15 +77,20 @@ class TaskEditorPopup(QDialog):
                 current_step_key="")
             print(f"{selectedTask.origin_key}, {selectedTask.task}")
             
-            selectedTask.origin_key = "사냥1"
-            selectedTask.task = self.tasks.get(selectedTask.origin_key)
+            taskkey = "사냥1"
+            selectedTask.Set_Task(taskkey, self.tasks.get(taskkey))
+            # selectedTask.origin_key = "사냥1"
+            # selectedTask.task = self.tasks.get(selectedTask.origin_key)
             # print(f"{selectedTask.task}")
-            selectedTask.current_key = "사냥-손창욱"    # selectedTask.task가 변경될 때 원본 데이터 대체
+            # selectedTask.current_key = "사냥-손창욱"    # selectedTask.task가 변경될 때 원본 데이터 대체
+            selectedTask.ChangeKey_CurrentTask("사냥-손창욱")   # selectedTask.task가 변경될 때 원본 데이터 대체
             
-            selectedTask.origin_step_key = "잡화상점이동"
-            step = selectedTask.task.Get_Step(selectedTask.origin_step_key)
-            print(f"{step}")
-            selectedTask.current_step_key = "잡화상점이동해야지"    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
+            # selectedTask.origin_step_key = "잡화상점이동"
+            # step = selectedTask.task.Get_Step(selectedTask.origin_step_key)
+            # print(f"{step}")
+            # selectedTask.current_step_key = "잡화상점이동해야지"    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
+            selectedTask.Set_StepKey("잡화상점이동")
+            selectedTask.ChangeKey_CurrentStep("잡화상점이동해야지")    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
         DevTest_Selected()
         
         self.selectedTask = None
