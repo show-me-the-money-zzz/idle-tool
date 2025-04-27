@@ -48,6 +48,9 @@ class SelectedTask:
         return (None != self.task.steps.get(stepkey))
     
     def UpdateStep_NextSteps(self, widget: QListWidget):
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return
+        
         steps = []
         for i in range(widget.count()):
             step = widget.item(i).text()
