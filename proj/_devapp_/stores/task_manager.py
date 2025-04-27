@@ -13,6 +13,7 @@ class TaskManager:
         self.filename = filename
         self.tasks = {}
         self.store_path = self._resolve_path()
+        # print(self.store_path)
 
         success = self._load()
         if not success:
@@ -175,8 +176,11 @@ def Get_Task(key, default=None):
     # print(data["steps"].items())
     step_dict = {}
     for key, val in data["steps"].items():
-        # print(f"[{key}] {val}")
-        step_dict[key] = TaskStep(**val)
+        try:
+            # print(f"[{key}] {val}")
+            step_dict[key] = TaskStep(**val)
+        except Exception as e:
+            print(f"[Step Load Error] '{key}' 변환 실패: {e}")
     # print(f"{step_dict}")
     # print("seq 3")
 
