@@ -100,36 +100,9 @@ class TaskEditorPopup(QDialog):
         
         # UI 설정
         self._setup_ui()
+        self.Connect_ChangedUI()
         
         self.initialize_data()
-        
-    def initialize_data(self):
-        """작업 목록 초기화"""
-        
-        self.automation_list.clear() # 기존 항목 모두 제거
-        self.step_list.clear()  # 단계 리스트 초기화
-        
-        # 작업 데이터에서 키 가져와서 추가
-        for key in self.tasks.keys():
-        # for taskkey, steps in self.tasks.items():
-            # addItem 사용 - 문자열 그대로 추가
-            self.automation_list.addItem(key)
-        # self.automation_list.addItem("하하호호")  # DEV TEST
-        # self.automation_list.addItem("즐겁다")  # DEV TEST
-        
-        self.waiting_spin.setValue(0.0)
-        
-        self.zone_combo.clear()
-        self.zone_combo.addItem("")
-        for keys in Areas.GetAll_ZoneAreas().keys():
-            self.zone_combo.addItem(keys)
-        
-        self.image_select_combo.clear()
-        self.image_select_combo.addItem("")
-        for keys in Areas.GetAll_ImageAreas().keys():
-            self.image_select_combo.addItem(keys)
-        self.fail_step_combo.clear()
-        self.next_step_combo.clear()
     
     def _setup_ui(self):
         """UI 구성 설정"""
@@ -181,7 +154,52 @@ class TaskEditorPopup(QDialog):
         buttons_layout.addWidget(self.cancel_btn)
         
         main_layout.addLayout(buttons_layout)
-    
+        
+    def Connect_ChangedUI(self):
+        self.automation_name_edit.textChanged.connect(lambda task_name: print(f"task_name= {task_name}"))
+        self.task_description.textChanged.connect(lambda: print(f"task_desc= {self.task_description.toPlainText()}"))
+        
+        self.main_type_combo.currentTextChanged.connect(lambda type: print(f"type= {type}"))
+        self.waiting_spin.valueChanged.connect(lambda waiting: print(f"waiting= {waiting}"))
+        self.step_name_edit.textChanged.connect(lambda step_name: print(f"step_name= {step_name}"))
+        self.zone_combo.currentTextChanged.connect(lambda zone: print(f"zone= {zone}"))
+        self.image_select_combo.currentTextChanged.connect(lambda image: print(f"image= {image}"))
+        self.similarity_spin.valueChanged.connect(lambda similarity: print(f"similarity= {similarity}"))
+        self.comparison_combo.currentTextChanged.connect(lambda comparison: print(f"comparison= {comparison}"))
+        self.click_type_combo.currentTextChanged.connect(lambda click: print(f"click= {click}"))
+        
+        self.fail_step_combo.currentTextChanged.connect(lambda fail_step: print(f"fail_step= {fail_step}"))
+        # self.next_steps_list.itemChanged.connect(lambda next_steps: print(f"fail_step= {next_steps}"))
+        self.step_description.textChanged.connect(lambda: print(f"step_desc= {self.step_description.toPlainText()}"))
+        
+    def initialize_data(self):
+        """작업 목록 초기화"""
+        
+        self.automation_list.clear() # 기존 항목 모두 제거
+        self.step_list.clear()  # 단계 리스트 초기화
+        
+        # 작업 데이터에서 키 가져와서 추가
+        for key in self.tasks.keys():
+        # for taskkey, steps in self.tasks.items():
+            # addItem 사용 - 문자열 그대로 추가
+            self.automation_list.addItem(key)
+        # self.automation_list.addItem("하하호호")  # DEV TEST
+        # self.automation_list.addItem("즐겁다")  # DEV TEST
+        
+        self.waiting_spin.setValue(0.0)
+        
+        self.zone_combo.clear()
+        self.zone_combo.addItem("")
+        for keys in Areas.GetAll_ZoneAreas().keys():
+            self.zone_combo.addItem(keys)
+        
+        self.image_select_combo.clear()
+        self.image_select_combo.addItem("")
+        for keys in Areas.GetAll_ImageAreas().keys():
+            self.image_select_combo.addItem(keys)
+        self.fail_step_combo.clear()
+        self.next_step_combo.clear()
+        
     def _setup_basic_tab(self):
         """기본 탭 구성"""
         # 전체 레이아웃은 수직으로 배치
