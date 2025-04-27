@@ -23,13 +23,25 @@ class SelectedTask:
         if task:
             self.task = copy.deepcopy(task)
         else: self.task = None
+    def Reset_Task(self):
+        self.Set_Task("", None)
+        self.Reset_Step()
     def ChangeKey_CurrentTask(self, key):
         self.current_key = key
+        
+    def Get_StartKey(self): return self.task.start_key
+    def Get_Commnet(self): return self.task.comment
 
     def Set_StepKey(self, key):
         self.origin_step_key = key
         self.current_step_key = key
+        return self.Get_Step()
+    def Reset_Step(self): self.Set_StepKey("")
     def ChangeKey_CurrentStep(self, key):
         self.current_step_key = key
     def Get_Step(self): #origin_step_key로 가져오기
+        if "" == self.origin_step_key:
+            return None
         return self.task.Get_Step(self.origin_step_key)
+    def IsExistStep(self, stepkey):
+        return (None != self.task.steps.get(stepkey))

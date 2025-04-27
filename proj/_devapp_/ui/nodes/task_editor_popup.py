@@ -62,10 +62,14 @@ class TaskEditorPopup(QDialog):
             print(f"{step}")
             # selectedTask.current_step_key = "잡화상점이동해야지"    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
             selectedTask.ChangeKey_CurrentStep("잡화상점이동해야지")    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
-        DevTest_Selected()
+        # DevTest_Selected()
         
-        self.selectedTask = None
-        self.selectedTaskStep = None
+        self.selectedTask = SelectedTask(
+            origin_key="",
+            current_key="",
+            task=None,
+            origin_step_key = "",
+            current_step_key="")
         
         # UI 설정
         self._setup_ui()
@@ -638,7 +642,7 @@ class TaskEditorPopup(QDialog):
         """자동화 항목 선택 상태에 따라 버튼 활성화 상태 업데이트"""
         self.Check_Modify()
         
-        self.selectedTask = None
+        self.selectedTask.Reset_Task()
         
         self.step_list.clear()
         self.start_key_input.setText("")
@@ -670,7 +674,7 @@ class TaskEditorPopup(QDialog):
             if not task:
                 return
             
-            self.selectedTask = (key, task)
+            self.selectedTask.Set_Task(key, task)
             
             self.start_key_input.setText(task.start_key)
             self.task_description.setText(task.comment)
@@ -690,7 +694,7 @@ class TaskEditorPopup(QDialog):
         modify = self.Check_Modify()
 
         # 선택된 항목이 있는지 확인
-        self.selectedTaskStep = None
+        self.selectedTask.Reset_Step()
         
         # self.main_type_combo
         self.start_step_checkbox.setChecked(False)
@@ -722,17 +726,14 @@ class TaskEditorPopup(QDialog):
         
         selectedItem = items[0]
         key = selectedItem.text()
-        # print(key)
-        taskkey, task = self.selectedTask
-        step = task.steps.get(key)
-        # print(f"{step}")
         
-        if not step:
+        if not self.selectedTask.IsExistStep(key):
             return
         
-        self.selectedTaskStep = (key, step)        
+        step = self.selectedTask.Set_StepKey(key)
+        # step = self.selectedTask.Get_Step()
         
-        self.start_step_checkbox.setChecked(key == task.start_key)
+        self.start_step_checkbox.setChecked(key == self.selectedTask.Get_StartKey())
         self.waiting_spin.setValue(step.waiting)
         self.step_name_edit.setText(key)
         
