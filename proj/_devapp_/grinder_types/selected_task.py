@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
+from PySide6.QtWidgets import QListWidget
 
 import copy
 
@@ -45,3 +46,8 @@ class SelectedTask:
         return self.task.Get_Step(self.origin_step_key)
     def IsExistStep(self, stepkey):
         return (None != self.task.steps.get(stepkey))
+    def UpdateStep_NextSteps(self, widget: QListWidget):
+        for i in range(widget.count()):
+            step = widget.item(i).text()
+            print(f"{step}")
+        print("\n")

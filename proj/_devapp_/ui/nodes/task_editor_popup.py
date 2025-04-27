@@ -129,21 +129,23 @@ class TaskEditorPopup(QDialog):
         main_layout.addLayout(buttons_layout)
         
     def Connect_ChangedUI(self):
-        self.automation_name_edit.textChanged.connect(lambda task_name: print(f"task_name= {task_name}"))
-        self.task_description.textChanged.connect(lambda: print(f"task_desc= {self.task_description.toPlainText()}"))
+        # self.automation_name_edit.textChanged.connect(lambda task_name: print(f"task_name= {task_name}"))
+        # self.task_description.textChanged.connect(lambda: print(f"task_desc= {self.task_description.toPlainText()}"))
         
-        self.main_type_combo.currentTextChanged.connect(lambda type: print(f"type= {type}"))
-        self.waiting_spin.valueChanged.connect(lambda waiting: print(f"waiting= {waiting}"))
-        self.step_name_edit.textChanged.connect(lambda step_name: print(f"step_name= {step_name}"))
-        self.zone_combo.currentTextChanged.connect(lambda zone: print(f"zone= {zone}"))
-        self.image_select_combo.currentTextChanged.connect(lambda image: print(f"image= {image}"))
-        self.similarity_spin.valueChanged.connect(lambda similarity: print(f"similarity= {similarity}"))
-        self.comparison_combo.currentTextChanged.connect(lambda comparison: print(f"comparison= {comparison}"))
-        self.click_type_combo.currentTextChanged.connect(lambda click: print(f"click= {click}"))
+        # self.main_type_combo.currentTextChanged.connect(lambda type: print(f"type= {type}"))
+        # self.waiting_spin.valueChanged.connect(lambda waiting: print(f"waiting= {waiting}"))
+        # self.step_name_edit.textChanged.connect(lambda step_name: print(f"step_name= {step_name}"))
+        # self.zone_combo.currentTextChanged.connect(lambda zone: print(f"zone= {zone}"))
+        # self.image_select_combo.currentTextChanged.connect(lambda image: print(f"image= {image}"))
+        # self.similarity_spin.valueChanged.connect(lambda similarity: print(f"similarity= {similarity}"))
+        # self.comparison_combo.currentTextChanged.connect(lambda comparison: print(f"comparison= {comparison}"))
+        # self.click_type_combo.currentTextChanged.connect(lambda click: print(f"click= {click}"))
         
-        self.fail_step_combo.currentTextChanged.connect(lambda fail_step: print(f"fail_step= {fail_step}"))
-        # self.next_steps_list.itemChanged.connect(lambda next_steps: print(f"fail_step= {next_steps}"))
-        self.step_description.textChanged.connect(lambda: print(f"step_desc= {self.step_description.toPlainText()}"))
+        # self.fail_step_combo.currentTextChanged.connect(lambda fail_step: print(f"fail_step= {fail_step}"))
+        # # self.next_steps_list.itemChanged.connect(lambda next_steps: print(f"fail_step= {next_steps}"))
+        # self.step_description.textChanged.connect(lambda: print(f"step_desc= {self.step_description.toPlainText()}"))
+        
+        print("Connect_ChangedUI")
         
     def initialize_data(self):
         """작업 목록 초기화"""
@@ -754,6 +756,7 @@ class TaskEditorPopup(QDialog):
         self.fail_step_combo.setCurrentText(step.fail_step)
         for nextstep in step.next_step:
             self.next_steps_list.addItem(nextstep)
+        self.selectedTask.UpdateStep_NextSteps(self.next_steps_list)
         self.step_description.setText(step.comment)
         
     def add_automation(self):
@@ -832,6 +835,7 @@ class TaskEditorPopup(QDialog):
             
             # 새 항목 추가
             self.next_steps_list.addItem(current_text)
+        self.selectedTask.UpdateStep_NextSteps(self.next_steps_list)
 
     def remove_next_step(self):
         """선택한 다음 단계 삭제"""
@@ -843,6 +847,7 @@ class TaskEditorPopup(QDialog):
             
             # 버튼 상태 업데이트
             self.update_next_step_buttons_state()
+        self.selectedTask.UpdateStep_NextSteps(self.next_steps_list)
 
     def update_next_step_buttons_state(self):
         """다음 단계 항목 선택 상태에 따라 버튼 활성화 상태 업데이트"""
