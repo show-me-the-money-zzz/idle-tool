@@ -78,7 +78,7 @@ class SelectedTask:
     def UpdateTask_Key(self, key):
         if "" == self.origin_key:
             return
-        self.current_key = key
+        self.ChangeKey_CurrentTask(key)
         # print(f"task key: {self.origin_key} vs {self.current_key}")
     def UpdateTask_Comment(self, text):
         if "" == self.origin_key:
