@@ -65,10 +65,27 @@ class SelectedTask:
         self.task.start_key = self.origin_step_key
         return self.task.start_key
     
+    def UpdateStep_Waiting(self, sec):
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return
+        self.Get_Step().waiting = sec
+    def UpdateStep_Key(self, key):
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return
+        self.current_step_key = key
+        # print(f"step key: {self.origin_step_key} vs {self.current_step_key}")
+    def UpdateStep_Zone(self, zone):
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return
+        self.Get_Step().zone = zone
+    def UpdateStep_Image(self, image):
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return
+        self.Get_Step().image = image
+        # print(f"{self.task}")
     def UpdateStep_NextSteps(self, widget: QListWidget):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
-        
         steps = []
         for i in range(widget.count()):
             step = widget.item(i).text()
