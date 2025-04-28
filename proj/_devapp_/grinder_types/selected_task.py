@@ -119,7 +119,7 @@ class SelectedTask:
         # print(f"{self.task}")
         
         # from stores.task_manager import Get_Task
-        # print(f"{Get_Task(self.origin_key).Get_Step(self.origin_step_key)}")
+        # print(f"{self.task.Get_Step(self.origin_step_key)}")
     def UpdateStep_Comment(self, text):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
