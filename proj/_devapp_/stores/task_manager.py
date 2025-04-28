@@ -199,77 +199,42 @@ class TaskManager:
             add_key = new_key if new_key else old_key
             return self.add_task(add_key, task, save)
         
-        # Task 객체를 딕셔너리로 변환
-        task_dict = {
-            "steps": {},
-            "start_key": task.start_key,
-            "comment": task.comment
-        }
-        
-        # 각 TaskStep을 딕셔너리로 변환하되, 기존 순서 유지
-        # 먼저 기존 키들의 순서를 확보
-        existing_step_keys = []
-        if old_key in self.tasks and "steps" in self.tasks[old_key]:
-            existing_step_keys = list(self.tasks[old_key]["steps"].keys())
-        
-        # 새 단계들을 처리하되, 기존 순서 유지
-        new_step_keys = list(task.steps.keys())
-        
-        # 1. 기존 키를 먼저 처리하여 순서 유지
-        for step_key in existing_step_keys:
-            if step_key in task.steps:  # 업데이트된 단계
-                step = task.steps[step_key]
-                task_dict["steps"][step_key] = {
-                    "seq": step.seq,
-                    "waiting": step.waiting,
-                    "type": step.type,
-                    "zone": step.zone,
-                    "image": step.image,
-                    "score": step.score,
-                    "finded_click": step.finded_click,
-                    "next_step": step.next_step,
-                    "fail_step": step.fail_step,
-                    "comment": step.comment
+        # print(f"<<<<<<<<<<BEFORE>>>>>>>>>\n{self.tasks.items()}")
+        tasklist = {}
+        for tsakkey, taskvar in self.tasks.items():
+            # print(f"{[tsakkey]} {taskvar}")
+            if old_key == tsakkey:  #덮어쓰기
+                keyname = old_key
+                if new_key:
+                    keyname = new_key
+                    
+                task_dict = {
+                    "steps": {},
+                    "start_key": task.start_key,
+                    "comment": task.comment
                 }
+                for stepkey, stepvar in task.steps.items(): #단계 복사
+                    task_dict["steps"][stepkey] = {
+                        "seq": stepvar.seq,
+                        "waiting": stepvar.waiting,
+                        "type": stepvar.type,
+                        "zone": stepvar.zone,
+                        "image": stepvar.image,
+                        "score": stepvar.score,
+                        "finded_click": stepvar.finded_click,
+                        "next_step": stepvar.next_step,
+                        "fail_step": stepvar.fail_step,
+                        "comment": stepvar.comment
+                    }
+                tasklist[keyname] = task_dict
+            else:   # 기존 정보는 그대로
+                tasklist[tsakkey] = taskvar
         
-        # 2. 기존에 없는 새 키 추가
-        for step_key in new_step_keys:
-            if step_key not in task_dict["steps"]:  # 새로 추가된 단계
-                step = task.steps[step_key]
-                task_dict["steps"][step_key] = {
-                    "seq": step.seq,
-                    "waiting": step.waiting,
-                    "type": step.type,
-                    "zone": step.zone,
-                    "image": step.image,
-                    "score": step.score,
-                    "finded_click": step.finded_click,
-                    "next_step": step.next_step,
-                    "fail_step": step.fail_step,
-                    "comment": step.comment
-                }
-        
-        # 키 변경이 있는 경우
-        if new_key and old_key != new_key:
-            # 전체 tasks 딕셔너리 순서 유지를 위해 새 딕셔너리 생성
-            updated_tasks = {}
-            for k in self.tasks.keys():
-                if k == old_key:
-                    # 기존 키 대신 새 키로 추가
-                    updated_tasks[new_key] = task_dict
-                else:
-                    # 다른 키는 그대로 복사
-                    updated_tasks[k] = self.tasks[k]
-            
-            # 새 딕셔너리로 업데이트
-            self.tasks = updated_tasks
-        else:
-            # 키 변경 없이 업데이트
-            self.tasks[old_key] = task_dict
+        self.tasks = tasklist
+        # print(f"<<<<<<<<<<AFTER>>>>>>>>>\n{self.tasks.items()}")
         
         if save:
             self.save()
-        
         return True
 
 # 전역 인스턴스 정의 (areas.py 방식)
@@ -321,6 +286,11 @@ def GetAll_Tasks() -> dict[str, Task]:
 Save_Tasks = Tasks.save
 Add_Task = Tasks.add_task
 Update_Task = Tasks.update_task
+def Update_Task(old_key: str, task: Task, new_key: str = None, save: bool = True):
+    if Tasks.update_task(old_key, task, new_key, save):
+        return GetAll_Tasks()
+    return None
+        
 
 def initialize():
     Tasks.save()
