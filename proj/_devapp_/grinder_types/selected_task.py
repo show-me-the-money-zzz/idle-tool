@@ -69,7 +69,7 @@ class SelectedTask:
             
             # 먼저 원본 딕셔너리의 키 목록을 가져옴
             original_keys = list(self.task.steps.keys())
-            print(f"{original_keys}")
+            # print(f"{original_keys}")
             
             # 다른 단계의 참조(fail_step, next_step) 업데이트
             for key, value in self.task.steps.items():
@@ -91,7 +91,7 @@ class SelectedTask:
             
             # 새 딕셔너리로 교체
             self.task.steps = newdata
-            print(f"{list(newdata.keys())}")
+            # print(f"{list(newdata.keys())}")
             return self.task.steps
         return None
     
@@ -150,7 +150,10 @@ class SelectedTask:
     def UpdateStep_ClickType(self, type):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
-        self.Get_Step().finded_click = type
+        save_click = ""
+        if "이미지" == type: save_click = "image"
+        elif "영역" == type: save_click = "zone"
+        self.Get_Step().finded_click = save_click
     def UpdateStep_FailStep(self, step):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
