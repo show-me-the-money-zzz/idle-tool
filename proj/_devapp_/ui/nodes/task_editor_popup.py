@@ -663,18 +663,42 @@ class TaskEditorPopup(QDialog):
 
         if self.selectedTask.IsSelect():
             originkey, currentkey = self.selectedTask.Get_Keys()
-            print("key가 변경되었다")
+            isChanged = (originkey != currentkey)
+            print(f"key 변경= {isChanged}")
             # TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
         
-            orgintask = self.tasks.get(originkey)
-            if orgintask:
-                deeporgintask = copy.deepcopy(orgintask)
-                if deeporgintask != self.selectedTask.task:
-                    # print("세이브")
-                    # TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
-                    newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
-                    if newtask: self.tasks = newtask
-                    print(self.tasks.items())
+            if not isChanged:
+                orgintask = self.tasks.get(originkey)
+                if orgintask:
+                    deeporgintask = copy.deepcopy(orgintask)
+                    isChanged = (deeporgintask != self.selectedTask.task)
+                    
+            if isChanged:
+                # X 버튼은 QMessageBox.No 또는 QMessageBox.Cancel 값과 같은 결과 반환
+                reply = QMessageBox.question(self, '데이트 수정됨',
+                                             "수정된 데이터를 저장하시겠습니까?",
+                                             QMessageBox.Yes | QMessageBox.No,  # 포함 버튼들
+                                             QMessageBox.Yes    # 기본 버튼(Enter 키 누를 때 선택되는 버튼)
+                                             )
+                if QMessageBox.Yes == reply:
+                    print("파일 저장")
+                    # newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
+                    # if newtask: self.tasks = newtask
+                    # print(self.tasks.items())
+                # elif QMessageBox.No == reply:
+                else:
+                    print("파일 저장 취소 (리로드)")
+                    # self.Reload_Tasks()   # 테스트 하기
+                
+            # orgintask = self.tasks.get(originkey)
+            # if orgintask:
+            #     deeporgintask = copy.deepcopy(orgintask)
+            #     if deeporgintask != self.selectedTask.task:
+            #         # print("세이브")
+            #         # TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
+            #         newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
+            #         if newtask: self.tasks = newtask
+            #         print(self.tasks.items())
         
         self.selectedTask.Reset_Task()
         
