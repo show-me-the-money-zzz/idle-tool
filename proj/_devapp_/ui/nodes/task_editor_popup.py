@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout,
 from PySide6.QtGui import QIcon, QFont
 from PySide6.QtCore import Qt, Signal, QEvent
 import sys
+import copy
 
 from ui.component.searchable_comboBox import SearchableComboBox
 
@@ -659,7 +660,18 @@ class TaskEditorPopup(QDialog):
     # 자동화 목록 관련 메서드 추가
     def update_automation_buttons_state(self):
         """자동화 항목 선택 상태에 따라 버튼 활성화 상태 업데이트"""
-        self.Check_Modify()
+
+        if self.selectedTask.IsSelect():
+            originkey, currentkey = self.selectedTask.Get_Keys()
+            orgintask = self.tasks.get(originkey)
+            if orgintask:
+                deeporgintask = copy.deepcopy(orgintask)
+                if deeporgintask != self.selectedTask.task:
+                    # print("세이브")
+                    TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
+        # if self.selectedTask.IsSelect() and not self.selectedTask.IsSame_Key():
+        #     print(f"{self.selectedTask.origin_key} vs {self.selectedTask.current_key}")
+        #     TaskMan.Update_Task(self.selectedTask.origin_key, self.selectedTask.task, self.selectedTask.current_key)
         
         self.selectedTask.Reset_Task()
         
@@ -919,9 +931,6 @@ class TaskEditorPopup(QDialog):
             
             # 버튼 상태 업데이트
             self.update_step_buttons_state()
-            
-    def Check_Modify(self):
-        return False
             
     # # dataclass는 내부적으로 __eq__()를 제공하므로 객체 비교가 가능
     # def is_task_modified(self): return self.selectedTask != self.originalTask

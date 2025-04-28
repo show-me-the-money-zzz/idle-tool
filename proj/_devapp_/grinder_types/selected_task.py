@@ -29,9 +29,14 @@ class SelectedTask:
         self.Reset_Step()
     def ChangeKey_CurrentTask(self, key):
         self.current_key = key
+    def Get_Keys(self):
+        return ( self.origin_key, self.current_key )
         
     def Get_StartKey(self): return self.task.start_key
     def Get_Commnet(self): return self.task.comment
+
+    def IsSelect(self): return "" != self.origin_key
+    def IsSame_Key(self): return (self.origin_key == self.current_key)
 
     def Set_StepKey(self, key):
         # print(f"SelectedTask.Set_StepKey({key})")
@@ -53,25 +58,40 @@ class SelectedTask:
     def IsSame_StepKey(self):
         return (self.origin_step_key == self.current_step_key)
     def Swap_StepKey(self):
-        # print(f"step key: {self.origin_step_key} vs {self.current_step_key}")
-        if self.origin_step_key in self.task.steps: # 키 있는지 확인
-            # print(f"{self.task.steps}")
-            if self.origin_step_key == self.task.start_key: # 시작키이면 변경
+        # 키가 존재하는지 확인
+        if self.origin_step_key in self.task.steps:
+            # 시작 키 업데이트
+            if self.origin_step_key == self.task.start_key:
                 self.task.start_key = self.current_step_key
+                
+            # 순서 유지를 위해 순서대로 복사할 새 딕셔너리 생성
             newdata = {}
+            
+            # 먼저 원본 딕셔너리의 키 목록을 가져옴
+            original_keys = list(self.task.steps.keys())
+            print(f"{original_keys}")
+            
+            # 다른 단계의 참조(fail_step, next_step) 업데이트
             for key, value in self.task.steps.items():
-                if self.origin_step_key == value.fail_step: # 실패 단계
+                if self.origin_step_key == value.fail_step:
                     value.fail_step = self.current_step_key
-                for nextIdx, nextVal in enumerate(value.next_step): # 다음 단계
+                    
+                for nextIdx, nextVal in enumerate(value.next_step):
                     if self.origin_step_key == nextVal:
                         value.next_step[nextIdx] = self.current_step_key
-                        break
-
-                # 변경 키로 데이터 맵핑해서 변경
-                if self.origin_step_key == key: newdata[self.current_step_key] = value
-                else: newdata[key] = value
+            
+            # 원래 순서대로 새 딕셔너리 생성
+            for key in original_keys:
+                if key == self.origin_step_key:
+                    # 변경할 키는 새 키로 대체
+                    newdata[self.current_step_key] = self.task.steps[key]
+                else:
+                    # 다른 키는 그대로 복사
+                    newdata[key] = self.task.steps[key]
+            
+            # 새 딕셔너리로 교체
             self.task.steps = newdata
-            # print(f"{self.task.steps}")
+            print(f"{list(newdata.keys())}")
             return self.task.steps
         return None
     
