@@ -99,6 +99,14 @@ class SelectedTask:
         # print(f"{scorestr}")
         self.Get_Step().score = scorestr
         # print(f"{self.task}")
+    def UpdateStep_ClickType(self, type):
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return
+        self.Get_Step().finded_click = type
+    def UpdateStep_FailStep(self, step):
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return
+        self.Get_Step().fail_step = step
     def UpdateStep_NextSteps(self, widget: QListWidget):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
@@ -112,4 +120,8 @@ class SelectedTask:
         
         # from stores.task_manager import Get_Task
         # print(f"{Get_Task(self.origin_key).Get_Step(self.origin_step_key)}")
+    def UpdateStep_Comment(self, text):
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return
+        self.Get_Step().comment = text
         

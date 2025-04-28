@@ -101,11 +101,11 @@ class TaskEditorPopup(QDialog):
         self.image_select_combo.currentTextChanged.connect(lambda image: self.selectedTask.UpdateStep_Image(image))
         self.similarity_spin.valueChanged.connect(lambda similarity: self.selectedTask.UpdateStep_ScoreVal(similarity))
         self.comparison_combo.currentTextChanged.connect(lambda comparison: self.selectedTask.UpdateStep_ScoreDesc(comparison))
-        # self.click_type_combo.currentTextChanged.connect(lambda click: print(f"click= {click}"))
+        self.click_type_combo.currentTextChanged.connect(lambda click: self.selectedTask.UpdateStep_ClickType(click))
         
-        # self.fail_step_combo.currentTextChanged.connect(lambda fail_step: print(f"fail_step= {fail_step}"))
+        self.fail_step_combo.currentTextChanged.connect(lambda step: self.selectedTask.UpdateStep_FailStep(step))
         # # self.next_steps_list.itemChanged.connect(lambda next_steps: print(f"fail_step= {next_steps}"))
-        # self.step_description.textChanged.connect(lambda: print(f"step_desc= {self.step_description.toPlainText()}"))
+        self.step_description.textChanged.connect(lambda: self.selectedTask.UpdateStep_Comment(self.step_description.toPlainText()))
         
         print("Connect_ChangedUI")
     def ProcessCheck_StartSetp(self, state):
