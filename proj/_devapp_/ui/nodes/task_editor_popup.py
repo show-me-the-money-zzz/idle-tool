@@ -663,15 +663,18 @@ class TaskEditorPopup(QDialog):
 
         if self.selectedTask.IsSelect():
             originkey, currentkey = self.selectedTask.Get_Keys()
+            print("key가 변경되었다")
+            # TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
+        
             orgintask = self.tasks.get(originkey)
             if orgintask:
                 deeporgintask = copy.deepcopy(orgintask)
                 if deeporgintask != self.selectedTask.task:
                     # print("세이브")
-                    TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
-        # if self.selectedTask.IsSelect() and not self.selectedTask.IsSame_Key():
-        #     print(f"{self.selectedTask.origin_key} vs {self.selectedTask.current_key}")
-        #     TaskMan.Update_Task(self.selectedTask.origin_key, self.selectedTask.task, self.selectedTask.current_key)
+                    # TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
+                    newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
+                    if newtask: self.tasks = newtask
+                    print(self.tasks.items())
         
         self.selectedTask.Reset_Task()
         
@@ -727,6 +730,7 @@ class TaskEditorPopup(QDialog):
             # 키가 변경되었으면
             newsteps = self.selectedTask.Swap_StepKey()
             if newsteps:
+                # print(f"{newsteps}")
                 originkey, currentkey = self.selectedTask.Get_StepKeys()
                 if originkey == self.start_key_input.text():    # 시작 키 input 변경
                     self.start_key_input.setText(currentkey)

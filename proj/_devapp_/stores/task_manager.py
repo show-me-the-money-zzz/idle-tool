@@ -205,7 +205,7 @@ class TaskManager:
             # print(f"{[tsakkey]} {taskvar}")
             if old_key == tsakkey:  #덮어쓰기
                 keyname = old_key
-                if new_key:
+                if new_key and old_key != new_key:  # new_key가 유효하고 old_key와 다르면
                     keyname = new_key
                     
                 task_dict = {
