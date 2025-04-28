@@ -99,8 +99,8 @@ class TaskEditorPopup(QDialog):
         self.step_name_edit.textChanged.connect(lambda step_name: self.selectedTask.UpdateStep_Key(step_name))
         self.zone_combo.currentTextChanged.connect(lambda zone: self.selectedTask.UpdateStep_Zone(zone))
         self.image_select_combo.currentTextChanged.connect(lambda image: self.selectedTask.UpdateStep_Image(image))
-        # self.similarity_spin.valueChanged.connect(lambda similarity: print(f"similarity= {similarity}"))
-        # self.comparison_combo.currentTextChanged.connect(lambda comparison: print(f"comparison= {comparison}"))
+        self.similarity_spin.valueChanged.connect(lambda similarity: self.selectedTask.UpdateStep_ScoreVal(similarity))
+        self.comparison_combo.currentTextChanged.connect(lambda comparison: self.selectedTask.UpdateStep_ScoreDesc(comparison))
         # self.click_type_combo.currentTextChanged.connect(lambda click: print(f"click= {click}"))
         
         # self.fail_step_combo.currentTextChanged.connect(lambda fail_step: print(f"fail_step= {fail_step}"))

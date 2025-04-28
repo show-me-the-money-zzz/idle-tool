@@ -82,6 +82,22 @@ class SelectedTask:
         if "" == self.origin_key or "" == self.origin_step_key:
             return
         self.Get_Step().image = image
+    def UpdateStep_ScoreVal(self, score):
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return
+        val, op_str, desc = self.Get_Step().parse_score()
+        # print(f"{val}, {op_str}, {desc}")
+        scorestr = TaskMan.TaskStep.desc_to_operator(desc) + str(score)
+        # print(f"{scorestr}")
+        self.Get_Step().score = scorestr
+        # print(f"{self.task}")
+    def UpdateStep_ScoreDesc(self, scoredesc):
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return
+        val, op_str, desc = self.Get_Step().parse_score()
+        scorestr = TaskMan.TaskStep.desc_to_operator(scoredesc) + str(val)
+        # print(f"{scorestr}")
+        self.Get_Step().score = scorestr
         # print(f"{self.task}")
     def UpdateStep_NextSteps(self, widget: QListWidget):
         if "" == self.origin_key or "" == self.origin_step_key:
