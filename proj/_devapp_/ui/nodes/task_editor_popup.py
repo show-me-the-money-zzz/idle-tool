@@ -104,10 +104,12 @@ class TaskEditorPopup(QDialog):
         self.click_type_combo.currentTextChanged.connect(lambda click: self.selectedTask.UpdateStep_ClickType(click))
         
         self.fail_step_combo.currentTextChanged.connect(lambda step: self.selectedTask.UpdateStep_FailStep(step))
+
         # # self.next_steps_list.itemChanged.connect(lambda next_steps: print(f"fail_step= {next_steps}"))
+        ## self.selectedTask.UpdateStep_NextSteps에서 처리
+
         self.step_description.textChanged.connect(lambda: self.selectedTask.UpdateStep_Comment(self.step_description.toPlainText()))
-        
-        print("Connect_ChangedUI")
+        # print("Connect_ChangedUI")
     def ProcessCheck_StartSetp(self, state):
         startkey = self.selectedTask.UpdateTask_StartStepKey(state)
         self.start_step_checkbox.setEnabled(False)
@@ -709,8 +711,25 @@ class TaskEditorPopup(QDialog):
 
     def update_step_buttons_state(self):
         """단계 선택 상태에 따라 버튼 활성화 상태 업데이트"""
-        modify = self.Check_Modify()
+        if self.selectedTask.IsSelectStep() and not self.selectedTask.IsSame_StepKey():
+            # 키가 변경되었으면
+            newsteps = self.selectedTask.Swap_StepKey()
+            if newsteps:
+                originkey, currentkey = self.selectedTask.Get_StepKeys()
+                if originkey == self.start_key_input.text():    # 시작 키 input 변경
+                    self.start_key_input.setText(currentkey)
 
+                # 키 리스트 사용하는 combobox 업데이트
+                self.step_list.clear()
+                self.fail_step_combo.clear()
+                self.next_step_combo.clear()
+
+                self.fail_step_combo.addItem("")
+                self.next_step_combo.addItem("")
+                for key in newsteps.keys():
+                    self.step_list.addItem(key)
+                    self.fail_step_combo.addItem(key)
+                    self.next_step_combo.addItem(key)
         # 선택된 항목이 있는지 확인
         self.selectedTask.Reset_Step()
         

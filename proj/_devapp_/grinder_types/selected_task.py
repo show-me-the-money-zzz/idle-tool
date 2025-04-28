@@ -34,9 +34,12 @@ class SelectedTask:
     def Get_Commnet(self): return self.task.comment
 
     def Set_StepKey(self, key):
+        # print(f"SelectedTask.Set_StepKey({key})")
         self.origin_step_key = key
         self.current_step_key = key
         return self.Get_Step()
+    def Get_StepKeys(self):
+        return ( self.origin_step_key, self.current_step_key )
     def Reset_Step(self): self.Set_StepKey("")
     def ChangeKey_CurrentStep(self, key):
         self.current_step_key = key
@@ -44,8 +47,33 @@ class SelectedTask:
         if "" == self.origin_step_key:
             return None
         return self.task.Get_Step(self.origin_step_key)
+    def IsSelectStep(self): return "" != self.origin_step_key
     def IsExistStep(self, stepkey):
         return (None != self.task.steps.get(stepkey))
+    def IsSame_StepKey(self):
+        return (self.origin_step_key == self.current_step_key)
+    def Swap_StepKey(self):
+        # print(f"step key: {self.origin_step_key} vs {self.current_step_key}")
+        if self.origin_step_key in self.task.steps: # 키 있는지 확인
+            # print(f"{self.task.steps}")
+            if self.origin_step_key == self.task.start_key: # 시작키이면 변경
+                self.task.start_key = self.current_step_key
+            newdata = {}
+            for key, value in self.task.steps.items():
+                if self.origin_step_key == value.fail_step: # 실패 단계
+                    value.fail_step = self.current_step_key
+                for nextIdx, nextVal in enumerate(value.next_step): # 다음 단계
+                    if self.origin_step_key == nextVal:
+                        value.next_step[nextIdx] = self.current_step_key
+                        break
+
+                # 변경 키로 데이터 맵핑해서 변경
+                if self.origin_step_key == key: newdata[self.current_step_key] = value
+                else: newdata[key] = value
+            self.task.steps = newdata
+            # print(f"{self.task.steps}")
+            return self.task.steps
+        return None
     
     def UpdateTask_Key(self, key):
         if "" == self.origin_key:
@@ -72,7 +100,7 @@ class SelectedTask:
     def UpdateStep_Key(self, key):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
-        self.current_step_key = key
+        self.ChangeKey_CurrentStep(key)
         # print(f"step key: {self.origin_step_key} vs {self.current_step_key}")
     def UpdateStep_Zone(self, zone):
         if "" == self.origin_key or "" == self.origin_step_key:
