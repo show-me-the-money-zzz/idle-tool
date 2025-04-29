@@ -477,6 +477,27 @@ class CaptureAreaPopup(QDialog):
 
     def _on_tab_changed(self, index):
         """탭이 변경되었을 때 호출"""
+        # 이전 탭의 모든 선택 해제
+        prev_mode = self.capturemode
+        if prev_mode != CaptureMode(index):  # 다른 탭으로 변경된 경우만
+            prev_list_widget = getattr(self, f"{prev_mode.name.lower()}_list")
+            prev_list_widget.clearSelection()  # 이전 탭의 선택 해제
+            
+            # 필드 초기화
+            self.key_input.clear()
+            self.x_spin.setValue(0)
+            self.y_spin.setValue(0)
+            self.width_spin.setValue(0)
+            self.height_spin.setValue(0)
+            self.click_x_spin.setValue(0)
+            self.click_y_spin.setValue(0)
+            self.edit_check.setChecked(False)
+            
+            # 미리보기 초기화
+            self.preview_label.clear()
+            self.preview_label.setText("영역을 선택하면\n미리보기가 표시됩니다")
+        
+        # 새 탭 처리
         mode = CaptureMode(index)
         self.capture_type_combo.setCurrentIndex(index)
         self.on_capture_type_changed(mode)
