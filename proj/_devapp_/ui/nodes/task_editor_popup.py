@@ -1063,8 +1063,52 @@ class TaskEditorPopup(QDialog):
         """작업 저장"""
         # self.accept()
         # self.close()
+
+        isSaved = False
+        isChanged = False
+        if self.selectedTask.IsSelect():            
+            originkey, currentkey = self.selectedTask.Get_Keys()
+            isChanged = (originkey != currentkey)   # 키 변경 체크
+            # print(f"key 변경= {isChanged}")
         
-        print("저장하기")
+            if not isChanged:   # 데이터 변경 체크
+                orgintask = self.tasks.get(originkey)
+                if orgintask:
+                    deeporgintask = copy.deepcopy(orgintask)
+                    isChanged = (deeporgintask != self.selectedTask.task)
+
+            if not isChanged:   # 새로운 아이템인지
+                findTask = TaskMan.Get_Task(originkey, None)
+                isChanged = not findTask
+                    
+            if isChanged:
+                # X 버튼은 QMessageBox.No 또는 QMessageBox.Cancel 값과 같은 결과 반환
+                reply = QMessageBox.question(self, '데이트 수정됨',
+                                             "수정된 데이터를 저장하시겠습니까?\n" +
+                                             "('No'는 저장된 상태로 돌아갑니다.)",
+                                             QMessageBox.Yes | QMessageBox.No,  # 포함 버튼들
+                                             QMessageBox.Yes    # 기본 버튼(Enter 키 누를 때 선택되는 버튼)
+                                             )
+                if QMessageBox.Yes == reply:
+                    # print("update_automation_buttons_state(): 파일 저장")
+                    newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
+                    if newtask:
+                        self.tasks = newtask
+
+                        if (originkey != currentkey):
+                            ChangeText_ListWidget(self.automation_list, originkey, currentkey)
+                        isSaved = True
+                    # print(self.tasks.items())
+                # elif QMessageBox.No == reply:
+                # else:
+                #     print("파일 저장 취소 (리로드)")
+        
+        if isSaved:
+            QMessageBox.information(self, "저장 성공", "저장에 성공하였습니다.")
+        else:
+            if isChanged:
+                QMessageBox.information(self, "저장 실패", "저장에 실패하였습니다.")
+            # else: QMessageBox.information(self, "저장 X", "변경 사항이 없습니다.")
         
     def OnClick_Reload(self):
         # print("리로드")
