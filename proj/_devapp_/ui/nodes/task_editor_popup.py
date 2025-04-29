@@ -957,10 +957,19 @@ class TaskEditorPopup(QDialog):
         # 현재 선택된 행 가져오기
         current_row = self.step_list.currentRow()
         
+        stepkey = self.step_list.item(current_row).text()
+        self.selectedTask.RemoveStep(stepkey)
+        
         # 유효한 행이 선택되었는지 확인
         if current_row >= 0:
             # 항목 삭제
             self.step_list.takeItem(current_row)
+
+            # print(f"{self.selectedTask.task}")
+            # taskkey, _ = self.selectedTask.Get_Keys()
+            # print(f"taskkey= {taskkey}")
+            # steps = self.tasks.get(taskkey).steps
+            # print(f"{self.tasks.get(taskkey).steps}")
             
             # 버튼 상태 업데이트
             self.update_step_buttons_state()

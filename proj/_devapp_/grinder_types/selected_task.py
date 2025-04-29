@@ -113,6 +113,23 @@ class SelectedTask:
         self.task.start_key = self.origin_step_key
         return self.task.start_key
     
+    def RemoveStep(self, key):
+        # print(f"RemoveStep({key})")
+        if "" != key:
+            self.task.steps.pop(key)
+
+            for _, stepvalue in self.task.steps.items():
+                if key == stepvalue.fail_step:
+                    stepvalue.fail_step = ""
+
+                next_step = []
+                for next in stepvalue.next_step:
+                    if key != next:
+                        next_step.append(next)
+                stepvalue.next_step = next_step
+            return True
+        return False
+    
     def UpdateStep_Waiting(self, sec):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
