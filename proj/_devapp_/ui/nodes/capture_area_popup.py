@@ -31,7 +31,7 @@ class CaptureAreaPopup(QDialog):
     def __init__(self, parent, region_selector, capture_manager, status_signal, on_close_callback=None):
         super().__init__(parent)
         self.setWindowTitle("아이템 에디터")
-        self.resize(520, 720)
+        self.resize(900, 720)
         
         self.parent = parent
         self.region_selector = region_selector
@@ -394,8 +394,9 @@ class CaptureAreaPopup(QDialog):
         left_layout.addWidget(self.left_tabs)
         
         # 왼쪽 패널 크기 설정
-        left_panel.setMinimumWidth(200)
-        left_panel.setMaximumWidth(300)
+        # left_panel.setMinimumWidth(200)
+        # left_panel.setMaximumWidth(300)
+        left_panel.setFixedWidth(360)
         
         return left_panel
 
