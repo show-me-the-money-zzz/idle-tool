@@ -520,10 +520,16 @@ class CaptureAreaPopup(QDialog):
         
         # 이미지 체크박스 상태 업데이트
         if mode == CaptureMode.IMAGE:
-            self.update_image_checkbox_state()
+            # 이미지 모드일 때 체크박스 표시 및 활성화
+            self.show_image_check.setVisible(True)
+            self.show_image_check.setEnabled(True)
+            
+            # 체크 상태이면 도킹 위젯 업데이트
+            if self.show_image_check.isChecked():
+                self.update_image_viewer()
         else:
+            # 이미지 모드가 아닐 때
             self.show_image_check.setVisible(False)
-            self.show_image_check.setChecked(False)
             self.image_dock.setVisible(False)
         
         self.on_capture_type_changed(mode)
@@ -598,11 +604,22 @@ class CaptureAreaPopup(QDialog):
     def update_image_checkbox_state(self):
         """이미지 체크박스 상태 업데이트"""
         if self.capturemode == CaptureMode.IMAGE:
-            # 이미지 모드일 때
-            key = self.key_input.text()
-            # 키가 존재하고 이미지 데이터가 있는지 확인
-            has_image = False
+            # 이미지 모드일 때 항상 체크박스 표시 및 활성화
+            self.show_image_check.setVisible(True)
+            self.show_image_check.setEnabled(True)
             
+            # 체크박스가 체크되어 있으면 도킹 위젯 표시
+            if self.show_image_check.isChecked():
+                self.update_image_viewer()
+        else:
+            # 이미지 모드가 아닐 때
+            self.show_image_check.setVisible(False)
+            self.image_dock.setVisible(False)
+
+    def update_image_viewer(self):
+        """이미지 뷰어 업데이트"""
+        if self.capturemode == CaptureMode.IMAGE:
+            key = self.key_input.text()
             if key:
                 image_data = Areas.Get_ImageArea(key)
                 if image_data and hasattr(image_data, 'file') and image_data.file:
@@ -611,48 +628,30 @@ class CaptureAreaPopup(QDialog):
                     local_path = finder.Get_LocalPth()
                     file_path = os.path.join(local_path, image_data.file)
                     
-                    # 파일이 실제로 존재하는지 확인
+                    # 이미지 로드
                     if os.path.exists(file_path):
-                        has_image = True
+                        self.image_dock.load_image(file_path)
+                        self.image_dock.setVisible(True)
+                        self.update_image_dock_position()
+                        return
+                
+                # 이미지 파일이 없는 경우
+                self.image_dock.image_label.setText("저장된 파일 없음")
+                self.image_dock.path_label.setText("파일 경로: 없음")
+            else:
+                # 키가 없는 경우
+                self.image_dock.image_label.setText("선택된 항목 없음")
+                self.image_dock.path_label.setText("파일 경로: 없음")
             
-            # 체크박스 표시 및 활성화 상태 설정
-            self.show_image_check.setVisible(True)
-            self.show_image_check.setEnabled(has_image)
-            
-            # 체크박스가 체크되어 있고 이미지가 없으면 체크 해제
-            if self.show_image_check.isChecked() and not has_image:
-                self.show_image_check.setChecked(False)
-                self.image_dock.setVisible(False)
-        else:
-            # 이미지 모드가 아닐 때
-            self.show_image_check.setVisible(False)
-            self.image_dock.setVisible(False)
+            # 도킹 위젯 표시
+            self.image_dock.setVisible(True)
+            self.update_image_dock_position()
 
     def toggle_image_viewer(self, state):
         """이미지 뷰어 토글"""
         if state == Qt.Checked:
-            # 체크됐을 때 이미지 로드 및 표시
-            if self.capturemode == CaptureMode.IMAGE:
-                key = self.key_input.text()
-                if key:
-                    image_data = Areas.Get_ImageArea(key)
-                    if image_data and hasattr(image_data, 'file') and image_data.file:
-                        # 로컬 경로로 변환
-                        from grinder_utils import finder
-                        local_path = finder.Get_LocalPth()
-                        file_path = os.path.join(local_path, image_data.file)
-                        
-                        # 이미지 로드
-                        if os.path.exists(file_path):
-                            self.image_dock.load_image(file_path)
-                            self.image_dock.setVisible(True)
-                            self.update_image_dock_position()
-                            return
-            
-            # 이미지를 찾을 수 없는 경우
-            self.image_dock.image_label.setText("이미지를 찾을 수 없습니다")
-            self.image_dock.setVisible(True)
-            self.update_image_dock_position()
+            # 체크됐을 때 이미지 뷰어 표시
+            self.update_image_viewer()
         else:
             # 체크 해제됐을 때 숨김
             self.image_dock.setVisible(False)
@@ -667,23 +666,6 @@ class CaptureAreaPopup(QDialog):
                 
                 # 이미지 체크박스 상태 업데이트
                 self.update_image_checkbox_state()
-                
-                # 체크 상태에 따라 이미지 로드
-                if self.show_image_check.isChecked() and data and hasattr(data, 'file') and data.file:
-                    # 로컬 경로로 변환
-                    from grinder_utils import finder
-                    local_path = finder.Get_LocalPth()
-                    file_path = os.path.join(local_path, data.file)
-                    
-                    # 이미지 로드
-                    if os.path.exists(file_path):
-                        self.image_dock.load_image(file_path)
-                        self.image_dock.setVisible(True)
-                        self.update_image_dock_position()
-                    else:
-                        # 파일이 없으면 체크 해제
-                        self.show_image_check.setChecked(False)
-                        self.image_dock.setVisible(False)
             else:
                 # 이미지 모드가 아니면 체크박스 숨김
                 self.show_image_check.setVisible(False)
@@ -1410,14 +1392,11 @@ class CaptureAreaPopup(QDialog):
             
             # 상대 경로로 변환
             from pathlib import Path
-            # data_path = Path(finder.Get_DataPath())
             local_path = Path(finder.Get_LocalPth())
             file_path_obj = Path(file_path)
             
             try:
                 # 상대 경로 생성 시도
-                # relative_path = file_path_obj.relative_to(data_path)
-                # stored_path = str(relative_path)
                 local_path = Path(finder.Get_LocalPth())
                 relative_path = file_path_obj.relative_to(local_path)
                 stored_path = str(relative_path)
@@ -1433,19 +1412,10 @@ class CaptureAreaPopup(QDialog):
                 "clickx": clickx, "clicky": clicky,
             })
             
-            # 저장 성공 후 체크박스 상태 업데이트
-            self.update_image_checkbox_state()
-            
             # 체크 상태이면 새로 저장된 이미지 표시
             if self.show_image_check.isChecked():
-                from grinder_utils import finder
-                local_path = finder.Get_LocalPth()
-                file_path = os.path.join(local_path, stored_path)
-                
-                if os.path.exists(file_path):
-                    self.image_dock.load_image(file_path)
-                    self.image_dock.setVisible(True)
-                    self.update_image_dock_position()
+                # 이미지 도킹 위젯 업데이트
+                self.update_image_viewer()
             
             self.status_signal.emit(f"이미지가 저장되었습니다: {file_path}")
             
