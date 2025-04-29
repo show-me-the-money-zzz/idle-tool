@@ -916,8 +916,8 @@ class TaskEditorPopup(QDialog):
                 
                 if TaskMan.Delete_Task(taskkey):
                     self.tasks = TaskMan.GetAll_Tasks()
-                    print("update_automation_buttons_state(): 파일 저장")
-                    print(f"{self.tasks}")
+                    # print("update_automation_buttons_state(): 파일 저장")
+                    # print(f"{self.tasks}")
 
                     # newtask = TaskMan.Delete_Task(taskkey)
                     # if newtask:
