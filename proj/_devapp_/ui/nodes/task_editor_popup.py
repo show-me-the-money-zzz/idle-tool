@@ -14,6 +14,7 @@ from ui.component.searchable_comboBox import SearchableComboBox
 import stores.task_manager as TaskMan
 import stores.areas as Areas
 from grinder_types.selected_task  import SelectedTask
+import ui.css as CSS
 
 class TaskEditorPopup(QDialog):
     """작업 편집기 팝업 창"""
@@ -76,17 +77,26 @@ class TaskEditorPopup(QDialog):
         # 최하단 - 버튼 영역
         buttons_layout = QHBoxLayout()
         
-        # 오른쪽에 공간 추가
+        # 왼쪽에 취소 버튼 배치
+        self.cancel_btn = QPushButton("닫기")
+        self.cancel_btn.setStyleSheet(CSS.BUTTON_CANCEL)
+        self.cancel_btn.clicked.connect(self.close)
+        buttons_layout.addWidget(self.cancel_btn)
+
+        # 오른쪽 버튼들을 위한 공간 추가
         buttons_layout.addStretch(1)
-        
-        # 저장/취소 버튼
+
+        # 다시 불러오기 버튼 추가 (오른쪽 첫 번째)
+        self.reload_btn = QPushButton("다시 불러오기")
+        self.reload_btn.setStyleSheet(CSS.BUTTON_APPLY2)  # 적절한 스타일 적용
+        self.reload_btn.clicked.connect(self.OnClick_Reload)  # 다시 불러오기 기능 연결
+        buttons_layout.addWidget(self.reload_btn)
+
+        # 저장 버튼 (오른쪽 끝)
         self.save_btn = QPushButton("저장")
+        self.save_btn.setStyleSheet(CSS.BUTTON_APPLY)
         self.save_btn.clicked.connect(self.save_task)
         buttons_layout.addWidget(self.save_btn)
-        
-        self.cancel_btn = QPushButton("취소")
-        self.cancel_btn.clicked.connect(self.reject)
-        buttons_layout.addWidget(self.cancel_btn)
         
         main_layout.addLayout(buttons_layout)
         
@@ -980,4 +990,10 @@ class TaskEditorPopup(QDialog):
     
     def save_task(self):
         """작업 저장"""
-        self.accept()
+        # self.accept()
+        # self.close()
+        
+        print("저장하기")
+        
+    def OnClick_Reload(self):
+        print("리로드")
