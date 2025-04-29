@@ -671,19 +671,29 @@ class TaskEditorPopup(QDialog):
     # 자동화 목록 관련 메서드 추가
     def update_automation_buttons_state(self):
         """자동화 항목 선택 상태에 따라 버튼 활성화 상태 업데이트"""
+        DEVDEV = False
 
-        if self.selectedTask.IsSelect():
+        if DEVDEV: print("update_automation step= 1")
+        if self.selectedTask.IsSelect():            
             originkey, currentkey = self.selectedTask.Get_Keys()
-            isChanged = (originkey != currentkey)
+            if DEVDEV: print(f"update_automation step= 2_1 ({originkey} vs {currentkey})")
+            isChanged = (originkey != currentkey)   # 키 변경 체크
             # print(f"key 변경= {isChanged}")
         
-            if not isChanged:
+            if not isChanged:   # 데이터 변경 체크
                 orgintask = self.tasks.get(originkey)
                 if orgintask:
+                    if DEVDEV: print(f"update_automation step= 2_2)")
                     deeporgintask = copy.deepcopy(orgintask)
                     isChanged = (deeporgintask != self.selectedTask.task)
+
+            if not isChanged:   # 새로운 아이템인지
+                findTask = TaskMan.Get_Task(originkey, None)
+                isChanged = not findTask
+                if DEVDEV: print(f"update_automation step= 2_3): {isChanged}")
                     
             if isChanged:
+                if DEVDEV: print("update_automation step= 2_X_1")
                 # X 버튼은 QMessageBox.No 또는 QMessageBox.Cancel 값과 같은 결과 반환
                 reply = QMessageBox.question(self, '데이트 수정됨',
                                              "수정된 데이터를 저장하시겠습니까?\n" +
@@ -692,9 +702,11 @@ class TaskEditorPopup(QDialog):
                                              QMessageBox.Yes    # 기본 버튼(Enter 키 누를 때 선택되는 버튼)
                                              )
                 if QMessageBox.Yes == reply:
+                    if DEVDEV: print("update_automation step= 2_X_2")
                     # print("update_automation_buttons_state(): 파일 저장")
                     newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
                     if newtask:
+                        if DEVDEV: print("update_automation step= 2_X_3")
                         self.tasks = newtask
 
                         if (originkey != currentkey):
@@ -704,7 +716,7 @@ class TaskEditorPopup(QDialog):
                 else:
                     print("파일 저장 취소 (리로드)")
                     # self.Reload_Tasks()   # 테스트 하기
-        
+        if DEVDEV: print("update_automation step= 3")
         self.selectedTask.Reset_Task()
         
         self.step_list.clear()
@@ -729,6 +741,7 @@ class TaskEditorPopup(QDialog):
         
         # 선택된 항목이 있으면 이름 편집 필드에 표시
         if has_selection:
+            if DEVDEV: print("update_automation step= 4")
             selectedItem = items[0]
             self.automation_name_edit.setText(selectedItem.text())
             
@@ -737,7 +750,7 @@ class TaskEditorPopup(QDialog):
             
             if not task:
                 return
-            
+            if DEVDEV: print("update_automation step= 5")
             self.selectedTask.Set_Task(key, task)
             
             self.start_key_input.setText(task.start_key)
@@ -854,7 +867,13 @@ class TaskEditorPopup(QDialog):
                                             "새 이름을 입력하세요:",
                                             QLineEdit.Normal, new_item_name)
         if ok and new_text.strip():
-            print(f"new_text= {new_text}")
+            # print(f"new_text= {new_text}")
+
+            self.tasks[new_text] = TaskMan.Task(
+                steps={},
+                start_key="",
+                comment="",
+            )
 
             # 새 항목 추가
             self.automation_list.addItem(new_text)

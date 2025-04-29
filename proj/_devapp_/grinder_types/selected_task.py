@@ -19,10 +19,12 @@ class SelectedTask:
     # ## selected_originkey 가 원본에 없는 key이면 추가
     # ## 있는 key면 selected_currentkey / selected_currenttask으로 비교해서 변경사항 추적
     def Set_Task(self, key, task: TaskMan.Task | None):
+        # print(f"Set_Task({key})")
         self.origin_key = key
         self.current_key = key
         if task:
             self.task = copy.deepcopy(task)
+            # print(f"{task}")
         else: self.task = None
     def Reset_Task(self):
         self.Set_Task("", None)
