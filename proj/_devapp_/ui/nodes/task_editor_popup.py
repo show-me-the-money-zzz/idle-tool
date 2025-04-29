@@ -15,6 +15,7 @@ import stores.task_manager as TaskMan
 import stores.areas as Areas
 from grinder_types.selected_task  import SelectedTask
 import ui.css as CSS
+from grinder_utils.pysider import ChangeText_ListWidget
 
 class TaskEditorPopup(QDialog):
     """작업 편집기 팝업 창"""
@@ -674,8 +675,7 @@ class TaskEditorPopup(QDialog):
         if self.selectedTask.IsSelect():
             originkey, currentkey = self.selectedTask.Get_Keys()
             isChanged = (originkey != currentkey)
-            print(f"key 변경= {isChanged}")
-            # TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
+            # print(f"key 변경= {isChanged}")
         
             if not isChanged:
                 orgintask = self.tasks.get(originkey)
@@ -691,24 +691,18 @@ class TaskEditorPopup(QDialog):
                                              QMessageBox.Yes    # 기본 버튼(Enter 키 누를 때 선택되는 버튼)
                                              )
                 if QMessageBox.Yes == reply:
-                    print("파일 저장")
-                    # newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
-                    # if newtask: self.tasks = newtask
+                    print("update_automation_buttons_state(): 파일 저장")
+                    newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
+                    if newtask:
+                        self.tasks = newtask
+
+                        if (originkey != currentkey):
+                            ChangeText_ListWidget(self.automation_list, originkey, currentkey)
                     # print(self.tasks.items())
                 # elif QMessageBox.No == reply:
                 else:
                     print("파일 저장 취소 (리로드)")
                     # self.Reload_Tasks()   # 테스트 하기
-                
-            # orgintask = self.tasks.get(originkey)
-            # if orgintask:
-            #     deeporgintask = copy.deepcopy(orgintask)
-            #     if deeporgintask != self.selectedTask.task:
-            #         # print("세이브")
-            #         # TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
-            #         newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
-            #         if newtask: self.tasks = newtask
-            #         print(self.tasks.items())
         
         self.selectedTask.Reset_Task()
         

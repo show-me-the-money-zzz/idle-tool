@@ -16,4 +16,4 @@ def Get_LocalPth():
         return Path(__file__).parent.parent
     
 def Get_DataPath():
-    return Get_LocalPth() / PATH_Data;
+    return Get_LocalPth() / PATH_Data
