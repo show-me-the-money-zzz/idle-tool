@@ -686,7 +686,8 @@ class TaskEditorPopup(QDialog):
             if isChanged:
                 # X 버튼은 QMessageBox.No 또는 QMessageBox.Cancel 값과 같은 결과 반환
                 reply = QMessageBox.question(self, '데이트 수정됨',
-                                             "수정된 데이터를 저장하시겠습니까?",
+                                             "수정된 데이터를 저장하시겠습니까?\n" +
+                                             "('No'는 저장된 상태로 돌아갑니다.)",
                                              QMessageBox.Yes | QMessageBox.No,  # 포함 버튼들
                                              QMessageBox.Yes    # 기본 버튼(Enter 키 누를 때 선택되는 버튼)
                                              )
