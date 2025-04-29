@@ -196,27 +196,6 @@ class CaptureAreaPopup(QDialog):
         top_controls.addWidget(settings_group, 1)
         right_layout.addLayout(top_controls)
 
-        # 작업 버튼들 그룹화 및 분리
-        work_group = QGroupBox("작업")
-        work_layout = QHBoxLayout(work_group)
-
-        # 저장 버튼 - 녹색 스타일
-        save_btn = QPushButton("저장")
-        save_btn.setStyleSheet(CSS.BUTTON_APPLY_GREEN)
-        save_btn.clicked.connect(self.apply_settings)
-        work_layout.addWidget(save_btn)
-
-        # 취소 버튼 - 빨간색 스타일
-        cancel_btn = QPushButton("취소하고 닫기")
-        cancel_btn.setStyleSheet(CSS.BUTTON_CANCEL)
-        cancel_btn.clicked.connect(self.on_close)
-        work_layout.addWidget(cancel_btn)
-
-        # 오른쪽으로 공간 추가
-        work_layout.addStretch(1)
-
-        right_layout.addWidget(work_group)
-
         # 마우스 클릭 그룹 추가
         mouse_group = QGroupBox("마우스 클릭")
         mouse_layout = QHBoxLayout(mouse_group)
@@ -355,6 +334,27 @@ class CaptureAreaPopup(QDialog):
         
         # 오른쪽 패널 레이아웃에 미리보기 그룹 추가
         right_layout.addWidget(preview_group, 1)  # stretch 1
+
+        # 작업 버튼들 그룹화 및 분리
+        work_group = QGroupBox("작업")
+        work_layout = QHBoxLayout(work_group)
+
+        # 저장 버튼 - 녹색 스타일
+        save_btn = QPushButton("저장")
+        save_btn.setStyleSheet(CSS.BUTTON_APPLY_GREEN)
+        save_btn.clicked.connect(self.apply_settings)
+        work_layout.addWidget(save_btn)
+
+        # 취소 버튼 - 빨간색 스타일
+        cancel_btn = QPushButton("취소하고 닫기")
+        cancel_btn.setStyleSheet(CSS.BUTTON_CANCEL)
+        cancel_btn.clicked.connect(self.on_close)
+        work_layout.addWidget(cancel_btn)
+
+        # 오른쪽으로 공간 추가
+        work_layout.addStretch(1)
+
+        right_layout.addWidget(work_group)
         
         # 오른쪽 패널을 메인 레이아웃에 추가
         main_layout.addWidget(right_panel, 1)  # 오른쪽 패널이 더 많은 공간 차지
