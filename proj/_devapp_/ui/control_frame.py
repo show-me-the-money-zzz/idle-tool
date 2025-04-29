@@ -10,6 +10,7 @@ except ImportError:
 import stores.sanner as Scanner
 import ui.css as CSS
 import zzz.config as CONFIG
+import stores.task_manager as TaskMan
 
 class ControlFrame(QFrame):
     """캡처 제어 프레임"""
@@ -30,6 +31,7 @@ class ControlFrame(QFrame):
         self.openpopup_taskeditor = openpopup_taskeditor
         
         self.setup_ui()
+        self.reload_tasks()
     
     def setup_ui(self):
         """UI 설정"""
@@ -147,9 +149,18 @@ class ControlFrame(QFrame):
     
     def reload_tasks(self):
         """작업 목록 새로고침"""
-        print("작업 목록 새로고침")
+        # print("작업 목록 새로고침")
+
+        # pass
         # 콤보박스 내용 업데이트 코드
-        pass
+        TaskMan.Load_Task()
+        self.task_combo.clear()
+        self.task_combo.addItem("")
+
+        task_keys = TaskMan.GetAll_Tasks().keys()
+        for key in task_keys:
+            self.task_combo.addItem(key)
+        # print(f"{task_keys}")
     
     def update_capture_button_text(self, is_capturing):
         """캡처 버튼 텍스트 업데이트"""

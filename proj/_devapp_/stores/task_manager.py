@@ -241,6 +241,7 @@ class TaskManager:
 Tasks = TaskManager("Task 데이터", "task.json")
 
 # 인터페이스 함수 정의
+Load_Task = Tasks._load
 Add_Task = Tasks.add
 Delete_Task = Tasks.delete
 _Get_Task = Tasks.get
