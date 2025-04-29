@@ -95,6 +95,10 @@ class SelectedTask:
             return self.task.steps
         return None
     
+    def RemoveTask(self, key):
+        # print(f"RemoveTask({key})")
+        self.Reset_Task()
+    
     def UpdateTask_Key(self, key):
         if "" == self.origin_key:
             return

@@ -692,7 +692,7 @@ class TaskEditorPopup(QDialog):
                                              QMessageBox.Yes    # 기본 버튼(Enter 키 누를 때 선택되는 버튼)
                                              )
                 if QMessageBox.Yes == reply:
-                    print("update_automation_buttons_state(): 파일 저장")
+                    # print("update_automation_buttons_state(): 파일 저장")
                     newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
                     if newtask:
                         self.tasks = newtask
@@ -860,13 +860,30 @@ class TaskEditorPopup(QDialog):
     def remove_automation(self):
         """선택한 자동화 항목 삭제"""
         current_row = self.automation_list.currentRow()
+        taskkey = self.automation_list.item(current_row).text()
+
         if current_row >= 0:
             # 삭제 전 확인 대화상자
             reply = QMessageBox.question(self, '자동화 삭제', 
-                                        "선택한 자동화를 삭제하시겠습니까?",
+                                        f"선택한 자동화({taskkey})를 삭제하시겠습니까?\n" +
+                                        "파일에 바로 저장합니다.",
                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             
             if reply == QMessageBox.Yes:
+                self.selectedTask.RemoveTask(taskkey)
+                
+                if TaskMan.Delete_Task(taskkey):
+                    self.tasks = TaskMan.GetAll_Tasks()
+                    print("update_automation_buttons_state(): 파일 저장")
+                    print(f"{self.tasks}")
+
+                    # newtask = TaskMan.Delete_Task(taskkey)
+                    # if newtask:
+                    #     self.tasks = newtask
+
+                    #     if (originkey != currentkey):
+                    #         ChangeText_ListWidget(self.automation_list, originkey, currentkey)
+
                 self.automation_list.takeItem(current_row)
                 self.update_automation_buttons_state()
 
@@ -885,6 +902,7 @@ class TaskEditorPopup(QDialog):
             
             # 사용자가 확인을 누르고 텍스트가 비어있지 않으면 항목 업데이트
             if ok and new_text.strip():
+                print(f"new_text= {new_text}")
                 item.setText(new_text)
 
     def filter_automation_list(self, text):
