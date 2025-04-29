@@ -974,19 +974,19 @@ class TaskEditorPopup(QDialog):
     # def is_task_modified(self): return self.selectedTask != self.originalTask
     # def is_step_modified(self): return self.selectedTaskStep != self.originalTaskStep
 
-    def OpenPopup_WarningSave(self):
-        reply = QMessageBox.question(
-            self,
-            "변경 내용 확인",
-            "변경된 내용이 있습니다. 저장하시겠습니까?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
-        # print(reply)
-        return (True if QMessageBox.Yes == reply else False)
-        # if reply == QMessageBox.No:
-            # return
-        # self.reject()
+    # def OpenPopup_WarningSave(self):
+    #     reply = QMessageBox.question(
+    #         self,
+    #         "변경 내용 확인",
+    #         "변경된 내용이 있습니다. 저장하시겠습니까?",
+    #         QMessageBox.Yes | QMessageBox.No,
+    #         QMessageBox.No
+    #     )
+    #     # print(reply)
+    #     return (True if QMessageBox.Yes == reply else False)
+    #     # if reply == QMessageBox.No:
+    #         # return
+    #     # self.reject()
     
     def save_task(self):
         """작업 저장"""
@@ -996,4 +996,10 @@ class TaskEditorPopup(QDialog):
         print("저장하기")
         
     def OnClick_Reload(self):
-        print("리로드")
+        # print("리로드")
+
+        self.selectedTask.Reset_Task()
+        # print(f"{self.selectedTask.IsSelect()}")
+        # # self.selectedTask.Reset_Step()
+
+        self.Reload_Tasks()
