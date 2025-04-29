@@ -74,6 +74,7 @@ class ConnectionFrame(QGroupBox):
         
         # 좌측 영역 - 게임 맨위로 버튼
         self.activate_window_btn = QPushButton("게임 맨위로")
+        self.activate_window_btn.setStyleSheet(CSS.BUTTON_ORANGE)
         self.activate_window_btn.clicked.connect(self.activate_connected_window)
         self.activate_window_btn.setEnabled(False)
         top_action_layout.addWidget(self.activate_window_btn, 0, Qt.AlignLeft)
@@ -83,7 +84,7 @@ class ConnectionFrame(QGroupBox):
         
         # 우측 영역 - 게임 연결 버튼
         connect_app_btn = QPushButton("게임 연결")
-        connect_app_btn.setStyleSheet(CSS.BUTTON_APPLY)
+        connect_app_btn.setStyleSheet(CSS.BUTTON_APPLY_GREEN)
         connect_app_btn.clicked.connect(self.connect_to_selected_app)
         top_action_layout.addWidget(connect_app_btn, 0, Qt.AlignRight)
         

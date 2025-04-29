@@ -45,6 +45,7 @@ class ControlFrame(QFrame):
         
         # 캡처 시작/중지 버튼 (왼쪽)
         self.capture_btn = QPushButton(self.RUNNER_BUTTON_START_TEXT)
+        self.capture_btn.setStyleSheet(CSS.BUTTON_APPLY_BLUESKY)
         self.capture_btn.setFixedWidth(60)
         self.capture_btn.clicked.connect(self.toggle_capture_callback)
         top_row.addWidget(self.capture_btn)
@@ -59,13 +60,13 @@ class ControlFrame(QFrame):
         
         # 자동화 생성 버튼 (오른쪽)
         self.create_task_btn = QPushButton("자동화 생성")
-        self.create_task_btn.setStyleSheet(CSS.BUTTON_APPLY2)
+        self.create_task_btn.setStyleSheet(CSS.BUTTON_APPLY_GREEN)
         self.create_task_btn.clicked.connect(self.openpopup_taskeditor)
         top_row.addWidget(self.create_task_btn)
         
         # 아이템 생성 버튼 (오른쪽 끝)
         self.create_item_btn = QPushButton("아이템 생성")
-        self.create_item_btn.setStyleSheet(CSS.BUTTON_APPLY)
+        self.create_item_btn.setStyleSheet(CSS.BUTTON_ORANGE)
         self.create_item_btn.clicked.connect(self.open_popup_callback)
         top_row.addWidget(self.create_item_btn)
         

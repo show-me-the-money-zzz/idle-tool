@@ -193,7 +193,7 @@ class CaptureAreaPopup(QDialog):
 
         # 저장 버튼 - 녹색 스타일
         save_btn = QPushButton("저장")
-        save_btn.setStyleSheet(CSS.BUTTON_APPLY)
+        save_btn.setStyleSheet(CSS.BUTTON_APPLY_GREEN)
         save_btn.clicked.connect(self.apply_settings)
         work_layout.addWidget(save_btn)
 
