@@ -847,15 +847,20 @@ class TaskEditorPopup(QDialog):
         """새 자동화 항목 추가"""
         count = self.automation_list.count()
         new_item_name = f"새 자동화 {count+1}"
-        
-        # 새 항목 추가
-        self.automation_list.addItem(new_item_name)
-        
-        # 새 항목 선택
-        self.automation_list.setCurrentRow(count)
-        
+
         # 즉시 편집 모드로 전환
-        self.edit_automation_item(self.automation_list.currentItem(), True)
+        # self.edit_automation_item(self.automation_list.currentItem(), True)
+        new_text, ok = QInputDialog.getText(self, "자동화 추가",
+                                            "새 이름을 입력하세요:",
+                                            QLineEdit.Normal, new_item_name)
+        if ok and new_text.strip():
+            print(f"new_text= {new_text}")
+
+            # 새 항목 추가
+            self.automation_list.addItem(new_text)
+
+            # 새 항목 선택
+            self.automation_list.setCurrentRow(count)
 
     def remove_automation(self):
         """선택한 자동화 항목 삭제"""
