@@ -16,6 +16,7 @@ import stores.areas as Areas
 from grinder_types.selected_task  import SelectedTask
 import ui.css as CSS
 from grinder_utils.pysider import ChangeText_ListWidget
+import zzz.config as CONFIG
 
 class TaskEditorPopup(QDialog):
     """작업 편집기 팝업 창"""
@@ -568,10 +569,11 @@ class TaskEditorPopup(QDialog):
         
         # 가이드 레이블 추가 (최하단)
         guide_layout = QHBoxLayout()
-        guide_label = QLabel("※영역 / 이미지는 검색 가능")
-        guide_label.setStyleSheet("color: gray; font-size: 9pt;")  # 작은 회색 텍스트
-        guide_layout.addWidget(guide_label)
+        self.guide_label_step_normalinfo = QLabel("")
+        self.guide_label_step_normalinfo.setStyleSheet("color: gray; font-size: 9pt;")  # 작은 회색 텍스트
+        guide_layout.addWidget(self.guide_label_step_normalinfo)
         guide_layout.addStretch(1)  # 오른쪽 여백 추가
+        self.Update_GuideLabel_StepNormalInfo()
         
         layout.addLayout(guide_layout)
         
@@ -855,6 +857,16 @@ class TaskEditorPopup(QDialog):
             self.next_steps_list.addItem(nextstep)
         self.selectedTask.UpdateStep_NextSteps(self.next_steps_list)
         self.step_description.setText(step.comment)
+
+        if not CONFIG.RELEASE_APP: self.Update_GuideLabel_StepNormalInfo()
+
+    def Update_GuideLabel_StepNormalInfo(self):
+        text = "※영역 / 이미지는 검색 가능"
+        if not CONFIG.RELEASE_APP:
+            step = self.selectedTask.Get_Step()
+            if step: text += f" (seq: {step.seq})"
+        
+        self.guide_label_step_normalinfo.setText(text)
         
     def add_automation(self):
         """새 자동화 항목 추가"""
