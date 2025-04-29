@@ -30,7 +30,7 @@ class CaptureAreaPopup(QDialog):
 
     def __init__(self, parent, region_selector, capture_manager, status_signal, on_close_callback=None):
         super().__init__(parent)
-        self.setWindowTitle("캡처 영역 설정")
+        self.setWindowTitle("아이템 에디터")
         self.resize(520, 720)
         
         self.parent = parent

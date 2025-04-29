@@ -25,7 +25,7 @@ class TaskEditorPopup(QDialog):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("작업 편집기")
+        self.setWindowTitle("자동화 에디터")
         self.resize(720, 1000)
         
         self.selectedTask = SelectedTask(
