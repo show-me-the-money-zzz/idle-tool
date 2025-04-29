@@ -1005,11 +1005,13 @@ class TaskEditorPopup(QDialog):
         """새 단계 추가"""
         # 현재 항목 수 확인
         count = self.step_list.count()
+        lastseq = self.selectedTask.Get_Step_LastSeq()
+        newseq = lastseq + 1
         
         # 새 항목 추가
-        key = f"새 단계 {count+1}"
+        key = f"새 단계 {newseq + 1}"
         self.step_list.addItem(key)
-        self.selectedTask.NewStep(key)
+        self.selectedTask.NewStep(key, newseq)
         # # originkey, _ = self.selectedTask.Get_Keys()
         # # print(f"add_step(): self.tasks[{originkey}].steps= {self.tasks.get(originkey).steps.items()}")
         # print(f"add_step(): selectedTask.task.steps= {self.selectedTask.task.steps.items()}")

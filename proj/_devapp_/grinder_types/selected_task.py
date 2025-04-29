@@ -119,13 +119,13 @@ class SelectedTask:
         self.task.start_key = self.origin_step_key
         return self.task.start_key
     
-    def NewStep(self, key):
-        seq = 0
+    def Get_Step_LastSeq(self):
+        seq = -1
         if 0 < len(self.task.steps):
             for k, step in self.task.steps.items():
                 if seq < step.seq: seq = step.seq
-            seq += 1    # step 들의 제일 큰 seq보다 1키우기
-
+        return seq
+    def NewStep(self, key, seq = 0):
         self.task.steps[key] = TaskMan.TaskStep(
             seq= seq,
             waiting= 100.0,
@@ -138,6 +138,7 @@ class SelectedTask:
             fail_step= "",
             comment= "",
         )
+        return seq
     def RemoveStep(self, key):
         # print(f"RemoveStep({key})")
         if "" != key:
