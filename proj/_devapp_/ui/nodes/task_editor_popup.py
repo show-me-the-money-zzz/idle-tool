@@ -87,7 +87,7 @@ class TaskEditorPopup(QDialog):
         buttons_layout.addStretch(1)
 
         # 다시 불러오기 버튼 추가 (오른쪽 첫 번째)
-        self.reload_btn = QPushButton("다시 불러오기")
+        self.reload_btn = QPushButton("리셋")
         self.reload_btn.setStyleSheet(CSS.BUTTON_APPLY2)  # 적절한 스타일 적용
         self.reload_btn.clicked.connect(self.OnClick_Reload)  # 다시 불러오기 기능 연결
         buttons_layout.addWidget(self.reload_btn)
