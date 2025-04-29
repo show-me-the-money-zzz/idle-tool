@@ -82,7 +82,7 @@ class TaskEditorPopup(QDialog):
         # 왼쪽에 취소 버튼 배치
         self.cancel_btn = QPushButton("닫기")
         self.cancel_btn.setStyleSheet(CSS.BUTTON_CANCEL)
-        self.cancel_btn.clicked.connect(self.close)
+        self.cancel_btn.clicked.connect(self.Close_Editor)
         buttons_layout.addWidget(self.cancel_btn)
 
         # 오른쪽 버튼들을 위한 공간 추가
@@ -676,48 +676,8 @@ class TaskEditorPopup(QDialog):
         DEVDEV = False
 
         if DEVDEV: print("update_automation step= 1")
-        if self.selectedTask.IsSelect():            
-            originkey, currentkey = self.selectedTask.Get_Keys()
-            if DEVDEV: print(f"update_automation step= 2_1 ({originkey} vs {currentkey})")
-            isChanged = (originkey != currentkey)   # 키 변경 체크
-            # print(f"key 변경= {isChanged}")
+        self.save_task()
         
-            if not isChanged:   # 데이터 변경 체크
-                orgintask = self.tasks.get(originkey)
-                if orgintask:
-                    if DEVDEV: print(f"update_automation step= 2_2)")
-                    deeporgintask = copy.deepcopy(orgintask)
-                    isChanged = (deeporgintask != self.selectedTask.task)
-
-            if not isChanged:   # 새로운 아이템인지
-                findTask = TaskMan.Get_Task(originkey, None)
-                isChanged = not findTask
-                if DEVDEV: print(f"update_automation step= 2_3): {isChanged}")
-                    
-            if isChanged:
-                if DEVDEV: print("update_automation step= 2_X_1")
-                # X 버튼은 QMessageBox.No 또는 QMessageBox.Cancel 값과 같은 결과 반환
-                reply = QMessageBox.question(self, '데이트 수정됨',
-                                             "수정된 데이터를 저장하시겠습니까?\n" +
-                                             "('No'는 저장된 상태로 돌아갑니다.)",
-                                             QMessageBox.Yes | QMessageBox.No,  # 포함 버튼들
-                                             QMessageBox.Yes    # 기본 버튼(Enter 키 누를 때 선택되는 버튼)
-                                             )
-                if QMessageBox.Yes == reply:
-                    if DEVDEV: print("update_automation step= 2_X_2")
-                    # print("update_automation_buttons_state(): 파일 저장")
-                    newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
-                    if newtask:
-                        if DEVDEV: print("update_automation step= 2_X_3")
-                        self.tasks = newtask
-
-                        if (originkey != currentkey):
-                            ChangeText_ListWidget(self.automation_list, originkey, currentkey)
-                    # print(self.tasks.items())
-                # elif QMessageBox.No == reply:
-                else:
-                    print("파일 저장 취소 (리로드)")
-                    # self.Reload_Tasks()   # 테스트 하기
         if DEVDEV: print("update_automation step= 3")
         self.selectedTask.Reset_Task()
         
@@ -1100,8 +1060,10 @@ class TaskEditorPopup(QDialog):
                         isSaved = True
                     # print(self.tasks.items())
                 # elif QMessageBox.No == reply:
-                # else:
-                #     print("파일 저장 취소 (리로드)")
+                else:
+                    isChanged = False
+                    QMessageBox.warning(self, "저장 취소", "저장을 취소하였습니다.")
+                    # print("파일 저장 취소 (리로드)")
         
         if isSaved:
             QMessageBox.information(self, "저장 성공", "저장에 성공하였습니다.")
@@ -1110,6 +1072,11 @@ class TaskEditorPopup(QDialog):
                 QMessageBox.information(self, "저장 실패", "저장에 실패하였습니다.")
             # else: QMessageBox.information(self, "저장 X", "변경 사항이 없습니다.")
         
+    def Close_Editor(self):
+        self.save_task()
+
+        self.close()
+
     def OnClick_Reload(self):
         # print("리로드")
 
