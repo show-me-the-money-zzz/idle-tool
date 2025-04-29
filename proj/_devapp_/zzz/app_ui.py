@@ -9,6 +9,7 @@ import os
 from core.window_utils import WindowUtil
 from core.capture_utils import CaptureManager
 from core.tasker import Tasker  # 새로 추가
+import stores.task_manager as TaskMan
 from core.ocr_engine import setup_tesseract
 from zzz.config import *
 from ui.nodes.region_selector import RegionSelector
@@ -270,6 +271,8 @@ class AppUI(QMainWindow):
         """캡처 시작/중지 전환"""
         if self.tasker.is_running:
             # 캡처 중지
+            TaskMan.ResetKey_RunningTask()
+
             self.tasker.stop_tasks()
             self.control_frame.update_capture_button_text(False)
         else:

@@ -99,6 +99,7 @@ class ControlFrame(QFrame):
             # self.task_combo.setMinimumWidth(150)
             # self.task_combo.setMaximumWidth(combo_max_width)
             self.task_combo.setFixedWidth(combo_max_width)
+            self.task_combo.currentTextChanged.connect(lambda task: self.Change_Task(task))
         except Exception as e:
             print(f"콤보박스 크기 설정 오류: {e}")
         
@@ -147,6 +148,11 @@ class ControlFrame(QFrame):
         
         return frame
     
+    def Change_Task(self, task):
+        # print(f"ControlFrame.Change_Task({task})")
+        TaskMan.SetKey_RunningTask(task)
+        # pass
+
     def reload_tasks(self):
         """작업 목록 새로고침"""
         # print("작업 목록 새로고침")
@@ -155,7 +161,7 @@ class ControlFrame(QFrame):
         # 콤보박스 내용 업데이트 코드
         TaskMan.Load_Task()
         self.task_combo.clear()
-        self.task_combo.addItem("")
+        # self.task_combo.addItem("")
 
         task_keys = TaskMan.GetAll_Tasks().keys()
         for key in task_keys:

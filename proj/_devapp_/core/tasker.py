@@ -63,6 +63,8 @@ class Tasker(QObject):
             return False
             
         self.is_running = False
+        self.running_task = None
+        self.running_task_steps = []
         
         # 현재 실행 중인 작업 취소
         if self.current_task:
@@ -109,15 +111,11 @@ class Tasker(QObject):
             
     def Make_Task_GS23_RF(self): return {}
     
-    running_task = None
-    running_task_steps = []
     async def Loop(self):
-        # self.logframe_adderror.emit("시작")
-        task_key = "사냥1"
-        hunting_tasks = TaskMan.Get_Task(task_key)
-        # print(f"{hunting_tasks}")
-        self.running_task = hunting_tasks
-        self.running_task_steps = [ hunting_tasks.start_key ]
+        task_key, task = TaskMan.Get_RunningTask()
+        print(f"Tasker.Loop(): [{task_key}] {task}")
+        self.running_task = task
+        self.running_task_steps = [ task.start_key ]
         
         try:
             while self.is_running:

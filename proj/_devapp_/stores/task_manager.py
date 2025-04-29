@@ -291,7 +291,25 @@ def Update_Task(old_key: str, task: Task, new_key: str = None, save: bool = True
     if Tasks.update_task(old_key, task, new_key, save):
         return GetAll_Tasks()
     return None
-        
+
+class RunningTask:
+    key = ""
+    def __init__(self, key: str): self.key = key
+    def set_key(self, key):
+        findTask = Get_Task(key, None)
+        if findTask:
+            self.key = key
+            return True        
+        else:
+            self.reset_key()
+            return False
+    def reset_key(self): self.key = ""
+    def get(self):
+        return (self.key, Get_Task(self.key, None))
+_runnging_task = RunningTask("")
+SetKey_RunningTask = _runnging_task.set_key
+ResetKey_RunningTask = _runnging_task.reset_key
+Get_RunningTask = _runnging_task.get
 
 def initialize():
     Tasks.save()
