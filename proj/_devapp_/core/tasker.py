@@ -32,10 +32,11 @@ class Tasker(QObject):
     logframe_adderror = Signal(str)
     logframe_addnotice = Signal(str)
     
-    def __init__(self, parent, capture_manager):
+    def __init__(self, parent, toggle_capture_callback, capture_manager):
         super().__init__(parent)
         self.async_helper = AsyncHelper(self)
         
+        self.toggle_capture_callback = toggle_capture_callback
         self.capture_manager = capture_manager
         
         # 작업 상태 변수
@@ -113,14 +114,14 @@ class Tasker(QObject):
     
     async def Loop(self):
         task_key, task = TaskMan.Get_RunningTask()
-        print(f"Tasker.Loop(): [{task_key}] {task}")
+        # print(f"Tasker.Loop(): [{task_key}] {task}")
         self.running_task = task
         self.running_task_steps = [ task.start_key ]
         
         try:
             while self.is_running:
                 if not WindowUtil.update_window_info():
-                    self.stop_tasks()
+                    self.toggle_capture_callback()
                     self.status_changed.emit("창이 닫혔습니다.")
                     return
                 
@@ -130,7 +131,7 @@ class Tasker(QObject):
                     step = self.running_task.Get_Step(step_key)
                     # print(f"step.seq= {step.seq}")
                     if None == step:
-                        self.stop_tasks()
+                        self.toggle_capture_callback()
                         self.logframe_adderror.emit(f"{task_key}-{step_key} 단계가 유효하지 않습니다.")
 
                     if "matching" == step.type: await self.Matching(step, task_key, step_key)
@@ -144,9 +145,11 @@ class Tasker(QObject):
         except asyncio.CancelledError:
             # 작업 취소 처리
             self.logframe_addwarning.emit("작업이 취소되었습니다.")
+            self.toggle_capture_callback()
         except Exception as e:
             # 예외 처리
             self.logframe_adderror.emit(f"작업 중 오류 발생: {str(e)}")
+            self.toggle_capture_callback()
             
     async def Matching(self, step: TaskMan.TaskStep, taskkey, stepkey):
         if 0.0 < step.waiting:

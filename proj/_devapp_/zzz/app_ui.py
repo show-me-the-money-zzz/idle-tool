@@ -72,7 +72,7 @@ class AppUI(QMainWindow):
         winman = WindowUtil  # 초기화를 위한
         self.capture_manager = CaptureManager(self.handle_capture_callback)
         
-        self.tasker = Tasker(self, self.capture_manager)
+        self.tasker = Tasker(self, self.toggle_capture, self.capture_manager)
         
         self.region_selector = RegionSelector()
         
@@ -271,7 +271,7 @@ class AppUI(QMainWindow):
         """캡처 시작/중지 전환"""
         if self.tasker.is_running:
             # 캡처 중지
-            TaskMan.ResetKey_RunningTask()
+            # TaskMan.ResetKey_RunningTask()
 
             self.tasker.stop_tasks()
             self.control_frame.update_capture_button_text(False)
