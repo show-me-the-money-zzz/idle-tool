@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QTabWidget, QWidget,
                              QLabel, QLineEdit, QPushButton, QCheckBox, QSpinBox, QDoubleSpinBox,
                              QGroupBox, QGridLayout, QComboBox, QTextEdit, QScrollArea, QApplication,
-                             QFrame, QMessageBox, QFileDialog)
+                             QFrame, QMessageBox, QFileDialog, QListWidget)
 from PySide6.QtGui import QPixmap, QImage, QPainter, QColor, QFont
 from PySide6.QtCore import Qt, Signal, Slot, QTimer
 from PIL import Image, ImageQt
@@ -70,8 +70,17 @@ class CaptureAreaPopup(QDialog):
         self.move_timer.start(500)  # 0.5초 간격으로 위치 업데이트
 
     def _setup_ui(self):
-        # 메인 레이아웃
-        main_layout = QVBoxLayout(self)
+        # 메인 레이아웃 - 수직 대신 수평 레이아웃 사용
+        main_layout = QHBoxLayout(self)
+        
+        # 왼쪽 패널 추가 (탭, 리스트, 버튼 포함)
+        left_panel = self._create_left_panel()
+        main_layout.addWidget(left_panel)
+        
+        # 오른쪽 패널 (기존 컨트롤들)
+        right_panel = QWidget()
+        right_layout = QVBoxLayout(right_panel)
+        right_layout.setContentsMargins(5, 5, 5, 5)
         
         # 상단 컨트롤 영역
         top_controls = QHBoxLayout()
@@ -96,7 +105,7 @@ class CaptureAreaPopup(QDialog):
         
         settings_layout.addLayout(key_layout)
         
-        # # 키워드: 콤보박스 + 버튼 수평 배치
+        # 키워드: 콤보박스 + 버튼 수평 배치
         keywords_layout = QHBoxLayout()
 
         # 키워드 콤보박스
@@ -158,7 +167,7 @@ class CaptureAreaPopup(QDialog):
             # spin.editingFinished.connect(self.update_area_preview)
             spin.editingFinished.connect(lambda: None)
 
-       # 동작 버튼들 가로 배치
+        # 동작 버튼들 가로 배치
         action_buttons_layout = QHBoxLayout()
 
         # 영역 선택 버튼
@@ -183,9 +192,8 @@ class CaptureAreaPopup(QDialog):
         settings_layout.addLayout(action_buttons_layout)
 
         # 전체 레이아웃에 settings_group 추가
-        top_controls.addWidget(settings_group, 1)  # 비율 조정 (전체 화면 사용)
-
-        main_layout.addLayout(top_controls)
+        top_controls.addWidget(settings_group, 1)
+        right_layout.addLayout(top_controls)
 
         # 작업 버튼들 그룹화 및 분리
         work_group = QGroupBox("작업")
@@ -206,7 +214,7 @@ class CaptureAreaPopup(QDialog):
         # 오른쪽으로 공간 추가
         work_layout.addStretch(1)
 
-        main_layout.addWidget(work_group)
+        right_layout.addWidget(work_group)
 
         # 마우스 클릭 그룹 추가
         mouse_group = QGroupBox("마우스 클릭")
@@ -280,8 +288,8 @@ class CaptureAreaPopup(QDialog):
         mouse_layout.addWidget(self.mouse_color_frame)
         self.mouse_color_frame.setVisible(False)  # 초기에는 숨김
 
-        # 메인 레이아웃에 마우스 클릭 그룹 추가
-        main_layout.addWidget(mouse_group)
+        # 오른쪽 패널 레이아웃에 마우스 클릭 그룹 추가
+        right_layout.addWidget(mouse_group)
         
         # 미리보기 영역
         preview_group = QGroupBox("영역 미리보기")
@@ -344,7 +352,11 @@ class CaptureAreaPopup(QDialog):
         self.preview_label.setText("영역을 선택하면\n미리보기가 표시됩니다")
         preview_layout.addWidget(self.preview_label)
         
-        main_layout.addWidget(preview_group, 1)  # stretch 1
+        # 오른쪽 패널 레이아웃에 미리보기 그룹 추가
+        right_layout.addWidget(preview_group, 1)  # stretch 1
+        
+        # 오른쪽 패널을 메인 레이아웃에 추가
+        main_layout.addWidget(right_panel, 1)  # 오른쪽 패널이 더 많은 공간 차지
         
         self.on_capture_type_changed(CaptureMode.IMAGE)
         
@@ -353,6 +365,96 @@ class CaptureAreaPopup(QDialog):
         if not RELEASE_APP:
             # 테스트용 색상 추가
             self.test_add_colors()
+
+    def _create_left_panel(self):
+        """왼쪽 패널 생성 - 탭, 리스트, 버튼 포함"""
+        left_panel = QWidget()
+        left_layout = QVBoxLayout(left_panel)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # 탭 위젯 생성
+        self.left_tabs = QTabWidget()
+        
+        # 이미지 탭
+        image_tab = self._create_list_tab("이미지", CaptureMode.IMAGE)
+        self.left_tabs.addTab(image_tab, "이미지")
+        
+        # 빈영역 탭
+        zone_tab = self._create_list_tab("빈영역", CaptureMode.ZONE)
+        self.left_tabs.addTab(zone_tab, "빈영역")
+        
+        # 텍스트 탭
+        text_tab = self._create_list_tab("텍스트", CaptureMode.TEXT)
+        self.left_tabs.addTab(text_tab, "텍스트")
+        
+        # 탭 변경 이벤트 연결
+        self.left_tabs.currentChanged.connect(self._on_tab_changed)
+        
+        left_layout.addWidget(self.left_tabs)
+        
+        # 왼쪽 패널 크기 설정
+        left_panel.setMinimumWidth(200)
+        left_panel.setMaximumWidth(300)
+        
+        return left_panel
+
+    def _create_list_tab(self, title, mode):
+        """목록 탭 생성 (검색창, 리스트, 버튼 포함)"""
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(5, 5, 5, 5)
+        
+        # 검색 영역
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(QLabel("검색:"))
+        
+        search_edit = QLineEdit()
+        search_edit.setPlaceholderText(f"{title} 검색...")
+        search_layout.addWidget(search_edit)
+        
+        layout.addLayout(search_layout)
+        
+        # 목록 위젯
+        list_widget = QListWidget()
+        list_widget.setSelectionMode(QListWidget.SingleSelection)
+        layout.addWidget(list_widget)
+        
+        # 버튼 영역
+        buttons_layout = QHBoxLayout()
+        
+        add_btn = QPushButton("✚")
+        add_btn.setToolTip(f"{title} 추가")
+        add_btn.setFixedWidth(30)
+        buttons_layout.addWidget(add_btn)
+        
+        remove_btn = QPushButton("━")
+        remove_btn.setToolTip(f"선택한 {title} 삭제")
+        remove_btn.setFixedWidth(30)
+        remove_btn.setEnabled(False)  # 초기에는 비활성화
+        buttons_layout.addWidget(remove_btn)
+        
+        # 여백 추가
+        buttons_layout.addStretch(1)
+        
+        layout.addLayout(buttons_layout)
+        
+        # 각 요소 저장 및 이벤트 연결
+        setattr(self, f"{mode.name.lower()}_search", search_edit)
+        setattr(self, f"{mode.name.lower()}_list", list_widget)
+        setattr(self, f"{mode.name.lower()}_add_btn", add_btn)
+        setattr(self, f"{mode.name.lower()}_remove_btn", remove_btn)
+        
+        # 이벤트 연결
+        search_edit.textChanged.connect(lambda text, w=list_widget, m=mode: self._filter_list(text, w, m))
+        list_widget.itemSelectionChanged.connect(lambda w=list_widget, rm=remove_btn, m=mode: self._update_selection(w, rm, m))
+        list_widget.itemDoubleClicked.connect(lambda item, m=mode: self._on_item_double_clicked(item, m))
+        add_btn.clicked.connect(lambda _, m=mode: self._add_new_item(m))
+        remove_btn.clicked.connect(lambda _, w=list_widget, m=mode: self._remove_selected_item(w, m))
+        
+        # 초기 데이터 로드
+        self._load_list_data(list_widget, mode)
+        
+        return tab
             
     def _setup_ui_additions(self):
         # 색상 버튼 이벤트 연결
@@ -369,6 +471,163 @@ class CaptureAreaPopup(QDialog):
         # 체크박스 상태 변경 시 미리보기 업데이트
         self.edit_check.stateChanged.connect(self.update_area_preview)
         self.show_check.stateChanged.connect(self.update_area_preview)
+
+    def _on_tab_changed(self, index):
+        """탭이 변경되었을 때 호출"""
+        mode = CaptureMode(index)
+        self.capture_type_combo.setCurrentIndex(index)
+        self.on_capture_type_changed(mode)
+
+    def _load_list_data(self, list_widget, mode):
+        """목록 데이터 로드"""
+        list_widget.clear()
+        
+        try:
+            if mode == CaptureMode.IMAGE:
+                # 이미지 데이터 로드
+                items = areas.GetAll_ImageAreas().keys()
+            elif mode == CaptureMode.ZONE:
+                # 빈영역 데이터 로드
+                items = areas.GetAll_ZoneAreas().keys()
+            elif mode == CaptureMode.TEXT:
+                # 텍스트 데이터 로드
+                items = areas.GetAll_TextAreas().keys()
+            else:
+                items = []
+                
+            # 리스트에 항목 추가
+            for key in sorted(items):
+                list_widget.addItem(key)
+                
+        except Exception as e:
+            print(f"데이터 로드 중 오류: {e}")
+
+    def _filter_list(self, text, list_widget, mode):
+        """목록 필터링"""
+        text = text.lower()
+        for i in range(list_widget.count()):
+            item = list_widget.item(i)
+            if text in item.text().lower():
+                item.setHidden(False)
+            else:
+                item.setHidden(True)
+
+    def _update_selection(self, list_widget, remove_btn, mode):
+        """목록 선택 업데이트"""
+        has_selection = len(list_widget.selectedItems()) > 0
+        remove_btn.setEnabled(has_selection)
+        
+        if has_selection:
+            selected_key = list_widget.selectedItems()[0].text()
+            self._load_item_data(selected_key, mode)
+
+    def _load_item_data(self, key, mode):
+        """선택된 항목 데이터 로드"""
+        try:
+            data = None
+            
+            if mode == CaptureMode.IMAGE:
+                data = areas.GetAll_ImageAreas().get(key)
+            elif mode == CaptureMode.ZONE:
+                data = areas.GetAll_ZoneAreas().get(key)
+            elif mode == CaptureMode.TEXT:
+                data = areas.GetAll_TextAreas().get(key)
+                
+            if data:
+                # 키 입력 필드 업데이트
+                self.key_input.setText(key)
+                
+                # 좌표 및 크기 업데이트
+                self.x_spin.setValue(data.get("x", 0))
+                self.y_spin.setValue(data.get("y", 0))
+                self.width_spin.setValue(data.get("width", 0))
+                self.height_spin.setValue(data.get("height", 0))
+                
+                # 클릭 좌표 업데이트
+                clickx = data.get("clickx", 0)
+                clicky = data.get("clicky", 0)
+                self.click_x_spin.setValue(clickx)
+                self.click_y_spin.setValue(clicky)
+                
+                # 클릭 설정이 있으면 수정 모드 활성화
+                has_click = clickx > 0 or clicky > 0
+                self.edit_check.setChecked(has_click)
+                
+                # 미리보기 업데이트
+                self.update_area_preview()
+                
+        except Exception as e:
+            print(f"항목 데이터 로드 중 오류: {e}")
+
+    def _on_item_double_clicked(self, item, mode):
+        """항목 더블 클릭 처리"""
+        key = item.text()
+        self._load_item_data(key, mode)
+
+    def _add_new_item(self, mode):
+        """새 항목 추가"""
+        # 현재 선택된 모드에 맞는 리스트 위젯 가져오기
+        list_widget = getattr(self, f"{mode.name.lower()}_list")
+        
+        # 현재 항목 수 기반으로 기본 이름 생성
+        count = list_widget.count()
+        type_name = self.left_tabs.tabText(mode.value)
+        default_name = f"새 {type_name} {count + 1}"
+        
+        # 새 항목 추가 (실제로는 UI에만 추가, 저장은 apply_settings에서)
+        self.key_input.setText(default_name)
+        
+        # 캡처 타입 콤보박스 업데이트
+        self.capture_type_combo.setCurrentIndex(mode.value)
+        
+        # 기본 값으로 필드 초기화
+        self.x_spin.setValue(10)
+        self.y_spin.setValue(10)
+        self.width_spin.setValue(100)
+        self.height_spin.setValue(100)
+        self.click_x_spin.setValue(0)
+        self.click_y_spin.setValue(0)
+        self.edit_check.setChecked(False)
+
+    def _remove_selected_item(self, list_widget, mode):
+        """선택한 항목 삭제"""
+        selected_items = list_widget.selectedItems()
+        if not selected_items:
+            return
+            
+        key = selected_items[0].text()
+        
+        # 삭제 전 확인 대화상자
+        reply = QMessageBox.question(
+            self, 
+            '항목 삭제', 
+            f"'{key}' 항목을 삭제하시겠습니까?",
+            QMessageBox.Yes | QMessageBox.No, 
+            QMessageBox.No
+        )
+        
+        if reply == QMessageBox.Yes:
+            try:
+                # 데이터 저장소에서 삭제
+                if mode == CaptureMode.IMAGE:
+                    areas.Delete_ImageArea(key)
+                elif mode == CaptureMode.ZONE:
+                    areas.Delete_ZoneArea(key)
+                elif mode == CaptureMode.TEXT:
+                    areas.Delete_TextArea(key)
+                    
+                # UI에서 삭제
+                row = list_widget.row(selected_items[0])
+                list_widget.takeItem(row)
+                
+                # 필드 초기화
+                self.key_input.clear()
+                
+                # 상태 메시지 업데이트
+                self.status_signal.emit(f"'{key}' 항목이 삭제되었습니다.")
+                
+            except Exception as e:
+                QMessageBox.critical(self, "삭제 오류", f"항목 삭제 중 오류가 발생했습니다: {str(e)}")
         
     def select_mouse_color(self, index):
         """마우스 색상 선택"""
@@ -877,6 +1136,11 @@ class CaptureAreaPopup(QDialog):
             self.save_as_zone()
         elif CaptureMode.TEXT == self.capturemode:
             self.save_as_text()
+
+        # 현재 탭의 목록 새로고침
+        current_mode = CaptureMode(self.left_tabs.currentIndex())
+        list_widget = getattr(self, f"{current_mode.name.lower()}_list")
+        self._load_list_data(list_widget, current_mode)
 
     def save_as_text(self):
         """텍스트 영역으로 저장"""
