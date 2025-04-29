@@ -869,6 +869,12 @@ class TaskEditorPopup(QDialog):
         if ok and new_text.strip():
             # print(f"new_text= {new_text}")
 
+            duplication = self.tasks.get(new_text)
+            if duplication:
+                QMessageBox.critical(self, "중복 KEY",
+                                     "키가 중복됩니다. 다른 이름을 사용하세요.")
+                return
+
             self.tasks[new_text] = TaskMan.Task(
                 steps={},
                 start_key="",
