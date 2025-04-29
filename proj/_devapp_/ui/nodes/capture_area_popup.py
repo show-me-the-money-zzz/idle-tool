@@ -535,23 +535,21 @@ class CaptureAreaPopup(QDialog):
                 data = Areas.GetAll_TextAreas().get(key)
                 
             if data:
+                # print(f"{data}")
                 # 키 입력 필드 업데이트
                 self.key_input.setText(key)
                 
                 # 좌표 및 크기 업데이트
-                self.x_spin.setValue(data.get("x", 0))
-                self.y_spin.setValue(data.get("y", 0))
-                self.width_spin.setValue(data.get("width", 0))
-                self.height_spin.setValue(data.get("height", 0))
+                self.x_spin.setValue(data.x)
+                self.y_spin.setValue(data.y)
+                self.width_spin.setValue(data.width)
+                self.height_spin.setValue(data.height)
                 
-                # 클릭 좌표 업데이트
-                clickx = data.get("clickx", 0)
-                clicky = data.get("clicky", 0)
-                self.click_x_spin.setValue(clickx)
-                self.click_y_spin.setValue(clicky)
+                self.click_x_spin.setValue(data.clickx)
+                self.click_y_spin.setValue(data.clicky)
                 
                 # 클릭 설정이 있으면 수정 모드 활성화
-                has_click = clickx > 0 or clicky > 0
+                has_click = data.clickx > 0 or data.clicky > 0
                 self.edit_check.setChecked(has_click)
                 
                 # 미리보기 업데이트
