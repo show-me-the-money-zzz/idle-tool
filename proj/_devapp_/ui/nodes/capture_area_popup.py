@@ -449,7 +449,8 @@ class CaptureAreaPopup(QDialog):
         # 이벤트 연결
         search_edit.textChanged.connect(lambda text, w=list_widget, m=mode: self._filter_list(text, w, m))
         list_widget.itemSelectionChanged.connect(lambda w=list_widget, rm=remove_btn, m=mode: self._update_selection(w, rm, m))
-        list_widget.itemDoubleClicked.connect(lambda item, m=mode: self._on_item_double_clicked(item, m))
+        # list_widget.itemDoubleClicked.connect(lambda item, m=mode: self._on_item_double_clicked(item, m))
+        ## 불필요하여 삭제
         add_btn.clicked.connect(lambda _, m=mode: self._add_new_item(m))
         remove_btn.clicked.connect(lambda _, w=list_widget, m=mode: self._remove_selected_item(w, m))
         
