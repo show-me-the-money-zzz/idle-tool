@@ -8,7 +8,8 @@ set PATH_CORE=core
 set PATH_SCRIPTS=scripts
 set PATH_UI=ui
 set PATH_STORES=stores
-set PATH_UTILS=utils
+set PATH_TYPES=grinder_types
+set PATH_UTILS=grinder_utils
 set PATH_ZZZ=zzz
 set PATH_DOT_VSCODE=.vscode
 
@@ -56,6 +57,11 @@ if exist "%DEST%\%PATH_UI%" (
 if exist "%DEST%\%PATH_STORES%" (
     echo 기존 %PATH_STORES% 심볼릭 링크 삭제 중...
     rmdir "%DEST%\%PATH_STORES%"
+)
+
+if exist "%DEST%\%PATH_TYPES%" (
+    echo 기존 %PATH_TYPES% 심볼릭 링크 삭제 중...
+    rmdir "%DEST%\%PATH_TYPES%"
 )
 
 if exist "%DEST%\%PATH_UTILS%" (
@@ -129,6 +135,13 @@ if exist "%DEV%\%PATH_STORES%" (
     mklink /d "%DEST%\%PATH_STORES%" "%CD%\%DEV%\%PATH_STORES%"
 ) else (
     echo 경고: 소스 폴더가 존재하지 않습니다 - %DEV%\%PATH_STORES%
+)
+
+echo %PATH_TYPES% 폴더의 심볼릭 링크 생성...
+if exist "%DEV%\%PATH_TYPES%" (
+    mklink /d "%DEST%\%PATH_TYPES%" "%CD%\%DEV%\%PATH_TYPES%"
+) else (
+    echo 경고: 소스 폴더가 존재하지 않습니다 - %DEV%\%PATH_TYPES%
 )
 
 echo %PATH_UTILS% 폴더의 심볼릭 링크 생성...
