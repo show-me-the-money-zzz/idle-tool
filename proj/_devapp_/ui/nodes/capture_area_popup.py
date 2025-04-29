@@ -11,7 +11,7 @@ import os
 from enum import Enum
 
 from zzz.config import *
-from stores import areas
+import stores.areas as Areas
 from grinder_utils.system import Calc_MS
 from core.window_utils import WindowUtil
 from ui.nodes.log_dock_widget import LogDockWidget
@@ -95,7 +95,8 @@ class CaptureAreaPopup(QDialog):
         # 캡처 방식 선택 콤보박스
         self.capture_type_combo = QComboBox()
         self.capture_type_combo.addItems(["이미지", "빈영역", "텍스트"])
-        self.capture_type_combo.currentIndexChanged.connect(self.on_capture_type_changed)
+        # self.capture_type_combo.currentIndexChanged.connect(self.on_capture_type_changed)
+        self.capture_type_combo.setEnabled(False)
         key_layout.addWidget(self.capture_type_combo)
         
         # KEY 레이블과 입력
@@ -485,13 +486,13 @@ class CaptureAreaPopup(QDialog):
         try:
             if mode == CaptureMode.IMAGE:
                 # 이미지 데이터 로드
-                items = areas.GetAll_ImageAreas().keys()
+                items = Areas.GetAll_ImageAreas().keys()                
             elif mode == CaptureMode.ZONE:
                 # 빈영역 데이터 로드
-                items = areas.GetAll_ZoneAreas().keys()
+                items = Areas.GetAll_ZoneAreas().keys()
             elif mode == CaptureMode.TEXT:
                 # 텍스트 데이터 로드
-                items = areas.GetAll_TextAreas().keys()
+                items = Areas.GetAll_TextAreas().keys()
             else:
                 items = []
                 
@@ -527,11 +528,11 @@ class CaptureAreaPopup(QDialog):
             data = None
             
             if mode == CaptureMode.IMAGE:
-                data = areas.GetAll_ImageAreas().get(key)
+                data = Areas.GetAll_ImageAreas().get(key)
             elif mode == CaptureMode.ZONE:
-                data = areas.GetAll_ZoneAreas().get(key)
+                data = Areas.GetAll_ZoneAreas().get(key)
             elif mode == CaptureMode.TEXT:
-                data = areas.GetAll_TextAreas().get(key)
+                data = Areas.GetAll_TextAreas().get(key)
                 
             if data:
                 # 키 입력 필드 업데이트
@@ -610,11 +611,11 @@ class CaptureAreaPopup(QDialog):
             try:
                 # 데이터 저장소에서 삭제
                 if mode == CaptureMode.IMAGE:
-                    areas.Delete_ImageArea(key)
+                    Areas.Delete_ImageArea(key)
                 elif mode == CaptureMode.ZONE:
-                    areas.Delete_ZoneArea(key)
+                    Areas.Delete_ZoneArea(key)
                 elif mode == CaptureMode.TEXT:
-                    areas.Delete_TextArea(key)
+                    Areas.Delete_TextArea(key)
                     
                 # UI에서 삭제
                 row = list_widget.row(selected_items[0])
@@ -1157,7 +1158,7 @@ class CaptureAreaPopup(QDialog):
                 QMessageBox.critical(self, "오류", "KEY를 입력하세요.")
                 return
  
-            areas.Add_TextArea(key, {"x": x, "y": y, "width": width, "height": height,
+            Areas.Add_TextArea(key, {"x": x, "y": y, "width": width, "height": height,
                                      "clickx": clickx, "clicky": clicky,
                                      })
                 
@@ -1253,7 +1254,7 @@ class CaptureAreaPopup(QDialog):
                 stored_path = file_path
             
             # 이미지 정보를 JSON에 저장
-            areas.Add_ImageArea(key, {
+            Areas.Add_ImageArea(key, {
                 "x": x, "y": y, 
                 "width": width, "height": height,
                 "file": stored_path,
@@ -1285,7 +1286,7 @@ class CaptureAreaPopup(QDialog):
                 QMessageBox.critical(self, "오류", "KEY를 입력하세요.")
                 return
  
-            areas.Add_ZoneArea(key, {"x": x, "y": y, "width": width, "height": height,
+            Areas.Add_ZoneArea(key, {"x": x, "y": y, "width": width, "height": height,
                                      "clickx": clickx, "clicky": clicky,
                                      })
                 

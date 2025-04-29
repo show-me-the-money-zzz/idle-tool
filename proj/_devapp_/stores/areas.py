@@ -25,7 +25,7 @@ def Get_TextArea(key, default=None) -> TextItem | None:
     if data:
         return TextItem(**data)
     return default
-def GetAll_TextArea():
+def GetAll_TextAreas():
     datalist = {}
     for key, data in Texts.all().items():
         datalist[key] = TextItem(**data)
