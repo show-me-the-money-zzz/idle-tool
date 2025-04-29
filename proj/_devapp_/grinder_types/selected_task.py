@@ -119,6 +119,19 @@ class SelectedTask:
         self.task.start_key = self.origin_step_key
         return self.task.start_key
     
+    def NewStep(self, key, seq = 0):
+        self.task.steps[key] = TaskMan.TaskStep(
+            seq= seq,
+            waiting= 100.0,
+            type= "matching",
+            zone= "",
+            image= "",
+            score= "<=99.0",
+            finded_click= "",
+            next_step= [],
+            fail_step= "",
+            comment= "",
+        )
     def RemoveStep(self, key):
         # print(f"RemoveStep({key})")
         if "" != key:

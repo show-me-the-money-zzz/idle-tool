@@ -995,7 +995,12 @@ class TaskEditorPopup(QDialog):
         count = self.step_list.count()
         
         # 새 항목 추가
-        self.step_list.addItem(f"새 단계 {count+1}")
+        key = f"새 단계 {count+1}"
+        self.step_list.addItem(key)
+        self.selectedTask.NewStep(key, count)
+        # # originkey, _ = self.selectedTask.Get_Keys()
+        # # print(f"add_step(): self.tasks[{originkey}].steps= {self.tasks.get(originkey).steps.items()}")
+        # print(f"add_step(): selectedTask.task.steps= {self.selectedTask.task.steps.items()}")
         
         # 새 항목 선택
         self.step_list.setCurrentRow(count)
