@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QTabWidget, QWidget,
                              QLabel, QLineEdit, QPushButton, QCheckBox, QSpinBox, QDoubleSpinBox,
                              QGroupBox, QGridLayout, QComboBox, QTextEdit, QScrollArea, QApplication,
-                             QFrame, QMessageBox, QFileDialog, QListWidget)
+                             QFrame, QMessageBox, QFileDialog, QListWidget, QInputDialog)
 from PySide6.QtGui import QPixmap, QImage, QPainter, QColor, QFont
 from PySide6.QtCore import Qt, Signal, Slot, QTimer
 from PIL import Image, ImageQt
@@ -574,21 +574,36 @@ class CaptureAreaPopup(QDialog):
         count = list_widget.count()
         type_name = self.left_tabs.tabText(mode.value)
         default_name = f"새 {type_name} {count + 1}"
+
+        new_text, ok = QInputDialog.getText(self, f"{type_name} 추가",
+                                            "KEY를 입력하세요:",
+                                            QLineEdit.Normal, default_name)
         
-        # 새 항목 추가 (실제로는 UI에만 추가, 저장은 apply_settings에서)
-        self.key_input.setText(default_name)
-        
-        # 캡처 타입 콤보박스 업데이트
-        self.capture_type_combo.setCurrentIndex(mode.value)
-        
-        # 기본 값으로 필드 초기화
-        self.x_spin.setValue(10)
-        self.y_spin.setValue(10)
-        self.width_spin.setValue(100)
-        self.height_spin.setValue(100)
-        self.click_x_spin.setValue(0)
-        self.click_y_spin.setValue(0)
-        self.edit_check.setChecked(False)
+        if ok and new_text.strip():
+
+            for i in range(list_widget.count()):
+                item = list_widget.item(i)
+                if new_text == item.text():
+                    QMessageBox.critical(self, "중복 KEY",
+                                         "키가 중복됩니다. 다른 이름을 사용하세요.")
+                    return
+
+            list_widget.addItem(new_text)
+            list_widget.setCurrentRow(count)
+            # 새 항목 추가 (실제로는 UI에만 추가, 저장은 apply_settings에서)
+            self.key_input.setText(new_text)
+            
+            # 캡처 타입 콤보박스 업데이트
+            self.capture_type_combo.setCurrentIndex(mode.value)
+            
+            # 기본 값으로 필드 초기화
+            self.x_spin.setValue(10)
+            self.y_spin.setValue(10)
+            self.width_spin.setValue(100)
+            self.height_spin.setValue(100)
+            self.click_x_spin.setValue(0)
+            self.click_y_spin.setValue(0)
+            self.edit_check.setChecked(False)
 
     def _remove_selected_item(self, list_widget, mode):
         """선택한 항목 삭제"""
