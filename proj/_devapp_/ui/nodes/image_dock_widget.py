@@ -62,11 +62,11 @@ class ImageDockWidget(QDockWidget):
         layout.addWidget(title_label)
         layout.addStretch()
 
-        self.swap_btn = QPushButton("◀▶")
-        self.swap_btn.setFixedSize(30, 20)
-        self.swap_btn.setToolTip("도킹 좌우 위치 전환")
-        self.swap_btn.clicked.connect(self.toggle_dock_side)
-        layout.addWidget(self.swap_btn)
+      #   self.swap_btn = QPushButton("◀▶")
+      #   self.swap_btn.setFixedSize(30, 20)
+      #   self.swap_btn.setToolTip("도킹 좌우 위치 전환")
+      #   self.swap_btn.clicked.connect(self.toggle_dock_side)
+      #   layout.addWidget(self.swap_btn)
 
         self.setTitleBarWidget(bar)
         
