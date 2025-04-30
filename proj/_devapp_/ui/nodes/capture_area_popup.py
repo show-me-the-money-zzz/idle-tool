@@ -812,7 +812,7 @@ class CaptureAreaPopup(QDialog):
                                             QLineEdit.Normal, default_name)
         
         if ok and new_text.strip():
-
+            # 키 중복 체크
             for i in range(list_widget.count()):
                 item = list_widget.item(i)
                 if new_text == item.text():
@@ -823,6 +823,25 @@ class CaptureAreaPopup(QDialog):
             # 캡처 타입 콤보박스 업데이트
             self.capture_type_combo.setCurrentIndex(mode.value)
             
+            # 기본 데이터 준비
+            default_data = {
+                "x": 10,
+                "y": 10,
+                "width": 100,
+                "height": 100,
+                "clickx": 0,
+                "clicky": 0
+            }
+            
+            # 모드에 따라 Areas에 데이터 추가
+            if mode == CaptureMode.IMAGE:
+                default_data["file"] = ""  # 파일 경로는 비어 있음
+                Areas.Add_ImageArea(new_text, default_data, False)
+            elif mode == CaptureMode.ZONE:
+                Areas.Add_ZoneArea(new_text, default_data, False)
+            elif mode == CaptureMode.TEXT:
+                Areas.Add_TextArea(new_text, default_data, False)
+            
             # 새 항목 추가
             list_widget.addItem(new_text)
             
@@ -832,7 +851,7 @@ class CaptureAreaPopup(QDialog):
                     list_widget.setCurrentRow(i)
                     break
             
-            # 컨트롤 활성화 및 기본값 설정 - 선택만으로는 기본값이 설정되지 않으므로 수동으로 설정
+            # 컨트롤 활성화 및 기본값 설정
             self.key_input.setEnabled(True)
             self.x_spin.setEnabled(True)
             self.y_spin.setEnabled(True)
@@ -840,19 +859,15 @@ class CaptureAreaPopup(QDialog):
             self.height_spin.setEnabled(True)
             
             self.Set_Key(new_text)
-            self.x_spin.setValue(10)  # 기본값 설정
-            self.y_spin.setValue(10)
-            self.width_spin.setValue(100)
-            self.height_spin.setValue(100)
-            self.click_x_spin.setValue(0)
-            self.click_y_spin.setValue(0)
+            self.x_spin.setValue(default_data["x"])
+            self.y_spin.setValue(default_data["y"])
+            self.width_spin.setValue(default_data["width"])
+            self.height_spin.setValue(default_data["height"])
+            self.click_x_spin.setValue(default_data["clickx"])
+            self.click_y_spin.setValue(default_data["clicky"])
             self.edit_check.setChecked(False)
             
             # 저장 버튼 활성화
-            # for widget in self.findChildren(QPushButton):
-            #     if widget.text() == "저장":
-            #         widget.setEnabled(True)
-            #         break
             self.EnableButton_Save(True)
             
             # 미리보기 초기화
