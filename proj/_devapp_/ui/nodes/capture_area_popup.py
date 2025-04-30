@@ -357,10 +357,9 @@ class CaptureAreaPopup(QDialog):
         work_layout = QHBoxLayout(work_group)
 
         # 저장 버튼 - 녹색 스타일
-        save_btn = QPushButton("저장")
-        save_btn.setStyleSheet(CSS.BUTTON_APPLY_GREEN)
-        save_btn.clicked.connect(self.apply_settings)
-        work_layout.addWidget(save_btn)
+        self.save_btn = QPushButton("저장")        
+        self.save_btn.clicked.connect(self.apply_settings)
+        work_layout.addWidget(self.save_btn)
 
         # 취소 버튼 - 빨간색 스타일
         cancel_btn = QPushButton("취소하고 닫기")
@@ -375,6 +374,22 @@ class CaptureAreaPopup(QDialog):
         
         # 오른쪽 패널을 메인 레이아웃에 추가
         main_layout.addWidget(right_panel, 1)  # 오른쪽 패널이 더 많은 공간 차지
+
+        # 초기에 컨트롤 비활성화
+        self.key_input.setEnabled(False)
+        self.x_spin.setEnabled(False)
+        self.y_spin.setEnabled(False)
+        self.width_spin.setEnabled(False)
+        self.height_spin.setEnabled(False)
+        self.click_x_spin.setEnabled(False)
+        self.click_y_spin.setEnabled(False)
+        
+        # 저장 버튼 초기에 비활성화
+        # for widget in self.findChildren(QPushButton):
+        #     if widget.text() == "저장":
+        #         widget.setEnabled(False)
+        #         break
+        self.EnableButton_Save(False)
         
         self._setup_ui_additions()
 
@@ -504,19 +519,14 @@ class CaptureAreaPopup(QDialog):
             prev_list_widget = getattr(self, f"{prev_mode.name.lower()}_list")
             prev_list_widget.clearSelection()  # 이전 탭의 선택 해제
             
-            # 필드 초기화
-            self.Set_Key("")
-            self.x_spin.setValue(0)
-            self.y_spin.setValue(0)
-            self.width_spin.setValue(0)
-            self.height_spin.setValue(0)
-            self.click_x_spin.setValue(0)
-            self.click_y_spin.setValue(0)
-            self.edit_check.setChecked(False)
+            # # 필드 초기화 - clearSelection()으로 인해 _update_selection이 호출되고
+            # # 거기서 필드 초기화하므로 여기서 중복 코드 제거
+            # self.Set_Key("")
+            # ...
             
-            # 미리보기 초기화
-            self.preview_label.clear()
-            self.preview_label.setText("영역을 선택하면\n미리보기가 표시됩니다")
+            # # 미리보기 초기화
+            # self.preview_label.clear()
+            # self.preview_label.setText("영역을 선택하면\n미리보기가 표시됩니다")
         
         # 새 탭 처리
         mode = CaptureMode(index)
@@ -582,9 +592,30 @@ class CaptureAreaPopup(QDialog):
         has_selection = len(list_widget.selectedItems()) > 0
         remove_btn.setEnabled(has_selection)
         
+        # 컨트롤 활성화/비활성화 상태 업데이트
+        self.key_input.setEnabled(has_selection)
+        self.x_spin.setEnabled(has_selection)
+        self.y_spin.setEnabled(has_selection)
+        self.width_spin.setEnabled(has_selection)
+        self.height_spin.setEnabled(has_selection)
+        self.click_x_spin.setEnabled(has_selection and self.edit_check.isChecked())
+        self.click_y_spin.setEnabled(has_selection and self.edit_check.isChecked())
+        
+        self.EnableButton_Save(has_selection)
+        
         if has_selection:
             selected_key = list_widget.selectedItems()[0].text()
             self._load_item_data(selected_key, mode)
+        else:
+            # 선택된 항목이 없을 때 필드 초기화
+            self.Set_Key("")
+            self.x_spin.setValue(0)
+            self.y_spin.setValue(0)
+            self.width_spin.setValue(0)
+            self.height_spin.setValue(0)
+            self.click_x_spin.setValue(0)
+            self.click_y_spin.setValue(0)
+            self.edit_check.setChecked(False)
 
     def update_image_dock_position(self):
         """이미지 도킹 위젯 위치 업데이트"""
@@ -745,25 +776,25 @@ class CaptureAreaPopup(QDialog):
                 item = list_widget.item(i)
                 if new_text == item.text():
                     QMessageBox.critical(self, "중복 KEY",
-                                         "키가 중복됩니다. 다른 이름을 사용하세요.")
+                                        "키가 중복됩니다. 다른 이름을 사용하세요.")
                     return
 
+            # 새 항목 추가하고 선택
             list_widget.addItem(new_text)
-            list_widget.setCurrentRow(count)
-            # 새 항목 추가 (실제로는 UI에만 추가, 저장은 apply_settings에서)            
-            self.Set_Key(new_text)
             
+            # 새 항목을 선택하고 컨트롤 활성화
+            for i in range(list_widget.count()):
+                if list_widget.item(i).text() == new_text:
+                    list_widget.setCurrentRow(i)
+                    break
+            
+            # 새 아이템이 선택되면 컨트롤은 _update_selection 메서드에서 자동으로 활성화됨
             # 캡처 타입 콤보박스 업데이트
             self.capture_type_combo.setCurrentIndex(mode.value)
             
-            # 기본 값으로 필드 초기화
-            self.x_spin.setValue(10)
-            self.y_spin.setValue(10)
-            self.width_spin.setValue(100)
-            self.height_spin.setValue(100)
-            self.click_x_spin.setValue(0)
-            self.click_y_spin.setValue(0)
-            self.edit_check.setChecked(False)
+            # # 기본 값으로 필드 초기화. _update_selection에서 처리
+            # self.x_spin.setValue(10)
+            # ...
 
     def _remove_selected_item(self, list_widget, mode):
         """선택한 항목 삭제"""
@@ -980,18 +1011,19 @@ class CaptureAreaPopup(QDialog):
     def update_mouse_controls_state(self):
         # 수정 체크박스 상태 확인
         is_checked = self.edit_check.isChecked()
+        has_selection = len(getattr(self, f"{self.capturemode.name.lower()}_list").selectedItems()) > 0
         
-        # 스핀박스 활성화/비활성화
-        self.click_x_spin.setEnabled(is_checked)
-        self.click_y_spin.setEnabled(is_checked)
-        self.click_pos_update.setEnabled(is_checked)
-        self.center_btn.setEnabled(is_checked)
-        self.show_check.setEnabled(is_checked)
+        # 스핀박스 활성화/비활성화 - 아이템이 선택된 상태에서만 활성화
+        self.click_x_spin.setEnabled(is_checked and has_selection)
+        self.click_y_spin.setEnabled(is_checked and has_selection)
+        self.click_pos_update.setEnabled(is_checked and has_selection)
+        self.center_btn.setEnabled(is_checked and has_selection)
+        self.show_check.setEnabled(is_checked and has_selection)
         
         # 색상 프레임 표시/숨김
         self.mouse_color_frame.setVisible(is_checked)
         
-        if is_checked:
+        if is_checked and has_selection:
             x = self.click_x_spin.value()
             y = self.click_y_spin.value()
             if 0 == x and 0 == y:
@@ -1566,3 +1598,8 @@ class CaptureAreaPopup(QDialog):
         
         # print("CaptureAreaPopup 종료 완료")
         self.reject()
+
+    def EnableButton_Save(self, ennable):
+        css = CSS.BUTTON_APPLY_GREEN if ennable else CSS.BUTTON_DISABLE
+        self.save_btn.setStyleSheet(css)
+        self.save_btn.setEnabled(ennable)
