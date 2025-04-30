@@ -534,17 +534,10 @@ class CaptureAreaPopup(QDialog):
         
         # 이미지 체크박스 상태 업데이트
         if mode == CaptureMode.IMAGE:
-            # # 이미지 모드일 때 체크박스 표시 및 활성화
-            # self.show_image_check.setVisible(True)
-            # self.show_image_check.setEnabled(True)
-            
-            # 체크 상태이면 도킹 위젯 업데이트
-            # if self.show_image_check.isChecked():
-            # print(f"_on_tab_changed(): {mode}")
+            # 이미지 모드로 변경 시 업데이트
             self.update_image_viewer()
         else:
             # 이미지 모드가 아닐 때
-            # self.show_image_check.setVisible(False)
             self.image_dock.setVisible(False)
             
         if CaptureMode.TEXT != mode:
@@ -601,7 +594,11 @@ class CaptureAreaPopup(QDialog):
         self.click_x_spin.setEnabled(has_selection and self.edit_check.isChecked())
         self.click_y_spin.setEnabled(has_selection and self.edit_check.isChecked())
         
-        self.EnableButton_Save(has_selection)
+        # 저장 버튼 활성화/비활성화
+        for widget in self.findChildren(QPushButton):
+            if widget.text() == "저장":
+                widget.setEnabled(has_selection)
+                break
         
         if has_selection:
             selected_key = list_widget.selectedItems()[0].text()
@@ -616,6 +613,10 @@ class CaptureAreaPopup(QDialog):
             self.click_x_spin.setValue(0)
             self.click_y_spin.setValue(0)
             self.edit_check.setChecked(False)
+            
+            # 미리보기 초기화
+            self.preview_label.clear()
+            self.preview_label.setText("영역을 선택하면\n미리보기가 표시됩니다")
 
     def update_image_dock_position(self):
         """이미지 도킹 위젯 위치 업데이트"""
@@ -779,22 +780,44 @@ class CaptureAreaPopup(QDialog):
                                         "키가 중복됩니다. 다른 이름을 사용하세요.")
                     return
 
-            # 새 항목 추가하고 선택
+            # 캡처 타입 콤보박스 업데이트
+            self.capture_type_combo.setCurrentIndex(mode.value)
+            
+            # 새 항목 추가
             list_widget.addItem(new_text)
             
-            # 새 항목을 선택하고 컨트롤 활성화
+            # 새 항목을 선택
             for i in range(list_widget.count()):
                 if list_widget.item(i).text() == new_text:
                     list_widget.setCurrentRow(i)
                     break
             
-            # 새 아이템이 선택되면 컨트롤은 _update_selection 메서드에서 자동으로 활성화됨
-            # 캡처 타입 콤보박스 업데이트
-            self.capture_type_combo.setCurrentIndex(mode.value)
+            # 컨트롤 활성화 및 기본값 설정 - 선택만으로는 기본값이 설정되지 않으므로 수동으로 설정
+            self.key_input.setEnabled(True)
+            self.x_spin.setEnabled(True)
+            self.y_spin.setEnabled(True)
+            self.width_spin.setEnabled(True)
+            self.height_spin.setEnabled(True)
             
-            # # 기본 값으로 필드 초기화. _update_selection에서 처리
-            # self.x_spin.setValue(10)
-            # ...
+            self.Set_Key(new_text)
+            self.x_spin.setValue(10)  # 기본값 설정
+            self.y_spin.setValue(10)
+            self.width_spin.setValue(100)
+            self.height_spin.setValue(100)
+            self.click_x_spin.setValue(0)
+            self.click_y_spin.setValue(0)
+            self.edit_check.setChecked(False)
+            
+            # 저장 버튼 활성화
+            # for widget in self.findChildren(QPushButton):
+            #     if widget.text() == "저장":
+            #         widget.setEnabled(True)
+            #         break
+            self.EnableButton_Save(True)
+            
+            # 미리보기 초기화
+            self.preview_label.clear()
+            self.preview_label.setText("영역을 선택하면\n미리보기가 표시됩니다")
 
     def _remove_selected_item(self, list_widget, mode):
         """선택한 항목 삭제"""
