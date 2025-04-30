@@ -69,6 +69,9 @@ class CaptureAreaPopup(QDialog):
         self.selected_color_index = 0   # 현재 선택된 색상 버튼 인덱스
 
         self._setup_ui()
+
+        self.on_capture_type_changed(CaptureMode.IMAGE)
+        self.update_image_viewer()
         
         # 이동 타이머 추가
         self.move_timer = QTimer(self)
@@ -373,8 +376,6 @@ class CaptureAreaPopup(QDialog):
         # 오른쪽 패널을 메인 레이아웃에 추가
         main_layout.addWidget(right_panel, 1)  # 오른쪽 패널이 더 많은 공간 차지
         
-        self.on_capture_type_changed(CaptureMode.IMAGE)
-        
         self._setup_ui_additions()
 
         if not RELEASE_APP:
@@ -489,6 +490,12 @@ class CaptureAreaPopup(QDialog):
         self.edit_check.stateChanged.connect(self.update_area_preview)
         self.show_check.stateChanged.connect(self.update_area_preview)
 
+    def Set_Key(self, key):
+        if "" == key: self.key_input.clear()
+        else: self.key_input.setText(key)
+
+        if self.image_dock.isVisible(): self.update_image_viewer()
+
     def _on_tab_changed(self, index):
         """탭이 변경되었을 때 호출"""
         # 이전 탭의 모든 선택 해제
@@ -498,7 +505,7 @@ class CaptureAreaPopup(QDialog):
             prev_list_widget.clearSelection()  # 이전 탭의 선택 해제
             
             # 필드 초기화
-            self.key_input.clear()
+            self.Set_Key("")
             self.x_spin.setValue(0)
             self.y_spin.setValue(0)
             self.width_spin.setValue(0)
@@ -523,6 +530,7 @@ class CaptureAreaPopup(QDialog):
             
             # 체크 상태이면 도킹 위젯 업데이트
             # if self.show_image_check.isChecked():
+            # print(f"_on_tab_changed(): {mode}")
             self.update_image_viewer()
         else:
             # 이미지 모드가 아닐 때
@@ -623,34 +631,38 @@ class CaptureAreaPopup(QDialog):
 
     def update_image_viewer(self):
         """이미지 뷰어 업데이트"""
-        if self.capturemode == CaptureMode.IMAGE:
-            key = self.key_input.text()
-            if key:
-                image_data = Areas.Get_ImageArea(key)
-                if image_data and hasattr(image_data, 'file') and image_data.file:
-                    # 로컬 경로로 변환
-                    from grinder_utils import finder
-                    local_path = finder.Get_LocalPth()
-                    file_path = os.path.join(local_path, image_data.file)
-                    
-                    # 이미지 로드
-                    if os.path.exists(file_path):
-                        self.image_dock.setVisible(True)
-                        self.image_dock.load_image(file_path)
-                        self.update_image_dock_position()
-                        return
+        # print(f"update_image_viewer(): {self.capturemode.name}")
+
+        # if self.capturemode == CaptureMode.IMAGE:
+        ## 창 표시 중일 때만 호출할거
+
+        key = self.key_input.text()
+        if key:
+            image_data = Areas.Get_ImageArea(key)
+            if image_data and hasattr(image_data, 'file') and image_data.file:
+                # 로컬 경로로 변환
+                from grinder_utils import finder
+                local_path = finder.Get_LocalPth()
+                file_path = os.path.join(local_path, image_data.file)
                 
-                # 이미지 파일이 없는 경우
-                self.image_dock.image_label.setText("저장된 파일 없음")
-                self.image_dock.path_label.setText("파일 경로: 없음")
-            else:
-                # 키가 없는 경우
-                self.image_dock.image_label.setText("선택된 항목 없음")
-                self.image_dock.path_label.setText("파일 경로: 없음")
+                # 이미지 로드
+                if os.path.exists(file_path):
+                    self.image_dock.setVisible(True)
+                    self.image_dock.load_image(file_path)
+                    self.update_image_dock_position()
+                    return
             
-            # 도킹 위젯 표시
-            self.image_dock.setVisible(True)
-            self.update_image_dock_position()
+            # 이미지 파일이 없는 경우
+            self.image_dock.image_label.setText("저장된 파일 없음")
+            self.image_dock.path_label.setText("파일 경로: 없음")
+        else:
+            # 키가 없는 경우
+            self.image_dock.image_label.setText("선택된 항목 없음")
+            self.image_dock.path_label.setText("파일 경로: 없음")
+        
+        # 도킹 위젯 표시
+        self.image_dock.setVisible(True)
+        self.update_image_dock_position()
 
     def toggle_image_viewer(self, state):
         """이미지 뷰어 토글"""
@@ -687,7 +699,7 @@ class CaptureAreaPopup(QDialog):
             
             if data:
                 # 키 입력 필드 업데이트
-                self.key_input.setText(key)
+                self.Set_Key(key)
                 
                 # 좌표 및 크기 업데이트
                 self.x_spin.setValue(data.x)
@@ -738,8 +750,8 @@ class CaptureAreaPopup(QDialog):
 
             list_widget.addItem(new_text)
             list_widget.setCurrentRow(count)
-            # 새 항목 추가 (실제로는 UI에만 추가, 저장은 apply_settings에서)
-            self.key_input.setText(new_text)
+            # 새 항목 추가 (실제로는 UI에만 추가, 저장은 apply_settings에서)            
+            self.Set_Key(new_text)
             
             # 캡처 타입 콤보박스 업데이트
             self.capture_type_combo.setCurrentIndex(mode.value)
@@ -785,7 +797,7 @@ class CaptureAreaPopup(QDialog):
                 list_widget.takeItem(row)
                 
                 # 필드 초기화
-                self.key_input.clear()
+                self.Set_Key("")
                 
                 # 상태 메시지 업데이트
                 self.status_signal.emit(f"'{key}' 항목이 삭제되었습니다.")
@@ -1513,8 +1525,8 @@ class CaptureAreaPopup(QDialog):
         self.update_area_preview()
         
     def apply_keyword_to_key_input(self):
-        keyword = self.keywords_combo.currentText()
-        self.key_input.setText(keyword)
+        keyword = self.keywords_combo.currentText()        
+        self.Set_Key(keyword)
         
     def closeEvent(self, event):
         # print("[DEBUG] closeEvent triggered from X 버튼")
