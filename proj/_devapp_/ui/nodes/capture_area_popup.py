@@ -63,7 +63,6 @@ class CaptureAreaPopup(QDialog):
         self.image_dock.setFloating(True)
         self.image_dock.setVisible(False)
         
-        
         # 타이머 변수 (None으로 초기화)
         self._read_timer = None
 
@@ -74,10 +73,8 @@ class CaptureAreaPopup(QDialog):
         # 이동 타이머 추가
         self.move_timer = QTimer(self)
         self.move_timer.timeout.connect(self.update_log_dock_position)
+        self.move_timer.timeout.connect(self.update_image_dock_position)    # 이미지 도킹 위젯 이동 타이머 연결
         self.move_timer.start(500)  # 0.5초 간격으로 위치 업데이트
-
-        # 이미지 도킹 위젯 이동 타이머 연결
-        self.move_timer.timeout.connect(self.update_image_dock_position)
 
     def _setup_ui(self):
         # 메인 레이아웃 - 수직 대신 수평 레이아웃 사용
@@ -577,7 +574,6 @@ class CaptureAreaPopup(QDialog):
             selected_key = list_widget.selectedItems()[0].text()
             self._load_item_data(selected_key, mode)
 
-    # 3. 이미지 뷰어 관련 메서드 추가
     def update_image_dock_position(self):
         """이미지 도킹 위젯 위치 업데이트"""
         if self.image_dock.isVisible():
@@ -587,10 +583,11 @@ class CaptureAreaPopup(QDialog):
                 # 새 위치 계산
                 space_x = 10
                 new_x = 0
-                if "right" == self.image_dock.Get_FloatingPos():
-                    new_x = main_geo.x() + main_geo.width() + space_x
-                elif "left" == self.image_dock.Get_FloatingPos():
-                    new_x = main_geo.x() - self.image_dock.width() - space_x
+                # if "right" == self.image_dock.Get_FloatingPos():
+                #     new_x = main_geo.x() + main_geo.width() + space_x
+                # elif "left" == self.image_dock.Get_FloatingPos():
+                #     new_x = main_geo.x() - self.image_dock.width() - space_x
+                new_x = main_geo.x() + main_geo.width() + space_x
                 new_y = main_geo.y()
                 
                 # 위젯 크기 설정
@@ -630,8 +627,8 @@ class CaptureAreaPopup(QDialog):
                     
                     # 이미지 로드
                     if os.path.exists(file_path):
-                        self.image_dock.load_image(file_path)
                         self.image_dock.setVisible(True)
+                        self.image_dock.load_image(file_path)
                         self.update_image_dock_position()
                         return
                 
@@ -916,8 +913,12 @@ class CaptureAreaPopup(QDialog):
             self.log_dock.setVisible(True)
             # 적절한 위치로 도킹 위젯 이동
             self.update_log_dock_position()
+        elif CaptureMode.IMAGE == mode:
+            self.image_dock.setVisible(True)
+            self.update_image_dock_position()
         else:
             self.log_dock.setVisible(False)
+            self.image_dock.setVisible(False)
         
         # 객체에 현재 캡처 타입 저장
         self.capturemode = mode
@@ -933,10 +934,11 @@ class CaptureAreaPopup(QDialog):
                 
                 # 새 위치 계산
                 new_x = 0
-                if "right" == self.log_dock.Get_FloatingPos():
-                    new_x = main_geo.x() + main_geo.width() + SpaceX
-                elif "left" == self.log_dock.Get_FloatingPos():
-                    new_x = main_geo.x() - self.log_dock.width() - SpaceX
+                # if "right" == self.log_dock.Get_FloatingPos():
+                #     new_x = main_geo.x() + main_geo.width() + SpaceX
+                # elif "left" == self.log_dock.Get_FloatingPos():
+                #     new_x = main_geo.x() - self.log_dock.width() - SpaceX
+                new_x = main_geo.x() - self.log_dock.width() - SpaceX
                 new_y = main_geo.y()
                 
                 # 위젯 크기 설정 (필요한 경우)
@@ -991,6 +993,8 @@ class CaptureAreaPopup(QDialog):
         """창 이동 시 로그 창도 함께 이동"""
         super().moveEvent(event)
         self.update_log_dock_position()
+        # print(f"{self.image_dock}")
+        # self.update_image_dock_position()
 
     def clear_log(self):
         """로그 내용 초기화"""
