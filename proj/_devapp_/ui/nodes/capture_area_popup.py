@@ -189,11 +189,11 @@ class CaptureAreaPopup(QDialog):
         preview_btn.clicked.connect(self.update_area_preview)
         action_buttons_layout.addWidget(preview_btn)
 
-        # 저장 이미지 보기 체크박스 (이미지 탭에서만 표시)
-        self.show_image_check = QCheckBox("저장 이미지 보기")
-        self.show_image_check.setVisible(False)  # 초기에는 숨김
-        self.show_image_check.stateChanged.connect(self.toggle_image_viewer)
-        action_buttons_layout.addWidget(self.show_image_check)
+        # # 저장 이미지 보기 체크박스 (이미지 탭에서만 표시)
+        # self.show_image_check = QCheckBox("저장 이미지 보기")
+        # self.show_image_check.setVisible(False)  # 초기에는 숨김
+        # self.show_image_check.stateChanged.connect(self.toggle_image_viewer)
+        # action_buttons_layout.addWidget(self.show_image_check)
 
         # 여백 추가 (오른쪽으로 버튼 밀기)
         action_buttons_layout.addStretch(1)
@@ -517,17 +517,21 @@ class CaptureAreaPopup(QDialog):
         
         # 이미지 체크박스 상태 업데이트
         if mode == CaptureMode.IMAGE:
-            # 이미지 모드일 때 체크박스 표시 및 활성화
-            self.show_image_check.setVisible(True)
-            self.show_image_check.setEnabled(True)
+            # # 이미지 모드일 때 체크박스 표시 및 활성화
+            # self.show_image_check.setVisible(True)
+            # self.show_image_check.setEnabled(True)
             
             # 체크 상태이면 도킹 위젯 업데이트
-            if self.show_image_check.isChecked():
-                self.update_image_viewer()
+            # if self.show_image_check.isChecked():
+            self.update_image_viewer()
         else:
             # 이미지 모드가 아닐 때
-            self.show_image_check.setVisible(False)
+            # self.show_image_check.setVisible(False)
             self.image_dock.setVisible(False)
+            
+        if CaptureMode.TEXT != mode:
+            self.reading_text = False
+            self.log_dock.setVisible(False)
         
         self.on_capture_type_changed(mode)
 
@@ -603,18 +607,19 @@ class CaptureAreaPopup(QDialog):
     # 체크박스 상태 업데이트 함수 추가
     def update_image_checkbox_state(self):
         """이미지 체크박스 상태 업데이트"""
-        if self.capturemode == CaptureMode.IMAGE:
-            # 이미지 모드일 때 항상 체크박스 표시 및 활성화
-            self.show_image_check.setVisible(True)
-            self.show_image_check.setEnabled(True)
+        # if self.capturemode == CaptureMode.IMAGE:
+        #     # 이미지 모드일 때 항상 체크박스 표시 및 활성화
+        #     self.show_image_check.setVisible(True)
+        #     self.show_image_check.setEnabled(True)
             
-            # 체크박스가 체크되어 있으면 도킹 위젯 표시
-            if self.show_image_check.isChecked():
-                self.update_image_viewer()
-        else:
-            # 이미지 모드가 아닐 때
-            self.show_image_check.setVisible(False)
-            self.image_dock.setVisible(False)
+        #     # 체크박스가 체크되어 있으면 도킹 위젯 표시
+        #     if self.show_image_check.isChecked():
+        #         self.update_image_viewer()
+        # else:
+        #     # 이미지 모드가 아닐 때
+        #     self.show_image_check.setVisible(False)
+        #     self.image_dock.setVisible(False)
+        pass
 
     def update_image_viewer(self):
         """이미지 뷰어 업데이트"""
@@ -665,11 +670,15 @@ class CaptureAreaPopup(QDialog):
                 data = Areas.GetAll_ImageAreas().get(key)
                 
                 # 이미지 체크박스 상태 업데이트
-                self.update_image_checkbox_state()
+                self.update_image_checkbox_state()            
             else:
                 # 이미지 모드가 아니면 체크박스 숨김
-                self.show_image_check.setVisible(False)
+                # self.show_image_check.setVisible(False)
                 self.image_dock.setVisible(False)
+                
+            if CaptureMode.TEXT != mode:
+                self.reading_text = False
+                self.log_dock.setVisible(False)
                 
             if mode == CaptureMode.ZONE:
                 data = Areas.GetAll_ZoneAreas().get(key)
@@ -1422,10 +1431,11 @@ class CaptureAreaPopup(QDialog):
                 "clickx": clickx, "clicky": clicky,
             })
             
-            # 체크 상태이면 새로 저장된 이미지 표시
-            if self.show_image_check.isChecked():
-                # 이미지 도킹 위젯 업데이트
-                self.update_image_viewer()
+            # # 체크 상태이면 새로 저장된 이미지 표시
+            # if self.show_image_check.isChecked():
+            #     # 이미지 도킹 위젯 업데이트
+            #     self.update_image_viewer()
+            self.update_image_viewer()
             
             self.status_signal.emit(f"이미지가 저장되었습니다: {file_path}")
             
