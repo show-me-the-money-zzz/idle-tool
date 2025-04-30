@@ -128,11 +128,11 @@ class SelectedTask:
     def NewStep(self, key, seq = 0):
         self.task.steps[key] = TaskMan.TaskStep(
             seq= seq,
-            waiting= 100.0,
+            waiting= 0.01,
             type= "matching",
             zone= "",
             image= "",
-            score= "<=99.0",
+            score= "<=85.0",
             finded_click= "",
             next_step= [],
             fail_step= "",
