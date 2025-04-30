@@ -245,6 +245,7 @@ class AppUI(QMainWindow):
             # 팝업 창 생성
             popup = TaskEditorPopup(
                 self,
+                self.tasker,
             )
             
             popup.show()

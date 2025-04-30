@@ -8,8 +8,10 @@ from PySide6.QtGui import QIcon, QFont
 from PySide6.QtCore import Qt, Signal, QEvent
 import sys
 import copy
+import datetime
 
 from ui.component.searchable_comboBox import SearchableComboBox
+from ui.component.draggable_label import DraggableLabel
 
 import stores.task_manager as TaskMan
 import stores.areas as Areas
@@ -18,16 +20,20 @@ import ui.css as CSS
 from grinder_utils.pysider import ChangeText_ListWidget
 import zzz.config as CONFIG
 
+
 class TaskEditorPopup(QDialog):
     """작업 편집기 팝업 창"""
     
     # 상태 신호 정의
     task_saved_signal = Signal(dict)
     
-    def __init__(self, parent=None):
+    def __init__(self, parent, tasker):
         super().__init__(parent)
         self.setWindowTitle("자동화 에디터")
         self.resize(720, 1000)
+
+        # tasker 인스턴스 저장
+        self.tasker = tasker
         
         self.selectedTask = SelectedTask(
             origin_key="",
@@ -530,9 +536,15 @@ class TaskEditorPopup(QDialog):
         
         # 오른쪽 여백 추가
         similarity_layout.addStretch(1)
+
+        # 결과 표시용 레이블 생성
+        self.result_label = DraggableLabel(parent=self)
+        self.result_label.hide()  # 초기에는 숨김 상태
+        similarity_layout.addWidget(self.result_label)
         
         # "현재 게임에서" 버튼 추가 (오른쪽 정렬)
         self.current_game_btn = QPushButton("현재 게임에서")
+        self.current_game_btn.clicked.connect(self.on_current_game_clicked)
         self.current_game_btn.setMaximumWidth(120)  # 폭 제한
         similarity_layout.addWidget(self.current_game_btn)
         
@@ -1018,6 +1030,53 @@ class TaskEditorPopup(QDialog):
     #     # if reply == QMessageBox.No:
     #         # return
     #     # self.reject()
+
+    def on_current_game_clicked(self):
+        """현재 게임 화면에서 선택한 zone에서 image를 찾고 결과를 표시합니다."""
+        try:
+            # 선택된 zone과 image 가져오기
+            zone_key = self.zone_combo.currentText()
+            image_key = self.image_select_combo.currentText()
+            
+            # 유효성 검사
+            if not zone_key or not image_key:
+                QMessageBox.warning(self, "경고", "존과 이미지를 모두 선택해주세요.")
+                return
+                
+            # match_image_in_zone 호출
+            result = self.tasker.match_image_in_zone(zone_key, image_key)
+            
+            # 현재 시간 가져오기
+            current_time = datetime.datetime.now().strftime("%H:%M:%S")
+            
+            # 리턴값 확인 및 처리
+            if result and 'score_percent' in result:
+                # 결과 텍스트 생성
+                score_percent = result['score_percent']
+                result_text = f"유사도 {score_percent:.2f}% ({current_time})"
+                
+                # 레이블에 결과 표시
+                self.result_label.setText(result_text)
+                self.result_label.show()
+                
+                # # 사용자에게 피드백 제공
+                # self.status_signal.emit(f"이미지 매칭 완료: 유사도 {score_percent:.2f}%")
+                
+                # 추가 정보 표시 (위치 등이 있다면)
+                if 'center_x' in result and 'center_y' in result:
+                    center_x = result['center_x']
+                    center_y = result['center_y']
+                    self.status_signal.emit(f"중심점: X={center_x}, Y={center_y}")
+            else:
+                # 매칭 실패
+                self.result_label.setText(f"{current_time} 매칭 실패")
+                self.result_label.show()
+                QMessageBox.information(self, "정보", "해당 영역에서 이미지를 찾을 수 없습니다.")
+                self.status_signal.emit("이미지 매칭 실패")
+                
+        except Exception as e:
+            QMessageBox.critical(self, "오류", f"이미지 매칭 중 오류 발생: {str(e)}")
+            self.status_signal.emit(f"오류: {str(e)}")
     
     def save_task(self):
         """작업 저장"""
