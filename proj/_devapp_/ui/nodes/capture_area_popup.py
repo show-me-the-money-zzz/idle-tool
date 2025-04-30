@@ -478,9 +478,12 @@ class CaptureAreaPopup(QDialog):
         
         # 이벤트 연결
         search_edit.textChanged.connect(lambda text, w=list_widget, m=mode: self._filter_list(text, w, m))
-        list_widget.itemSelectionChanged.connect(lambda w=list_widget, rm=remove_btn, m=mode: self._update_selection(w, rm, m))
-        # list_widget.itemDoubleClicked.connect(lambda item, m=mode: self._on_item_double_clicked(item, m))
-        ## 불필요하여 삭제
+        
+        # 아이템 선택 변경 이벤트 수정
+        # 여기서 itemSelectionChanged 대신 currentItemChanged를 사용
+        list_widget.currentItemChanged.connect(lambda current, previous, w=list_widget, rm=remove_btn, m=mode: 
+                                            self._update_selection_current(current, previous, w, rm, m))
+        
         add_btn.clicked.connect(lambda _, m=mode: self._add_new_item(m))
         remove_btn.clicked.connect(lambda _, w=list_widget, m=mode: self._remove_selected_item(w, m))
         
@@ -488,6 +491,43 @@ class CaptureAreaPopup(QDialog):
         self._load_list_data(list_widget, mode)
         
         return tab
+    
+    def _update_selection_current(self, current_item, previous_item, list_widget, remove_btn, mode):
+        """현재 선택된 아이템이 변경되었을 때 호출되는 함수"""
+        # 선택 여부 확인
+        has_selection = current_item is not None
+        remove_btn.setEnabled(has_selection)
+        
+        # 컨트롤 활성화/비활성화 상태 업데이트
+        self.key_input.setEnabled(has_selection)
+        self.x_spin.setEnabled(has_selection)
+        self.y_spin.setEnabled(has_selection)
+        self.width_spin.setEnabled(has_selection)
+        self.height_spin.setEnabled(has_selection)
+        self.click_x_spin.setEnabled(has_selection and self.edit_check.isChecked())
+        self.click_y_spin.setEnabled(has_selection and self.edit_check.isChecked())
+        
+        # 저장 버튼 활성화/비활성화
+        self.EnableButton_Save(has_selection)
+        
+        if has_selection:
+            # 현재 선택된 아이템 정보 로드
+            selected_key = current_item.text()
+            self._load_item_data(selected_key, mode)
+        else:
+            # 선택된 항목이 없을 때 필드 초기화
+            self.Set_Key("")
+            self.x_spin.setValue(0)
+            self.y_spin.setValue(0)
+            self.width_spin.setValue(0)
+            self.height_spin.setValue(0)
+            self.click_x_spin.setValue(0)
+            self.click_y_spin.setValue(0)
+            self.edit_check.setChecked(False)
+            
+            # 미리보기 초기화
+            self.preview_label.clear()
+            self.preview_label.setText("영역을 선택하면\n미리보기가 표시됩니다")
             
     def _setup_ui_additions(self):
         # 색상 버튼 이벤트 연결
