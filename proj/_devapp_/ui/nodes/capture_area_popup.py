@@ -576,6 +576,9 @@ class CaptureAreaPopup(QDialog):
 
     def update_image_dock_position(self):
         """이미지 도킹 위젯 위치 업데이트"""
+        if not hasattr(self, 'image_dock') or self.image_dock is None or not self.image_dock.isVisible():
+            return
+    
         if self.image_dock.isVisible():
             if self.image_dock.isFloating():
                 main_geo = self.geometry()
@@ -925,6 +928,9 @@ class CaptureAreaPopup(QDialog):
         
     def update_log_dock_position(self):
         """로그 도킹 위젯 위치 업데이트"""
+        if not hasattr(self, 'log_dock') or self.log_dock is None or not self.log_dock.isVisible():
+            return
+    
         SpaceX = 10
         if self.log_dock.isVisible():
             # 위젯이 도킹되었는지 분리되었는지 확인
@@ -992,9 +998,9 @@ class CaptureAreaPopup(QDialog):
     def moveEvent(self, event):
         """창 이동 시 로그 창도 함께 이동"""
         super().moveEvent(event)
+        
         self.update_log_dock_position()
-        # print(f"{self.image_dock}")
-        # self.update_image_dock_position()
+        self.update_image_dock_position()
 
     def clear_log(self):
         """로그 내용 초기화"""
