@@ -499,7 +499,7 @@ class CaptureAreaPopup(QDialog):
         remove_btn.setEnabled(has_selection)
         
         # 컨트롤 활성화/비활성화 상태 업데이트
-        self.key_input.setEnabled(has_selection)
+        self.key_input.setEnabled(False)
         self.x_spin.setEnabled(has_selection)
         self.y_spin.setEnabled(has_selection)
         self.width_spin.setEnabled(has_selection)
@@ -626,7 +626,7 @@ class CaptureAreaPopup(QDialog):
         remove_btn.setEnabled(has_selection)
         
         # 컨트롤 활성화/비활성화 상태 업데이트
-        self.key_input.setEnabled(has_selection)
+        self.key_input.setEnabled(False)
         self.x_spin.setEnabled(has_selection)
         self.y_spin.setEnabled(has_selection)
         self.width_spin.setEnabled(has_selection)
@@ -852,7 +852,7 @@ class CaptureAreaPopup(QDialog):
                     break
             
             # 컨트롤 활성화 및 기본값 설정
-            self.key_input.setEnabled(True)
+            self.key_input.setEnabled(False)
             self.x_spin.setEnabled(True)
             self.y_spin.setEnabled(True)
             self.width_spin.setEnabled(True)
@@ -1463,10 +1463,10 @@ class CaptureAreaPopup(QDialog):
             # 성공 메시지 표시
             self.status_signal.emit("텍스트가 저장되었습니다.")
             
-            QMessageBox.information(self, "알림", f"{key} 텍스트 데이터를 추가하였습니다.")
+            QMessageBox.information(self, "알림", f"[{key}] 텍스트 데이터를 추가하였습니다.")
             
-            # 창 닫기
-            self.on_close()
+            # # 창 닫기
+            # self.on_close()
             
         except Exception as e:
             QMessageBox.critical(self, "설정 오류", f"설정을 적용하는 중 오류가 발생했습니다: {str(e)}")
@@ -1561,10 +1561,10 @@ class CaptureAreaPopup(QDialog):
             
             self.status_signal.emit(f"이미지가 저장되었습니다: {file_path}")
             
-            QMessageBox.information(self, "알림", f"{key} 이미지 데이터를 추가하였습니다.")
+            QMessageBox.information(self, "알림", f"[{key}] 이미지 데이터를 추가하였습니다.")
             
-            # 창 닫기
-            self.on_close()
+            # # 창 닫기
+            # self.on_close()
             
         except Exception as e:
             QMessageBox.critical(self, "이미지 저장 오류", f"이미지 저장 중 오류가 발생했습니다: {str(e)}")
@@ -1594,10 +1594,10 @@ class CaptureAreaPopup(QDialog):
             # 성공 메시지 표시
             self.status_signal.emit("빈영역이 저장되었습니다.")
             
-            QMessageBox.information(self, "알림", f"{key} 빈영역 데이터를 추가하였습니다.")
+            QMessageBox.information(self, "알림", f"[{key}] 빈영역 데이터를 추가하였습니다.")
             
-            # 창 닫기
-            self.on_close()
+            # # 창 닫기
+            # self.on_close()
             
         except Exception as e:
             QMessageBox.critical(self, "설정 오류", f"설정을 적용하는 중 오류가 발생했습니다: {str(e)}")
