@@ -11,6 +11,7 @@ import stores.sanner as Scanner
 import ui.css as CSS
 import zzz.config as CONFIG
 import stores.task_manager as TaskMan
+import stores.areas as Areas
 
 class ControlFrame(QFrame):
     """캡처 제어 프레임"""
@@ -159,6 +160,9 @@ class ControlFrame(QFrame):
         # print("작업 목록 새로고침")
 
         # pass
+
+        Areas.Load_All()
+
         # 콤보박스 내용 업데이트 코드
         TaskMan.Load_Task()
         self.task_combo.clear()

@@ -76,6 +76,11 @@ def GetAll_ZoneAreas():
 Delete_ZoneArea = Zones.delete
 Save_ZoneAreas = Zones.save
 
+def Load_All():
+    Zones._load()
+    Images._load()
+    Texts._load()
+
 def initialize():
     Texts.save()
     Images.save()
