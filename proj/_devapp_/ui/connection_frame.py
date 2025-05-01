@@ -52,7 +52,7 @@ class ConnectionFrame(QGroupBox):
         name_layout = QGridLayout(name_tab)
         
         name_layout.addWidget(QLabel("앱 이름 (부분 일치):"), 0, 0, Qt.AlignLeft)
-        self.app_name_entry = QLineEdit(DEFAULT_APP_NAME)
+        self.app_name_entry = QLineEdit(APP_CONFIG.DEFAULT_APP_NAME)
         self.app_name_entry.setMinimumWidth(200)
         if APP_CONFIG.RELEASE_APP: self.app_name_entry.setEnabled(False)
         name_layout.addWidget(self.app_name_entry, 0, 1, Qt.AlignLeft)
@@ -149,7 +149,7 @@ class ConnectionFrame(QGroupBox):
             pid_layout = QGridLayout(pid_tab)
             
             pid_layout.addWidget(QLabel("프로세스 ID (PID):"), 0, 0, Qt.AlignLeft)
-            self.pid_entry = QLineEdit(DEFAULT_PID)
+            self.pid_entry = QLineEdit(APP_CONFIG.DEFAULT_PID)
             self.pid_entry.setMaximumWidth(100)
             pid_layout.addWidget(self.pid_entry, 0, 1, Qt.AlignLeft)
             
