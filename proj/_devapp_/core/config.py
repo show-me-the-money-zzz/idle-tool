@@ -7,18 +7,8 @@
 ▶️⏹️🟥
 """
 
-
-
 APP_WIDTH = 600
 APP_HEIGHT = 1060
-APP_THEME_TkInter = 'classic'
-# clam: 단순 깔끔 / alt: 대체 스타일 / default: 기본 / classic: 클래식(기본 tk 스타일과 유사)
-# vista: Windows Vista/7 / winnative: 원래의 Windows 네이티브 / xpnative: Windows XP 네이티브
-# aqua: macOS의 기본
-APP_THEME = 'Windows'
-# 배포는 'Macintosh' / 개발은 "Windows (Dark Theme)"
-# "Fusion", "Windows", "WindowsVista", "Macintosh", "macos"
-# 스타일 설정 (PySide6에서는 QApplication 스타일 시트 또는 Fusion 스타일 사용)
 
 # 기본 입력값
 DEFAULT_APP_NAME = "RF 온라인 넥스트"  # 기본 검색할 앱 이름

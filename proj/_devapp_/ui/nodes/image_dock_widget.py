@@ -5,7 +5,7 @@ from PySide6.QtGui import QPixmap, QImage
 from PIL import Image, ImageQt
 import os
 
-from core.config import APP_THEME
+import zzz.app_config as APP_CONFIG
 
 class ImageDockWidget(QDockWidget):
     """도킹 가능한 이미지 뷰어 위젯"""
@@ -50,7 +50,7 @@ class ImageDockWidget(QDockWidget):
         
         BG_COLOR = "#ffffff"
         TEXT_COLOR = "#000000"
-        if False == ("mac" in APP_THEME.lower()):
+        if APP_CONFIG.Is_DarkTheme():
             BG_COLOR = "#2b2b2b"
             TEXT_COLOR = "#7f7f7f"
         bar.setStyleSheet(f"background-color: {BG_COLOR}; color: {TEXT_COLOR};")

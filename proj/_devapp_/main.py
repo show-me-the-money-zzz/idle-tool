@@ -10,7 +10,7 @@ if current_dir not in sys.path:
 
 from zzz.app_ui import AppUI
 from core.settings_manager import AppSetting
-from core.config import *
+import zzz.app_config as APP_CONFIG
 
 def main():
     """메인 함수"""
@@ -37,7 +37,7 @@ def main():
     # QApplication 생성
     app = QApplication(sys.argv)
     
-    app.setStyle(APP_THEME)
+    app.setStyle(APP_CONFIG.APP_THEME)
     
     # 메인 애플리케이션 UI 생성
     main_window = AppUI(AppSetting)

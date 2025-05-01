@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QLabel
 from PySide6.QtCore import Qt
 
-import core.config as CONFIG
+import zzz.app_config as APP_CONFIG
 
 class DraggableLabel(QLabel):
    """드래그 가능한 레이블 위젯"""
@@ -10,7 +10,7 @@ class DraggableLabel(QLabel):
       super().__init__(text, parent)
       self.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
-      isDarkTheme = CONFIG.APP_THEME == 'Windows'
+      isDarkTheme = APP_CONFIG.Is_DarkTheme()
       color_bg = "#1e1e1e" if isDarkTheme else "#f0f0f0"
       color_board  = "#f0f0f0" if isDarkTheme else "#1e1e1e"
       self.setStyleSheet(f"background-color: {color_bg}; padding: 2px 5px; border: 1px solid {color_board};")
