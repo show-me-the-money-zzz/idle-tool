@@ -10,7 +10,7 @@ if current_dir not in sys.path:
 
 from zzz.app_ui import AppUI
 from core.settings_manager import AppSetting
-from zzz.config import *
+from core.config import *
 
 def main():
     """메인 함수"""

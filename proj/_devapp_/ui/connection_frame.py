@@ -7,7 +7,7 @@ from datetime import datetime
 import os
 import asyncio
 
-from zzz.config import *
+from core.config import *
 import ui.css as CSS
 from core.window_utils import WindowUtil
 

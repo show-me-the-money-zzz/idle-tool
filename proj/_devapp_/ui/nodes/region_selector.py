@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (QApplication, QDialog, QLabel, QVBoxLayout,
 from PySide6.QtGui import QPainter, QPixmap, QColor, QPen, QFont, QImage, QCursor
 from PySide6.QtCore import Qt, QRect, QPoint, QSize, QTimer, Signal
 
-from zzz.config import *
+from core.config import *
 from core.window_utils import WindowUtil
 
 

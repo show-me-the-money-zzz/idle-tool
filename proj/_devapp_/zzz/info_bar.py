@@ -8,7 +8,7 @@ import numpy as np
 import stores.def_info as Info
 from stores.areas import *
 import core.ocr_engine as OcrEngine
-from zzz.config import LOOP_TEXT_KEYWORD
+from core.config import LOOP_TEXT_KEYWORD
 from core.window_utils import WindowUtil
 
 class InfoBar(QFrame):

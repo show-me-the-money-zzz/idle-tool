@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDockWidget, QTextEdit, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QDoubleSpinBox
 
-from zzz.config import APP_THEME
+from core.config import APP_THEME
 
 class LogDockWidget(QDockWidget):
     """도킹 가능한 로그 위젯"""

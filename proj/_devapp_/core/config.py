@@ -26,7 +26,7 @@ APP_THEME = 'Windows'
 # 스타일 설정 (PySide6에서는 QApplication 스타일 시트 또는 Fusion 스타일 사용)
 
 # 기본 입력값
-DEFAULT_APP_NAME = "RF 온라인 넥스트"  # 기본 검색할 앱 이름
+DEFAULT_APP_NAME = "Lust Goddess"  # 기본 검색할 앱 이름
 DEFAULT_PID = ""             # 기본 PID (비워두기)
 DEFAULT_CAPTURE_X = "0"      # 기본 캡처 X 좌표
 DEFAULT_CAPTURE_Y = "0"      # 기본 캡처 Y 좌표

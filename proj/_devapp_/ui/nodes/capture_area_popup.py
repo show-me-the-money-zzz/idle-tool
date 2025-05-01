@@ -10,7 +10,7 @@ import time
 import os
 from enum import Enum
 
-from zzz.config import *
+from core.config import *
 import stores.areas as Areas
 from grinder_utils.system import Calc_MS
 from core.window_utils import WindowUtil

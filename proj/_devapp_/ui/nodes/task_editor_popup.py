@@ -18,7 +18,7 @@ import stores.areas as Areas
 from grinder_types.selected_task  import SelectedTask
 import ui.css as CSS
 from grinder_utils.pysider import ChangeText_ListWidget
-import zzz.config as CONFIG
+import core.config as CONFIG
 
 
 class TaskEditorPopup(QDialog):

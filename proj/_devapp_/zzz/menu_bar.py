@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QMenu, QMessageBox, QDialog, QVBoxLayout, QTextEdi
 from PySide6.QtGui import QAction
 import os
 
-from zzz.config import *
+from core.config import *
 from core.settings_manager import AppSetting
 
 class MenuBar:

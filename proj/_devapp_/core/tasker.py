@@ -14,7 +14,7 @@ from asyncio import Future
 from core.window_utils import WindowUtil
 from stores.areas import *
 import stores.sanner as Scanner
-from zzz.config import LOOP_TEXT_KEYWORD
+from core.config import LOOP_TEXT_KEYWORD
 import zzz.hotkey as HotKey
 import stores.task_manager as TaskMan
 

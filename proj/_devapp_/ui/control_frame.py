@@ -9,7 +9,7 @@ except ImportError:
 
 import stores.sanner as Scanner
 import ui.css as CSS
-import zzz.config as CONFIG
+import core.config as CONFIG
 import stores.task_manager as TaskMan
 import stores.areas as Areas
 

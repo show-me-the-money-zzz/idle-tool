@@ -11,7 +11,7 @@ from core.capture_utils import CaptureManager
 from core.tasker import Tasker  # 새로 추가
 import stores.task_manager as TaskMan
 from core.ocr_engine import setup_tesseract
-from zzz.config import *
+from core.config import *
 from ui.nodes.region_selector import RegionSelector
 from core.settings_manager import AppSetting
 

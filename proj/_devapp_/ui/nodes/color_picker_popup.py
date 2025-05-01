@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw, ImageQt
 import numpy as np
 import os
 
-from zzz.config import COLOR_EXTRACT_MODE_SWAP_KEY
+from core.config import COLOR_EXTRACT_MODE_SWAP_KEY
 
 
 class ColorPickerPopup(QDialog):

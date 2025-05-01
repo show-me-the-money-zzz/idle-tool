@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (QGroupBox, QLabel, QLineEdit, QPushButton,
 from PySide6.QtCore import Qt, Signal, Slot
 import pyautogui
 
-from zzz.config import *
+from core.config import *
 from core.window_utils import WindowUtil
 
 class InputHandlerFrame(QGroupBox):

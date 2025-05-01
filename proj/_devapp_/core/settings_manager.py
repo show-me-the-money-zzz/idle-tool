@@ -5,7 +5,7 @@
 import os
 import configparser
 from PySide6.QtWidgets import QFileDialog, QMessageBox
-from zzz.config import SETTINGS_FILE, DEFAULT_TESSERACT_EXEFILENAME
+from core.config import SETTINGS_FILE, DEFAULT_TESSERACT_EXEFILENAME
 from grinder_utils import finder, system
 
 class SettingsManager:

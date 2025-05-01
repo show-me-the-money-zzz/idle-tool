@@ -5,7 +5,7 @@ from PySide6.QtGui import QPixmap, QImage
 from PIL import Image, ImageQt
 import os
 
-from zzz.config import APP_THEME
+from core.config import APP_THEME
 
 class ImageDockWidget(QDockWidget):
     """도킹 가능한 이미지 뷰어 위젯"""

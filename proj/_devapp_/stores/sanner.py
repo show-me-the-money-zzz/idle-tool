@@ -1,4 +1,4 @@
-from zzz.config import DEFAULT_LOOP_INTERVAL
+from core.config import DEFAULT_LOOP_INTERVAL
 from grinder_utils.system import Calc_MS
 
 Loop_Interval = DEFAULT_LOOP_INTERVAL

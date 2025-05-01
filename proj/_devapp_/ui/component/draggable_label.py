@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QLabel
 from PySide6.QtCore import Qt
 
-import zzz.config as CONFIG
+import core.config as CONFIG
 
 class DraggableLabel(QLabel):
    """드래그 가능한 레이블 위젯"""

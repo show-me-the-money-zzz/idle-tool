@@ -2,7 +2,7 @@ import sys
 # from grinder_utils import system
 from pathlib import Path
 
-from zzz.config import PATH_Data
+from core.config import PATH_Data
 
 def Get_LocalPth():
     # 애플리케이션 실행 파일 기준 경로 설정
