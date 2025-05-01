@@ -204,19 +204,5 @@ class SettingsManager:
     KEY_GENERAL_RESOLUTION = "resolution"
     def Get_General(self, key, default=None):
         return self.get(SettingsManager.SECTION_GENERAL, key, default)
-    def Get_Resolution(self):
-        resolution = self.get(SettingsManager.SECTION_GENERAL, SettingsManager.KEY_GENERAL_RESOLUTION, default=None)
-        if None == resolution:
-            return None
-        resolarr = resolution.split("x") #Set_Resolution에서 사용한 구분자
-        ret = [ int(resolarr[0]), int(resolarr[1]) ]
-        return ret
-
-    def Set_Resolution(self, width, height):
-        val = f"{width}x{height}"
-        if self.set(SettingsManager.SECTION_GENERAL, SettingsManager.KEY_GENERAL_RESOLUTION, val):
-            if self.save_settings():
-                return True
-        return False
     
 AppSetting = SettingsManager()

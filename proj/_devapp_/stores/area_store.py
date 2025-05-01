@@ -3,7 +3,7 @@ import sys
 import json
 # from pathlib import Path
 from grinder_utils import finder, system
-from core.settings_manager import AppSetting
+from stores.data_setting import DataSetting
 from core.window_utils import WindowUtil
 
 class AreaStore:
@@ -74,13 +74,13 @@ class AreaStore:
     def Setup_Resolution():
         # 1회성 처리
         # tesseract_path = AppSetting.get('Tesseract', 'path');
-        gene_resolution = AppSetting.Get_Resolution()
+        gene_resolution = DataSetting.Get_Resolution()
         system.PrintDEV(f"AreaStore.Setup_Resolution(): {gene_resolution}")
         if None == gene_resolution:
             left, top, right, bottom = WindowUtil.get_window_rect()
             width = right - left
             height = bottom - top
             # print(f"AreaStore.Setup_Resolution(): window resolution= {width} x {height}")
-            update_setting = AppSetting.Set_Resolution(width, height)
+            update_setting = DataSetting.Set_Resolution(width, height)
             system.PrintDEV(f"AreaStore.Setup_Resolution(): update setting= {update_setting}")
         AreaStore._issetup_resolution = True

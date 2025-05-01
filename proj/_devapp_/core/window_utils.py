@@ -9,7 +9,7 @@ from ctypes import windll, Structure, c_ulong, POINTER, sizeof, byref, c_long
 from pynput.keyboard import Key, Controller
 from PySide6.QtWidgets import QMessageBox
 
-from core.settings_manager import AppSetting
+from stores.data_setting import DataSetting
 from grinder_utils.system import PrintDEV
 
 class WindowManager:
@@ -101,7 +101,7 @@ class WindowManager:
             return False
         
     def Check_Reoslution(self):
-        setting_resol = AppSetting.Get_Resolution()
+        setting_resol = DataSetting.Get_Resolution()
         # PrintDEV(f"WindowManager.Check_Reoslution(): resol= {setting_resol}")
         
         if None != setting_resol:
@@ -119,7 +119,7 @@ class WindowManager:
             
             # # DEV 코드
             # width, height = self.Get_Resolution()
-            # AppSetting.Set_Resolution(width, height)
+            # DataSetting.Set_Resolution(width, height)
         
     def send_key(self, key):
         # print(f"send_key_with_pynput({key})")
