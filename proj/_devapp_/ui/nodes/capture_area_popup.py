@@ -11,6 +11,7 @@ import os
 from enum import Enum
 
 from core.config import *
+import zzz.app_config as APP_CONFIG
 import stores.areas as Areas
 from grinder_utils.system import Calc_MS
 from core.window_utils import WindowUtil
@@ -318,7 +319,7 @@ class CaptureAreaPopup(QDialog):
         # 레이아웃에 추가
         preview_layout.addLayout(bg_color_layout)
         
-        if not RELEASE_APP:
+        if not APP_CONFIG.RELEASE_APP:
             # 색상 추출 영역
             color_layout = QHBoxLayout()
             
@@ -393,7 +394,7 @@ class CaptureAreaPopup(QDialog):
         
         self._setup_ui_additions()
 
-        if not RELEASE_APP:
+        if not APP_CONFIG.RELEASE_APP:
             # 테스트용 색상 추가
             self.test_add_colors()
 

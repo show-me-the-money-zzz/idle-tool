@@ -9,7 +9,7 @@ except ImportError:
 
 import stores.sanner as Scanner
 import ui.css as CSS
-import core.config as CONFIG
+import zzz.app_config as APP_CONFIG
 import stores.task_manager as TaskMan
 import stores.areas as Areas
 
@@ -51,7 +51,7 @@ class ControlFrame(QFrame):
         self.capture_btn.clicked.connect(self.toggle_capture_callback)
         top_row.addWidget(self.capture_btn)
 
-        if not CONFIG.RELEASE_APP:
+        if not APP_CONFIG.RELEASE_APP:
             # 간격 프레임
             interval_frame = self.create_interval_frame()
             top_row.addWidget(interval_frame)

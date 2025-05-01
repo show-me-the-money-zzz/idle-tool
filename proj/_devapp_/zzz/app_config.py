@@ -1,3 +1,6 @@
+RELEASE_APP = True
+# 개발용 앱 구분
+
 # 앱 기본 설정
 APP_VERSION="0.2.580"
 

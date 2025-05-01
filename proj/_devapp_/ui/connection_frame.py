@@ -8,6 +8,7 @@ import os
 import asyncio
 
 from core.config import *
+import zzz.app_config as APP_CONFIG
 import ui.css as CSS
 from core.window_utils import WindowUtil
 
@@ -24,7 +25,7 @@ class ConnectionFrame(QGroupBox):
         asyncio.run(self.AutoConnect())
             
     async def AutoConnect(self):
-        if RELEASE_APP:
+        if APP_CONFIG.RELEASE_APP:
             self.connect_to_app_name()
             await asyncio.sleep(0.5)
             
@@ -53,18 +54,18 @@ class ConnectionFrame(QGroupBox):
         name_layout.addWidget(QLabel("앱 이름 (부분 일치):"), 0, 0, Qt.AlignLeft)
         self.app_name_entry = QLineEdit(DEFAULT_APP_NAME)
         self.app_name_entry.setMinimumWidth(200)
-        if RELEASE_APP: self.app_name_entry.setEnabled(False)
+        if APP_CONFIG.RELEASE_APP: self.app_name_entry.setEnabled(False)
         name_layout.addWidget(self.app_name_entry, 0, 1, Qt.AlignLeft)
         
         search_btn = QPushButton("검색")
         search_btn.clicked.connect(self.connect_to_app_name)
-        if RELEASE_APP: search_btn.setEnabled(False)
+        if APP_CONFIG.RELEASE_APP: search_btn.setEnabled(False)
         name_layout.addWidget(search_btn, 0, 2)
         
         name_layout.addWidget(QLabel("검색 결과:"), 1, 0, Qt.AlignLeft)
         self.app_list = QComboBox()
         self.app_list.setMinimumWidth(400)
-        if RELEASE_APP: self.app_list.setEnabled(False)
+        if APP_CONFIG.RELEASE_APP: self.app_list.setEnabled(False)
         name_layout.addWidget(self.app_list, 1, 1, 1, 2)
         
         # 상단 버튼 그룹 (좌측과 우측 나누기)
@@ -140,7 +141,7 @@ class ConnectionFrame(QGroupBox):
 
         name_layout.addWidget(bottom_action_frame, 3, 0, 1, 3)
         
-        if not RELEASE_APP:
+        if not APP_CONFIG.RELEASE_APP:
             pid_tab = QWidget()
             tab_control.addTab(pid_tab, "PID로 연결")
             

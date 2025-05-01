@@ -18,7 +18,7 @@ import stores.areas as Areas
 from grinder_types.selected_task  import SelectedTask
 import ui.css as CSS
 from grinder_utils.pysider import ChangeText_ListWidget
-import core.config as CONFIG
+import zzz.app_config as APP_CONFIG
 
 
 class TaskEditorPopup(QDialog):
@@ -830,11 +830,11 @@ class TaskEditorPopup(QDialog):
         self.selectedTask.UpdateStep_NextSteps(self.next_steps_list)
         self.step_description.setText(step.comment)
 
-        if not CONFIG.RELEASE_APP: self.Update_GuideLabel_StepNormalInfo()
+        if not APP_CONFIG.RELEASE_APP: self.Update_GuideLabel_StepNormalInfo()
 
     def Update_GuideLabel_StepNormalInfo(self):
         text = "※영역 / 이미지는 검색 가능"
-        if not CONFIG.RELEASE_APP:
+        if not APP_CONFIG.RELEASE_APP:
             step = self.selectedTask.Get_Step()
             if step: text += f" (seq: {step.seq})"
         
