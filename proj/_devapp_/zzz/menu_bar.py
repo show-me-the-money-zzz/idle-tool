@@ -3,6 +3,7 @@ from PySide6.QtGui import QAction
 import os
 
 from core.config import *
+import zzz.app_config as APP_CONFIG
 from core.settings_manager import AppSetting
 
 class MenuBar:
@@ -182,9 +183,9 @@ class MenuBar:
     def show_about(self):
         """정보 표시"""
         about_text = f"""
-{APP_TITLE}
+{APP_CONFIG.APP_TITLE}
 
-버전: 1.0.0
+버전: {APP_CONFIG.APP_VERSION}
 
 화면 영역을 캡처하여 OCR로 텍스트를 인식하는 도구입니다.
 

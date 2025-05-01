@@ -8,12 +8,8 @@
 """
 
 RELEASE_APP = False
-APP_VERSION="0.2.577"
 # 개발용 앱 구분
 
-# 앱 기본 설정
-APP_TITLE = f"쌀먹툴 - [ZZXX] (ver. {APP_VERSION})" # 연결하려는 앱의 타이틀이 포함되면 안됨
-# APP_TITLE = "쌀먹 - [게임]" # 연결하려는 앱의 타이틀이 포함되면 안됨
 APP_WIDTH = 600
 APP_HEIGHT = 1060
 APP_THEME_TkInter = 'classic'

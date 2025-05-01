@@ -12,6 +12,8 @@ from core.tasker import Tasker  # 새로 추가
 import stores.task_manager as TaskMan
 from core.ocr_engine import setup_tesseract
 from core.config import *
+from zzz.app_config import *
+import zzz.app_config as APP_CONFIG
 from ui.nodes.region_selector import RegionSelector
 from core.settings_manager import AppSetting
 
@@ -38,7 +40,7 @@ class AppUI(QMainWindow):
         self.setWindowIcon(app_icon)
     
         # 메인 윈도우 설정
-        self.setWindowTitle(APP_TITLE)
+        self.setWindowTitle(APP_CONFIG.AppTitle_nVer())
         self.resize(APP_WIDTH, APP_HEIGHT)
         
         # 상태 메시지 변수
