@@ -41,35 +41,35 @@ class ControlFrame(QFrame):
         main_layout.setContentsMargins(0, 5, 0, 5)
         main_layout.setSpacing(5)  # 적절한 간격 설정
         
-        # 첫 번째 행 - 좌: 캡처 버튼, 우: 자동화/아이템 생성 버튼
+        # 첫 번째 행 - 좌: 자동화/아이템 생성 버튼, 우: 간격 프레임과 캡처 버튼
         top_row = QHBoxLayout()
         
-        # 캡처 시작/중지 버튼 (왼쪽)
-        self.capture_btn = QPushButton(self.RUNNER_BUTTON_START_TEXT)
-        self.capture_btn.setStyleSheet(CSS.BUTTON_APPLY_BLUESKY)
-        self.capture_btn.setFixedWidth(60)
-        self.capture_btn.clicked.connect(self.toggle_capture_callback)
-        top_row.addWidget(self.capture_btn)
-
-        if not APP_CONFIG.RELEASE_APP:
-            # 간격 프레임
-            interval_frame = self.create_interval_frame()
-            top_row.addWidget(interval_frame)
-        
-        # 여백 추가 (가운데)
-        top_row.addStretch(1)
-        
-        # 자동화 생성 버튼 (오른쪽)
+        # 자동화 생성 버튼 (왼쪽)
         self.create_task_btn = QPushButton("자동화")
         self.create_task_btn.setStyleSheet(CSS.BUTTON_APPLY_GREEN)
         self.create_task_btn.clicked.connect(self.openpopup_taskeditor)
         top_row.addWidget(self.create_task_btn)
         
-        # 아이템 생성 버튼 (오른쪽 끝)
+        # 아이템 생성 버튼 (왼쪽 두번째)
         self.create_item_btn = QPushButton("아이템")
         self.create_item_btn.setStyleSheet(CSS.BUTTON_ORANGE)
         self.create_item_btn.clicked.connect(self.open_popup_callback)
         top_row.addWidget(self.create_item_btn)
+        
+        # 여백 추가 (가운데)
+        top_row.addStretch(1)
+        
+        if not APP_CONFIG.RELEASE_APP:
+            # 간격 프레임 (오른쪽)
+            interval_frame = self.create_interval_frame()
+            top_row.addWidget(interval_frame)
+        
+        # 캡처 시작/중지 버튼 (오른쪽 끝)
+        self.capture_btn = QPushButton(self.RUNNER_BUTTON_START_TEXT)
+        self.capture_btn.setStyleSheet(CSS.BUTTON_APPLY_BLUESKY)
+        self.capture_btn.setFixedWidth(60)
+        self.capture_btn.clicked.connect(self.toggle_capture_callback)
+        top_row.addWidget(self.capture_btn)
         
         # 첫 번째 행을 메인 레이아웃에 추가
         main_layout.addLayout(top_row)
