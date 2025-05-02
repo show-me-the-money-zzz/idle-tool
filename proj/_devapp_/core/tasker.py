@@ -141,7 +141,7 @@ class Tasker(QObject):
                     # self.status_changed.emit("창이 닫혔습니다.")
                     # return
                     self.logframe_addwarning.emit("창이 닫혔습니다.")
-                    self.is_running = False  # Set flag directly instead of calling callback
+                    self.toggle_capture_callback()
                     break
                 
                 # await self.Task_GS23_RF()
@@ -150,8 +150,8 @@ class Tasker(QObject):
                     step = self.running_task.Get_Step(step_key)
                     # print(f"step.seq= {step.seq}")
                     if None == step:
-                        self.toggle_capture_callback()
-                        self.logframe_adderror.emit(f"{task_key}-{step_key} 단계가 유효하지 않습니다.")                        
+                        self.logframe_adderror.emit(f"{task_key}-{step_key} 단계가 유효하지 않습니다.")
+                        self.toggle_capture_callback()                        
 
                     if "matching" == step.type: await self.Matching(step, task_key, step_key)
                     elif "waiting" == step.type: await self.Waiting(step)
@@ -191,14 +191,14 @@ class Tasker(QObject):
 
             if 0 >= len(step.next_step):
                 self.logframe_addwarning.emit(f"시작 단계가 [{taskkey} - {stepkey}] 에 없어서 종료합니다.")
-                self.is_running = False  # Directly set the flag to stop the loop
+                self.toggle_capture_callback()
                 # Don't call any external methods at this point
             else:
                 self.running_task_steps = step.next_step
         else:
             if "" == step.fail_step:
                 self.logframe_addwarning.emit(f"실패 단계가 [{taskkey} - {stepkey}] 에 없어서 종료합니다.")
-                self.is_running = False  # Directly set the flag to stop the loop
+                self.toggle_capture_callback()
                 # Don't call any external methods at this point
             else:
                 self.running_task_steps = [ step.fail_step ]
