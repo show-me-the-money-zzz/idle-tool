@@ -274,10 +274,11 @@ class AppUI(QMainWindow):
         """캡처 시작/중지 전환"""
         if self.tasker.is_running:
             # 캡처 중지
-            # TaskMan.ResetKey_RunningTask()
-
             self.tasker.stop_tasks()
             self.control_frame.update_capture_button_text(False)
+            # 즉시 시작 방지를 위해 버튼 일시적 비활성화
+            self.control_frame.capture_btn.setEnabled(False)
+            QTimer.singleShot(200, lambda: self.control_frame.capture_btn.setEnabled(True))
         else:
             try:
                 # Tesseract OCR이 설정되어 있는지 확인

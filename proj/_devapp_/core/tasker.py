@@ -70,10 +70,17 @@ class Tasker(QObject):
         # 현재 실행 중인 작업 취소
         if self.current_task:
             self.async_helper.cancel_task(self.current_task)
+            # 취소된 작업이 완료될 때까지 짧게 대기 (비동기 방식)
+            QTimer.singleShot(100, lambda: self._complete_stop_tasks())
             self.current_task = None
+        else:
+            self._complete_stop_tasks()
         
-        self.logframe_addnotice.emit("Tasker: 작업이 중지되었습니다.")
         return True
+    
+    def _complete_stop_tasks(self):
+        """작업 중지 완료 후 처리"""
+        self.logframe_addnotice.emit("Tasker: 작업이 중지되었습니다.")
     
     async def Task_GS23_RF(self):
         limit_score = 50
@@ -132,7 +139,7 @@ class Tasker(QObject):
                     # print(f"step.seq= {step.seq}")
                     if None == step:
                         self.toggle_capture_callback()
-                        self.logframe_adderror.emit(f"{task_key}-{step_key} 단계가 유효하지 않습니다.")
+                        self.logframe_adderror.emit(f"{task_key}-{step_key} 단계가 유효하지 않습니다.")                        
 
                     if "matching" == step.type: await self.Matching(step, task_key, step_key)
                     elif "waiting" == step.type: await self.Waiting(step)
@@ -170,9 +177,17 @@ class Tasker(QObject):
                 # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
                 self.Click(x, y, f"{taskkey}-{stepkey}")
 
-            self.running_task_steps = step.next_step
+            if 0 >= len(step.next_step):
+                self.logframe_addwarning.emit(f"시작 단계가 [{taskkey} - {stepkey}] 에 없어서 종료합니다.")
+                self.toggle_capture_callback()
+            else:
+                self.running_task_steps = step.next_step
         else:
-            self.running_task_steps = [ step.fail_step ]
+            if "" == step.fail_step:
+                self.logframe_addwarning.emit(f"실패 단계가 [{taskkey} - {stepkey}] 에 없어서 종료합니다.")
+                self.toggle_capture_callback()
+            else:
+                self.running_task_steps = [ step.fail_step ]            
             
     async def Waiting(self, step: TaskMan.TaskStep):
         self.logframe_addlog.emit(f"<잠깐대기> {step.waiting} 초")
@@ -347,8 +362,8 @@ class AsyncHelper(QObject):
         """안전하게 작업 취소"""
         if future and not future.done():
             future.cancel()
-            # 취소 후 처리를 위한 콜백 추가
-            future.add_done_callback(lambda f: self.process_asyncio())
+            # 콜백 추가하지 않음 (타이밍 문제 해결)
+            # future.add_done_callback(lambda f: self.process_asyncio())
         
     async def sleep(self, seconds):
         """비동기 대기 - 재구현"""
