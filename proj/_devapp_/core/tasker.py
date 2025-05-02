@@ -171,8 +171,9 @@ class Tasker(QObject):
             self.toggle_capture_callback()
             
     async def Matching(self, step: TaskMan.TaskStep, taskkey, stepkey):
+        logtext = "[[[매칭]]] "
         if 0.0 < step.waiting:
-            self.logframe_addlog.emit(f"[[잠깐]] {step.waiting} 초")
+            logtext += f"(잠깐만 {step.waiting} 초) "
             await self.async_helper.sleep(step.waiting)
         
         matched = self.match_image_in_zone(step.zone, step.image)
@@ -180,7 +181,8 @@ class Tasker(QObject):
         isSuccess = step.evaluate_score_condition(matched_score)
         
         resulttext = "성공" if isSuccess else "실패"
-        self.logframe_addlog.emit(f"[[매칭]] {step.zone} ZONE의 {step.image} IMAGE 근접도 {step.Print_Score()}: {matched_score}%로 {resulttext}")
+        logtext += f"[영역: {step.zone}]의 [이미지: {step.image}]의 [유사도] {step.Print_Score()}에서: {matched_score}%로 {resulttext}"
+        self.logframe_addlog.emit(logtext)
         
         if isSuccess:
             if "" != step.finded_click:
@@ -204,7 +206,7 @@ class Tasker(QObject):
                 self.running_task_steps = [ step.fail_step ]
             
     async def Waiting(self, step: TaskMan.TaskStep):
-        self.logframe_addlog.emit(f"<잠깐대기> {step.waiting} 초")
+        self.logframe_addlog.emit(f"[[[잠깐대기]]] {step.waiting} 초")
         
         await self.async_helper.sleep(step.waiting)
     
@@ -341,7 +343,7 @@ class Tasker(QObject):
 
     def Click(self, x, y, caller=""):
         WindowUtil.click_at_position(x, y)
-        logtext = f"[[마우스 클릭]] ({x}, {y})"
+        logtext = f"[[[마우스 클릭]]] ({x}, {y})"
         if "" != caller: logtext += f" {caller}"
         self.logframe_addlog.emit(logtext)
     
