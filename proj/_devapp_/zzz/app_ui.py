@@ -74,7 +74,7 @@ class AppUI(QMainWindow):
         winman = WindowUtil  # 초기화를 위한
         self.capture_manager = CaptureManager(self.handle_capture_callback)
         
-        self.tasker = Tasker(self, self.toggle_capture, self.capture_manager)
+        self.tasker = Tasker(self, self.toggle_capture, self.stop_capture, self.capture_manager)
         
         self.region_selector = RegionSelector()
         
@@ -272,15 +272,28 @@ class AppUI(QMainWindow):
     @Slot()
     def toggle_capture(self):
         """캡처 시작/중지 전환"""
+        
+        if hasattr(self, '_toggling') and self._toggling:
+            return
+        
+        self._toggling = True
+        QTimer.singleShot(500, lambda: setattr(self, '_toggling', False))
+    
         if self.tasker.is_running:
             # 캡처 중지
             self.tasker.stop_tasks()
             self.control_frame.update_capture_button_text(False)
             # 즉시 시작 방지를 위해 버튼 일시적 비활성화
             self.control_frame.capture_btn.setEnabled(False)
-            QTimer.singleShot(200, lambda: self.control_frame.capture_btn.setEnabled(True))
+            QTimer.singleShot(500, lambda: self.control_frame.capture_btn.setEnabled(True))
         else:
             try:
+                # Check if the task was recently stopped (add this flag in Tasker)
+                if hasattr(self.tasker, 'recently_stopped') and self.tasker.recently_stopped:
+                    # If it was just stopped, don't restart
+                    QTimer.singleShot(1000, lambda: setattr(self.tasker, 'recently_stopped', False))
+                    return
+            
                 # Tesseract OCR이 설정되어 있는지 확인
                 tesseract_path = AppSetting.get('Tesseract', 'Path', '')
                 if not tesseract_path or not os.path.exists(tesseract_path):
@@ -302,6 +315,15 @@ class AppUI(QMainWindow):
                 QMessageBox.critical(self, "입력 오류", f"올바른 값을 입력해주세요: {str(e)}")
             except Exception as e:
                 QMessageBox.critical(self, "캡처 오류", f"캡처 시작 중 오류가 발생했습니다: {str(e)}")
+                
+    def stop_capture(self):
+        """Just stop capture without attempting to toggle/restart"""
+        if self.tasker.is_running:
+            self.tasker.stop_tasks()
+            self.control_frame.update_capture_button_text(False)
+            # Optional: Disable button temporarily to prevent immediate restart
+            self.control_frame.capture_btn.setEnabled(False)
+            QTimer.singleShot(200, lambda: self.control_frame.capture_btn.setEnabled(True))
     
     @Slot()
     def apply_interval(self, val):

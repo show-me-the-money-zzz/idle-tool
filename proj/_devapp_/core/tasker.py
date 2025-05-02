@@ -32,11 +32,12 @@ class Tasker(QObject):
     logframe_adderror = Signal(str)
     logframe_addnotice = Signal(str)
     
-    def __init__(self, parent, toggle_capture_callback, capture_manager):
+    def __init__(self, parent, toggle_capture_callback, stop_capture_callback, capture_manager):
         super().__init__(parent)
         self.async_helper = AsyncHelper(self)
         
         self.toggle_capture_callback = toggle_capture_callback
+        self.stop_capture_callback = stop_capture_callback
         self.capture_manager = capture_manager
         
         # 작업 상태 변수
@@ -66,6 +67,10 @@ class Tasker(QObject):
         self.is_running = False
         self.running_task = None
         self.running_task_steps = []
+        self.recently_stopped = True
+        
+        # Set a timer to clear this flag after a while
+        QTimer.singleShot(2000, lambda: setattr(self, 'recently_stopped', False))
         
         # 현재 실행 중인 작업 취소
         if self.current_task:
@@ -127,10 +132,17 @@ class Tasker(QObject):
         
         try:
             while self.is_running:
+                 # Check at the top of each loop if we should still be running
+                if not self.is_running:
+                    break
+                
                 if not WindowUtil.update_window_info():
-                    self.toggle_capture_callback()
-                    self.status_changed.emit("창이 닫혔습니다.")
-                    return
+                    # self.stop_capture_callback()  # Use stop instead of toggle
+                    # self.status_changed.emit("창이 닫혔습니다.")
+                    # return
+                    self.logframe_addwarning.emit("창이 닫혔습니다.")
+                    self.is_running = False  # Set flag directly instead of calling callback
+                    break
                 
                 # await self.Task_GS23_RF()
 
@@ -179,15 +191,17 @@ class Tasker(QObject):
 
             if 0 >= len(step.next_step):
                 self.logframe_addwarning.emit(f"시작 단계가 [{taskkey} - {stepkey}] 에 없어서 종료합니다.")
-                self.toggle_capture_callback()
+                self.is_running = False  # Directly set the flag to stop the loop
+                # Don't call any external methods at this point
             else:
                 self.running_task_steps = step.next_step
         else:
             if "" == step.fail_step:
                 self.logframe_addwarning.emit(f"실패 단계가 [{taskkey} - {stepkey}] 에 없어서 종료합니다.")
-                self.toggle_capture_callback()
+                self.is_running = False  # Directly set the flag to stop the loop
+                # Don't call any external methods at this point
             else:
-                self.running_task_steps = [ step.fail_step ]            
+                self.running_task_steps = [ step.fail_step ]
             
     async def Waiting(self, step: TaskMan.TaskStep):
         self.logframe_addlog.emit(f"<잠깐대기> {step.waiting} 초")
