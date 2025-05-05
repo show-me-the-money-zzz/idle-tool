@@ -34,7 +34,8 @@ class InputHandlerFrame(QGroupBox):
         key_layout.addWidget(QLabel("입력 키:"))
         
         # HOTKEYs 딕셔너리에서 값 목록을 가져옴
-        hotkey_kyes = [ "", ] + list(HOTKEYs.keys())
+        # hotkey_kyes = [ "", ] + list(HOTKEYs.keys())
+        hotkey_kyes = [""] + [f"{key} ({value})" for key, value in HOTKEYs.items()]
         # 기본값으로 "m" 설정
         default_key = hotkey_kyes[0]
         
@@ -142,8 +143,15 @@ class InputHandlerFrame(QGroupBox):
                 return
             
             input_key = key
-            if key in HOTKEYs.keys():
-                input_key = HOTKEYs[key]
+            if 1 < len(key) and '(' in key and ')' in key:
+                # print(f"hotkey= {key}")
+                sp = key.split(' (')[0] #공백
+                # print(f"*{sp}*")
+                if sp in HOTKEYs.keys():
+                    input_key = HOTKEYs[sp]
+                    # print(f"{HOTKEYs[sp]} vs {input_key}")
+            # print(f"({key}): {input_key}")
+            # print(f"{HOTKEYs.items()}")
             
             # 키 입력
             if WindowUtil.send_key(input_key):
