@@ -205,6 +205,199 @@ class WindowManager:
     def Print_DEV(self, log):
         return
         print(log)
+        
+    def scroll_at_location(self, rel_x, rel_y, amount):
+        try:
+            if not self.is_window_valid():
+                print("창이 유효하지 않습니다.")
+                return False
+                
+            # 1. 현재 마우스 위치 저장
+            class POINT(Structure):
+                _fields_ = [("x", c_long), ("y", c_long)]
+            original_pos = POINT()
+            windll.user32.GetCursorPos(byref(original_pos))
+            
+            # 2. 원하는 위치로 마우스 이동
+            left, top, _, _ = self.window_rect
+            abs_x = left + rel_x
+            abs_y = top + rel_y
+            windll.user32.SetCursorPos(abs_x, abs_y)
+            time.sleep(0.1)
+            
+            # 3. 스크롤 수행
+            self.scroll_wheel(amount)
+            
+            # 4. 원래 위치로 마우스 복원
+            windll.user32.SetCursorPos(original_pos.x, original_pos.y)
+            
+            return True
+        except Exception as e:
+            print(f"스크롤 위치 오류: {e}")
+            return False
+
+        
+    def scroll_wheel(self, amount):
+        """
+        현재 마우스 위치에서 휠 스크롤을 수행합니다.
+        
+        Args:
+            amount (int): 스크롤 양(양수: 위로, 음수: 아래로)
+        
+        Returns:
+            bool: 성공 여부
+        """
+        try:
+            if not self.is_window_valid():
+                print("창이 유효하지 않습니다.")
+                return False
+
+            self.activate_window()
+            time.sleep(0.1)
+
+            # 휠 스크롤 이벤트 상수
+            MOUSEEVENTF_WHEEL = 0x0800
+            
+            # 스크롤 양 계산 (120은 한 노치의 표준값)
+            wheel_amount = amount * 120  # 양수: 위로, 음수: 아래로
+            
+            # mouse_event 함수 호출
+            windll.user32.mouse_event(MOUSEEVENTF_WHEEL, 0, 0, wheel_amount, 0)
+            
+            return True
+        except Exception as e:
+            print(f"스크롤 오류: {e}")
+            return False
+        
+    def scroll_mouse(self, amount=1):
+        """
+        타겟 윈도우에서 마우스 휠 스크롤을 수행합니다.
+        amount: 양수는 위로, 음수는 아래로 스크롤
+        """
+        try:
+            if not self.is_window_valid():
+                print("창이 유효하지 않습니다.")
+                return False
+
+            self.activate_window()
+            time.sleep(0.1)
+
+            MOUSEEVENTF_WHEEL = 0x0800
+            delta = 120 * amount  # 기본 단위 120
+
+            windll.user32.mouse_event(MOUSEEVENTF_WHEEL, 0, 0, delta, 0)
+            return True
+        except Exception as e:
+            print(f"마우스 스크롤 오류: {e}")
+            return False
+        
+    def scroll_wheel_with_pyautogui(self, amount):
+        """
+        PyAutoGUI를 사용해 휠 스크롤을 수행합니다.
+        
+        Args:
+            amount (int): 스크롤 양(양수: 위로, 음수: 아래로)
+        
+        Returns:
+            bool: 성공 여부
+        """
+        try:
+            if not self.is_window_valid():
+                print("창이 유효하지 않습니다.")
+                return False
+                
+            self.activate_window()
+            time.sleep(0.1)
+            
+            # PyAutoGUI 라이브러리 임포트
+            import pyautogui
+            
+            # 휠 스크롤 수행 (clicks 매개변수로 스크롤 양 지정)
+            pyautogui.scroll(amount)
+            
+            return True
+        except Exception as e:
+            print(f"스크롤 오류 (PyAutoGUI): {e}")
+            return False
+        
+    def scroll_wheel_with_pynput(self, amount):
+        """
+        pynput을 사용해 휠 스크롤을 수행합니다.
+        
+        Args:
+            amount (int): 스크롤 양(양수: 위로, 음수: 아래로)
+        
+        Returns:
+            bool: 성공 여부
+        """
+        try:
+            if not self.is_window_valid():
+                print("창이 유효하지 않습니다.")
+                return False
+                
+            self.activate_window()
+            time.sleep(0.1)
+            
+            # pynput 마우스 컨트롤러 임포트
+            from pynput.mouse import Controller, Button
+            
+            # 마우스 컨트롤러 생성
+            mouse = Controller()
+            
+            # 휠 스크롤 수행
+            # pynput의 scroll 메서드는 양수가 위로, 음수가 아래로 스크롤
+            mouse.scroll(0, amount)
+            
+            return True
+        except Exception as e:
+            print(f"스크롤 오류 (pynput): {e}")
+            return False
+        
+    def send_mousewheel_message(self, amount):
+        """Win32 메시지를 직접 전송하여 휠 스크롤을 시도합니다."""
+        try:
+            if not self.is_window_valid():
+                return False
+                
+            self.activate_window()
+            time.sleep(0.1)
+            
+            # WM_MOUSEWHEEL 메시지 상수
+            WM_MOUSEWHEEL = 0x020A
+            
+            # 양수는 위로, 음수는 아래로 스크롤
+            delta = amount * 120
+            
+            # 상위 워드에 델타 값, 하위 워드에 0을 넣음
+            w_param = delta << 16
+            
+            # 메시지 전송
+            win32gui.SendMessage(self.target_hwnd, WM_MOUSEWHEEL, w_param, 0)
+            
+            return True
+        except Exception as e:
+            print(f"마우스휠 메시지 전송 오류: {e}")
+            return False
+        
+    def scroll_mousewheel(self, amount):
+        """
+        타겟 윈도우의 중앙에서 마우스 휠 스크롤을 수행합니다.
+        """
+        if not self.is_window_valid():
+            print("유효한 창이 없습니다.")
+            return False
+
+        # 타겟 창 중앙 좌표 계산
+        left, top, right, bottom = self.window_rect
+        center_x = int((left + right) / 2)
+        center_y = int((top + bottom) / 2)
+
+        # 마우스 커서를 중앙으로 이동
+        windll.user32.SetCursorPos(center_x, center_y)
+        time.sleep(0.1)
+
+        # 스크롤 수행
+        return self.scroll_wheel(amount)
 
     def get_relative_position(self, abs_x, abs_y):
         if not self.is_window_valid():
