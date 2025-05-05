@@ -34,7 +34,7 @@ class InputHandlerFrame(QGroupBox):
         key_layout.addWidget(QLabel("입력 키:"))
         
         # HOTKEYs 딕셔너리에서 값 목록을 가져옴
-        hotkey_kyes = list(HOTKEYs.keys())
+        hotkey_kyes = [ "", ] + list(HOTKEYs.keys())
         # 기본값으로 "m" 설정
         default_key = hotkey_kyes[0]
         
