@@ -93,10 +93,10 @@ class InputHandlerFrame(QGroupBox):
         
         # 스크롤 양 스핀박스 추가
         self.scroll_amount_spin = QSpinBox(self)
-        self.scroll_amount_spin.setRange(1, 10)  # 스크롤 단위 (양수만)
+        self.scroll_amount_spin.setRange(1, 50)  # 스크롤 단위 (양수만)
         self.scroll_amount_spin.setValue(1)
         self.scroll_amount_spin.setMinimumWidth(48)
-        self.scroll_amount_spin.setToolTip("스크롤 단위 (1-10)")
+        self.scroll_amount_spin.setToolTip("스크롤 단위 (1-50)")
         scroll_layout.addWidget(self.scroll_amount_spin)
         
         # 위로 스크롤 버튼
