@@ -5,6 +5,8 @@ import pyautogui
 
 from core.config import *
 from core.window_utils import WindowUtil
+from ui.component.searchable_comboBox import SearchableComboBox
+from zzz.hotkey import HOTKEYs
 
 class InputHandlerFrame(QGroupBox):
     """입력 처리 프레임 (이전의 자동화 영역)"""
@@ -28,10 +30,20 @@ class InputHandlerFrame(QGroupBox):
         key_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.addWidget(key_frame, 0, 0, 1, 3)
 
-        # 키 입력 필드
+        # 키 입력 필드 (SearchableComboBox로 변경)
         key_layout.addWidget(QLabel("입력 키:"))
-        self.input_key_edit = QLineEdit("m")
-        self.input_key_edit.setMaximumWidth(50)
+        
+        # HOTKEYs 딕셔너리에서 값 목록을 가져옴
+        hotkey_kyes = list(HOTKEYs.keys())
+        # 기본값으로 "m" 설정
+        default_key = hotkey_kyes[0]
+        
+        # SearchableComboBox 생성
+        self.input_key_edit = SearchableComboBox(items=hotkey_kyes)
+        self.input_key_edit.setEditable(True)  # 직접 입력 가능하도록 설정
+        self.input_key_edit.setEditText(default_key)  # 기본값 설정
+        self.input_key_edit.setMinimumWidth(120)  # 너비 설정
+        self.input_key_edit.setToolTip("단축키를 선택하거나 직접 입력하세요")
         key_layout.addWidget(self.input_key_edit)
         key_layout.addSpacing(10)
 
@@ -40,10 +52,10 @@ class InputHandlerFrame(QGroupBox):
         self.key_btn.clicked.connect(self.press_key)
         key_layout.addWidget(self.key_btn)
 
-        # ESC 키 입력 버튼
-        self.esc_btn = QPushButton("ESC 키 입력")
-        self.esc_btn.clicked.connect(self.press_esc_key)
-        key_layout.addWidget(self.esc_btn)
+        # # ESC 키 입력 버튼
+        # self.esc_btn = QPushButton("ESC 키 입력")
+        # self.esc_btn.clicked.connect(self.press_esc_key)
+        # key_layout.addWidget(self.esc_btn)
 
         key_layout.addStretch(1)  # 우측 여백
 
@@ -123,15 +135,19 @@ class InputHandlerFrame(QGroupBox):
                 QMessageBox.critical(self, "오류", ERROR_NO_WINDOW)
                 return
             
-            # 사용자가 입력한 키 가져오기
-            key = self.input_key_edit.text()
+            # 사용자가 입력/선택한 키 가져오기
+            key = self.input_key_edit.currentText()
             if not key:
                 QMessageBox.information(self, "알림", "입력할 키를 지정해주세요.")
                 return
             
+            input_key = key
+            if key in HOTKEYs.keys():
+                input_key = HOTKEYs[key]
+            
             # 키 입력
-            if WindowUtil.send_key(key):
-                self.status_signal.emit(f"'{key}' 키가 입력되었습니다.")
+            if WindowUtil.send_key(input_key):
+                self.status_signal.emit(f"'{input_key}' 키가 입력되었습니다.")
             else:
                 QMessageBox.critical(self, "오류", "키 입력에 실패했습니다.")
                 
