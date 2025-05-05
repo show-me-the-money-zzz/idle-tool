@@ -54,7 +54,7 @@ class InputHandlerFrame(QGroupBox):
         main_layout.addWidget(click_frame, 1, 0, 1, 3)
 
         # "클릭:" 라벨 추가
-        click_layout.addWidget(QLabel("클릭:"))
+        click_layout.addWidget(QLabel("마우스 클릭:"))
 
         # X 스핀박스 추가
         self.click_x_spin = QSpinBox(self)
@@ -71,7 +71,7 @@ class InputHandlerFrame(QGroupBox):
         click_layout.addWidget(self.click_y_spin)
 
         # 마우스 클릭 버튼
-        self.click_btn = QPushButton("마우스 클릭")
+        self.click_btn = QPushButton("왼쪽 버튼")
         self.click_btn.clicked.connect(self.mouse_click)
         click_layout.addWidget(self.click_btn)
 
