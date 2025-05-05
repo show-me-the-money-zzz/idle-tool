@@ -47,33 +47,44 @@ class InputHandlerFrame(QGroupBox):
 
         key_layout.addStretch(1)  # 우측 여백
 
-        # 마우스 좌표 입력 필드 (상대적)
-        main_layout.addWidget(QLabel("클릭 X (창 내부):"), 1, 0, Qt.AlignLeft)
+        # 클릭 관련 프레임 (한 행에 모든 요소 배치)
+        click_frame = QWidget(self)
+        click_layout = QHBoxLayout(click_frame)
+        click_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.addWidget(click_frame, 1, 0, 1, 3)
+
+        # "클릭:" 라벨 추가
+        click_layout.addWidget(QLabel("클릭:"))
+
+        # X 스핀박스 추가
         self.click_x_spin = QSpinBox(self)
         self.click_x_spin.setRange(0, 99999)
         self.click_x_spin.setValue(int(DEFAULT_CLICK_X))
         self.click_x_spin.setMinimumWidth(80)
-        main_layout.addWidget(self.click_x_spin, 1, 1, Qt.AlignLeft)
+        click_layout.addWidget(self.click_x_spin)
 
-        main_layout.addWidget(QLabel("클릭 Y (창 내부):"), 2, 0, Qt.AlignLeft)
+        # Y 스핀박스 추가
         self.click_y_spin = QSpinBox(self)
         self.click_y_spin.setRange(0, 99999)
         self.click_y_spin.setValue(int(DEFAULT_CLICK_Y))
         self.click_y_spin.setMinimumWidth(80)
-        main_layout.addWidget(self.click_y_spin, 2, 1, Qt.AlignLeft)
+        click_layout.addWidget(self.click_y_spin)
 
-        # 3행에 "마우스 클릭"과 "현재 위치 복사" 버튼 좌우 배치
+        # 마우스 클릭 버튼
         self.click_btn = QPushButton("마우스 클릭")
         self.click_btn.clicked.connect(self.mouse_click)
-        main_layout.addWidget(self.click_btn, 3, 0, Qt.AlignLeft)
+        click_layout.addWidget(self.click_btn)
 
+        # 현재 위치 복사 버튼
         copy_pos_btn = QPushButton("현재 위치 복사")
         copy_pos_btn.clicked.connect(self.copy_current_mouse_position)
-        main_layout.addWidget(copy_pos_btn, 3, 2, Qt.AlignRight)
+        click_layout.addWidget(copy_pos_btn)
 
-        # 4행에 마우스 위치 표시 레이블을 우측 정렬로 배치
+        click_layout.addStretch(1)  # 우측 여백
+
+        # 마우스 위치 표시 레이블을 우측 정렬로 배치
         self.mouse_pos_label = QLabel("마우스 위치: 절대(X=0, Y=0) / 상대(X=0, Y=0)")
-        main_layout.addWidget(self.mouse_pos_label, 4, 0, 1, 3, Qt.AlignRight)
+        main_layout.addWidget(self.mouse_pos_label, 2, 0, 1, 3, Qt.AlignRight)
     
     @Slot()
     def press_key(self):
