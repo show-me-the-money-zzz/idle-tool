@@ -81,10 +81,34 @@ class InputHandlerFrame(QGroupBox):
         click_layout.addWidget(copy_pos_btn)
 
         click_layout.addStretch(1)  # 우측 여백
+        
+        # 휠 스크롤 관련 프레임 (한 행에 모든 요소 배치)
+        scroll_frame = QWidget(self)
+        scroll_layout = QHBoxLayout(scroll_frame)
+        scroll_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.addWidget(scroll_frame, 2, 0, 1, 3)
+        
+        # "마우스 휠 스크롤" 라벨 추가
+        scroll_layout.addWidget(QLabel("마우스 휠 스크롤:"))
+        
+        # 스크롤 양 스핀박스 추가
+        self.scroll_amount_spin = QSpinBox(self)
+        self.scroll_amount_spin.setRange(-10, 10)  # 음수는 아래로, 양수는 위로 스크롤
+        self.scroll_amount_spin.setValue(1)
+        self.scroll_amount_spin.setMinimumWidth(80)
+        self.scroll_amount_spin.setToolTip("양수: 위로 스크롤, 음수: 아래로 스크롤")
+        scroll_layout.addWidget(self.scroll_amount_spin)
+        
+        # 스크롤 버튼
+        self.scroll_btn = QPushButton("스크롤")
+        self.scroll_btn.clicked.connect(self.mouse_scroll)
+        scroll_layout.addWidget(self.scroll_btn)
+        
+        scroll_layout.addStretch(1)  # 우측 여백
 
         # 마우스 위치 표시 레이블을 우측 정렬로 배치
         self.mouse_pos_label = QLabel("마우스 위치: 절대(X=0, Y=0) / 상대(X=0, Y=0)")
-        main_layout.addWidget(self.mouse_pos_label, 2, 0, 1, 3, Qt.AlignRight)
+        main_layout.addWidget(self.mouse_pos_label, 3, 0, 1, 3, Qt.AlignRight)
     
     @Slot()
     def press_key(self):
@@ -152,6 +176,30 @@ class InputHandlerFrame(QGroupBox):
                 
         except Exception as e:
             QMessageBox.critical(self, "마우스 클릭 오류", f"마우스 클릭 중 오류가 발생했습니다: {str(e)}")
+            
+    @Slot()
+    def mouse_scroll(self):
+        """마우스 휠 스크롤"""
+        try:
+            if not WindowUtil.is_window_valid():
+                QMessageBox.critical(self, "오류", ERROR_NO_WINDOW)
+                return
+            
+            # 스크롤 양 가져오기
+            amount = self.scroll_amount_spin.value()
+            
+            # 상태 표시 업데이트
+            direction = "위로" if amount > 0 else "아래로"
+            self.status_signal.emit(f"스크롤 중... ({direction} {abs(amount)}단위)")
+            
+            # 스크롤 수행
+            if WindowUtil.scroll_mousewheel(amount):
+                self.status_signal.emit(f"마우스 휠 스크롤 완료 ({direction} {abs(amount)}단위)")
+            else:
+                QMessageBox.critical(self, "오류", "스크롤 작업에 실패했습니다.")
+                    
+        except Exception as e:
+            QMessageBox.critical(self, "마우스 스크롤 오류", f"마우스 스크롤 중 오류가 발생했습니다: {str(e)}")
     
     @Slot()
     def copy_current_mouse_position(self):
