@@ -237,14 +237,23 @@ class WindowManager:
             windll.user32.SetCursorPos(center_x, center_y)
             time.sleep(0.1)
             
-            # 스크롤 수행
-            # 필요한 scroll_wheel 함수 정의가 없으므로 직접 구현
+            # 스크롤 이벤트 상수
             MOUSEEVENTF_WHEEL = 0x0800
-            wheel_amount = amount * 120  # 양수는 위로, 음수는 아래로
             
-            # 스크롤 이벤트 발생
-            windll.user32.mouse_event(MOUSEEVENTF_WHEEL, 0, 0, wheel_amount, 0)
-            time.sleep(0.1)
+            # 스크롤 방향 설정 (부호 유지)
+            direction = 1 if amount > 0 else -1
+            
+            # 절대값으로 반복 횟수 계산
+            repeat_count = abs(amount)
+            # print(f"repeat_count= {repeat_count}")
+            
+            # 단일 스크롤 값
+            single_scroll = 120 * direction # 120은 한 노치의 표준값
+            
+            # 여러 번 반복하여 스크롤 수행
+            for _ in range(repeat_count):
+                windll.user32.mouse_event(MOUSEEVENTF_WHEEL, 0, 0, single_scroll, 0)
+                time.sleep(0.05)  # 각 스크롤 사이에 짧은 지연 추가
             
             # 원래 마우스 위치로 복원
             windll.user32.SetCursorPos(original_pos.x, original_pos.y)
