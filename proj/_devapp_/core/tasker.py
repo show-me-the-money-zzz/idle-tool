@@ -28,7 +28,7 @@ class Tasker(QObject):
     
     # 로그 메시지 시그널 추가
     logframe_addlog = Signal(str)
-    logframe_addlog_matching = Signal(TaskStep_Matching, float, bool)
+    logframe_addlog_matching = Signal(str, str, TaskStep_Matching, float, bool)
     logframe_addlog_notmatching = Signal(str)
     logframe_addwarning = Signal(str)
     logframe_adderror = Signal(str)
@@ -203,7 +203,7 @@ class Tasker(QObject):
         matched_score = matched["score_percent"]
         isSuccess = step.evaluate_score_condition(matched_score)
 
-        self.logframe_addlog_matching.emit(step, matched_score, isSuccess)
+        self.logframe_addlog_matching.emit(task_key, step_key, step, matched_score, isSuccess)
 
         self.running_task_steps.remove(step_key)
         

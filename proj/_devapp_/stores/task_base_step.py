@@ -90,6 +90,9 @@ class TaskStep_Matching(BaseStep):
         """점수 조건을 한글로 설명하는 함수"""
         value, _, desc = self.parse_score()
         return f"{value}% {desc}"
+    
+    def Get_LogText(self) -> str:
+        return f"[영역: {self.zone}]의 [이미지: {self.image}]의 [유사도] {self.Print_Score()}"
    
 @dataclass
 class TaskStep_MouseWheel(BaseStep):
