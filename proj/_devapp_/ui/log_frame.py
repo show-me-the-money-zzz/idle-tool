@@ -65,11 +65,12 @@ class LogFrame(QGroupBox):
         succsstext = "성공" if issuccess else "실패"
         resulttext = f"{matched_score:.1f}%({succsstext})"
 
-        if self.before_step_matching: pass
+        if self.before_step_matching:
+            step = self.before_step_matching["step"]
         else:
-            # self.before_step_matching = {
-            #     "step": step,
-            # }
+            self.before_step_matching = {
+                "step": step,
+            }
 
             logtext = "[[[매칭]]] "
             if 0 < step.waiting:
