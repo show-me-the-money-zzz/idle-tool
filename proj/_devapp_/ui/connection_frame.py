@@ -186,6 +186,7 @@ class ConnectionFrame(QGroupBox):
 
             # self.window_info_label.setText(f"연결됨: '{title}' (HWND: {hwnd})")  # 기존 코드
             self.window_info_edit.setText(f"연결됨: '{title}' (HWND: {hwnd})")
+            self.window_info_edit.setStyleSheet(f"background-color: #9b00ad; color:#ffffff")
             self.status_signal.emit(f"PID {pid}에 연결되었습니다. 창이 활성화되었습니다.")
 
             self.capture_window_btn.setEnabled(True)
@@ -245,6 +246,7 @@ class ConnectionFrame(QGroupBox):
 
             # self.window_info_label.setText(f"연결됨: '{title}' (PID: {pid}, {proc_name})")
             self.window_info_edit.setText(f"연결됨: '{title}' (PID: {pid}, {proc_name})")
+            self.window_info_edit.setStyleSheet(f"background-color: #9b00ad; color:#ffffff")
             self.status_signal.emit(f"창 '{title}'에 연결되었습니다. 창이 활성화되었습니다.")
 
             self.capture_window_btn.setEnabled(True)
