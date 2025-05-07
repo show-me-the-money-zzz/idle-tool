@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import (QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton, 
                             QTextEdit, QScrollBar, QWidget, QFrame)
 from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtGui import QTextCursor
 
 from datetime import datetime
 
@@ -81,11 +82,13 @@ class LogFrame(QGroupBox):
                 time_end = self.before_step_matching["time_end"]
                 resultlist = self.before_step_matching["resultlist"]
                 
+                color = self.before_step_matching["color"]
+                
                 logtext = f"[{LogFrame.GetText_Timestamp(time_begin)} ~ {LogFrame.GetText_Timestamp(time_end)}] "
                 logtext += f"{step.Get_LogText()}에서: "
                 logtext += f"{', '.join(resultlist)}"
                 
-                print(logtext)
+                self.update_last_log(logtext, color)
             else:
                 self.before_step_matching = None
                 
@@ -101,7 +104,8 @@ class LogFrame(QGroupBox):
                 "time_begin": datetime.now(),
                 "time_end": None,
             
-                "resultlist": [ result ]
+                "resultlist": [ result ],
+                "color": self.NormalColor,
             }
             
             logtext = f"{__step.Get_LogText()}에서: "
@@ -112,9 +116,17 @@ class LogFrame(QGroupBox):
         self.before_step_matching = None
         self.add_log(text)
     
-    def add_warning(self, text): self.print_log("#ffe88c", text)    
-    def add_error(self, text): self.print_log("#ff8c8c", text)
-    def add_notice(self, text): self.print_log("#00ff00", text)
+    def add_warning(self, text):
+        self.before_step_matching = None
+        self.print_log("#ffe88c", text)
+        
+    def add_error(self, text):
+        self.before_step_matching = None
+        self.print_log("#ff8c8c", text)
+        
+    def add_notice(self, text):
+        self.before_step_matching = None
+        self.print_log("#00ff00", text)
         
     def print_log(self, color, text):
         timestamp = LogFrame.GetText_Timestamp(datetime.now())
@@ -135,3 +147,34 @@ class LogFrame(QGroupBox):
     
     def Make_HtmlText(color, text):
         return f'<span style="color:{color}">{text}</span>'
+    
+    def update_last_log(self, text, color=None, print_timestamp = False):
+        """로그의 마지막 줄을 새 텍스트로 업데이트합니다."""
+        try:
+            # 마지막 항목 삭제
+            cursor = self.log_text.textCursor()
+            cursor.movePosition(QTextCursor.End)
+            cursor.select(QTextCursor.BlockUnderCursor)
+            cursor.removeSelectedText()
+            
+            # 새 로그 추가
+            if color is None:
+                color = self.NormalColor
+            
+            logtext = ""
+            if print_timestamp:
+                timestamp = LogFrame.GetText_Timestamp(datetime.now())
+                logtext = f"[{timestamp}] "
+            logtext += f" {text}"
+                
+            html = LogFrame.Make_HtmlText(color, logtext)
+            self.log_text.append(html)
+            
+            # 스크롤 업데이트
+            scrollbar = self.log_text.verticalScrollBar()
+            scrollbar.setValue(scrollbar.maximum())
+            
+        except Exception as e:
+            # 오류 발생 시 새 로그로 추가
+            self.add_error(f"로그 업데이트 오류: {e}")
+            self.add_log(text)
