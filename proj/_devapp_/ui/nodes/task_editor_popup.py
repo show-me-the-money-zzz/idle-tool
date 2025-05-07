@@ -661,21 +661,6 @@ class TaskEditorPopup(QDialog):
         # 최소 레이블 너비 계산 (가장 긴 레이블에 맞춤)
         min_label_width = 80  # 기본값 - "실패 후 단계:"에 맞게 조정
         
-        # 실패 후 단계 - 검색 가능한 콤보박스
-        fail_step_layout = QHBoxLayout()
-        fail_step_label = QLabel("실패 후 단계:")
-        fail_step_label.setFixedWidth(min_label_width)
-        fail_step_layout.addWidget(fail_step_label)
-        
-        # 샘플 항목 생성
-        # fail_step_items = [ "" ]
-        # fail_step_items += [ f"단계{i}" for i in range(1, 31)]
-        self.fail_step_combo = SearchableComboBox(items=[ "" ])
-        self.fail_step_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        fail_step_layout.addWidget(self.fail_step_combo)
-        
-        layout.addLayout(fail_step_layout)
-        
         # 다음 단계 - 검색 가능한 콤보박스
         next_step_layout = QHBoxLayout()
         next_step_label = QLabel("다음 단계:")
@@ -715,6 +700,21 @@ class TaskEditorPopup(QDialog):
         next_steps_list_layout.addWidget(self.next_steps_list)
         
         layout.addLayout(next_steps_list_layout)
+
+        # 실패 후 단계 - 검색 가능한 콤보박스
+        fail_step_layout = QHBoxLayout()
+        fail_step_label = QLabel("실패 후 단계:")
+        fail_step_label.setFixedWidth(min_label_width)
+        fail_step_layout.addWidget(fail_step_label)
+        
+        # 샘플 항목 생성
+        # fail_step_items = [ "" ]
+        # fail_step_items += [ f"단계{i}" for i in range(1, 31)]
+        self.fail_step_combo = SearchableComboBox(items=[ "" ])
+        self.fail_step_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        fail_step_layout.addWidget(self.fail_step_combo)
+        
+        layout.addLayout(fail_step_layout)
         
         # 설명 입력 영역
         layout.addWidget(QLabel("설명:"))
