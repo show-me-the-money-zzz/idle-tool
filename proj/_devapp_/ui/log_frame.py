@@ -54,10 +54,12 @@ class LogFrame(QGroupBox):
         """로그 텍스트 초기화"""
         self.log_text.clear()
         self.status_signal.emit("로그가 초기화되었습니다.")
+        
+    @property
+    def NormalColor(self): return "#b8abab" if self._color_toggle else "#ffffff"
     
     def add_log(self, text):
-        color = "#b8abab" if self._color_toggle else "#ffffff"
-        self.print_log(color, text)
+        self.print_log(self.NormalColor, text)
         
         self._color_toggle = not self._color_toggle
 
@@ -69,8 +71,18 @@ class LogFrame(QGroupBox):
             if __taskkey == taskkey and __stepkey == stepkey:
                 step = self.before_step_matching["step"]
                 time_begin = self.before_step_matching["time_begin"]
+                
+                self.before_step_matching["time_end"] = datetime.now()
+                
+                result = LogFrame.GetText_Result(matched_score, issuccess)
+                if result not in self.before_step_matching["resultlist"]:
+                    self.before_step_matching["resultlist"].append(result)
+                    
                 time_end = self.before_step_matching["time_end"]
-                result = self.before_step_matching["result"]
+                resultlist = self.before_step_matching["resultlist"]
+                
+                logtext = f"[{LogFrame.GetText_Timestamp(time_begin)} ~ {LogFrame.GetText_Timestamp(time_end)}] "
+                logtext += f"{step.Get_LogText()}에서: "
             else:
                 self.before_step_matching = None
                 
@@ -85,13 +97,11 @@ class LogFrame(QGroupBox):
                 
             #     "time_begin": datetime.now(),
             #     "time_end": None,
-            #     "result": [ result ]
+            
+            #     "resultlist": [ result ]
             # }
-
-            logtext = "[[[매칭]]] "
-            if 0 < __step.waiting:
-                logtext += f"(잠깐만 {__step.waiting} 초) "
-            logtext += f"{__step.Get_LogText()}에서: "
+            
+            logtext = f"{__step.Get_LogText()}에서: "
             self.add_log(logtext + result)
         
     def add_log_notmatching(self, text):
@@ -106,7 +116,7 @@ class LogFrame(QGroupBox):
     def print_log(self, color, text):
         timestamp = LogFrame.GetText_Timestamp(datetime.now())
         
-        html = f'<span style="color:{color}">[{timestamp}] {text}</span>'
+        html = LogFrame.Make_HtmlText(color, f"[{timestamp}] {text}")
         self.log_text.append(html)
         
         # 스크롤을 최신으로 이동
@@ -119,3 +129,6 @@ class LogFrame(QGroupBox):
     def GetText_Result(matched_score: float, issuccess: bool):
         text_success = "성공" if issuccess else "실패"
         return f"{matched_score:.1f}%({text_success})"
+    
+    def Make_HtmlText(color, text):
+        return f'<span style="color:{color}">{text}</span>'

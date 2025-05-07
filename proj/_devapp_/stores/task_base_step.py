@@ -92,7 +92,11 @@ class TaskStep_Matching(BaseStep):
         return f"{value}% {desc}"
     
     def Get_LogText(self) -> str:
-        return f"[영역: {self.zone}]의 [이미지: {self.image}]의 [유사도] {self.Print_Score()}"
+        ret = "[[[매칭]]] "
+        if 0 < self.waiting:
+            ret += f"(잠깐만 {self.waiting} 초) "
+        ret += f"[영역: {self.zone}]의 [이미지: {self.image}]의 [유사도] {self.Print_Score()}"
+        return ret
    
 @dataclass
 class TaskStep_MouseWheel(BaseStep):
