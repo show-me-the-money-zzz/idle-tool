@@ -428,7 +428,9 @@ class TaskEditorPopup(QDialog):
         type_layout.addWidget(type_label)
         
         self.main_type_combo = QComboBox()
-        type_items = ["영역-이미지 매칭", "마우스 휠", "텔레그램 알림"]
+        type_items = ["영역-이미지 매칭", "마우스 휠",
+                    #   "텔레그램 알림",
+                      ]
         self.main_type_combo.addItems(type_items)
         
         # 항목 최대 길이에 맞게 너비 계산
