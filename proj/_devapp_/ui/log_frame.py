@@ -83,23 +83,26 @@ class LogFrame(QGroupBox):
                 
                 logtext = f"[{LogFrame.GetText_Timestamp(time_begin)} ~ {LogFrame.GetText_Timestamp(time_end)}] "
                 logtext += f"{step.Get_LogText()}에서: "
+                logtext += f"{', '.join(resultlist)}"
+                
+                print(logtext)
             else:
                 self.before_step_matching = None
                 
         if not self.before_step_matching:
             result = LogFrame.GetText_Result(matched_score, issuccess)
             
-            # self.before_step_matching = {
-            #     "taskkey": __taskkey,
-            #     "stepkey": __stepkey,
+            self.before_step_matching = {
+                "taskkey": __taskkey,
+                "stepkey": __stepkey,
                 
-            #     "step": __step,
+                "step": __step,
                 
-            #     "time_begin": datetime.now(),
-            #     "time_end": None,
+                "time_begin": datetime.now(),
+                "time_end": None,
             
-            #     "resultlist": [ result ]
-            # }
+                "resultlist": [ result ]
+            }
             
             logtext = f"{__step.Get_LogText()}에서: "
             self.add_log(logtext + result)
