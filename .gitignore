@@ -28,3 +28,9 @@ __pycache__
 /proj/_devapp_/utils
 /proj/_devapp_/data - *
 app_settings.ini
+/proj/Netmarble/RF온라인넥스트/core
+/proj/Netmarble/RF온라인넥스트/grinder_types
+/proj/Netmarble/RF온라인넥스트/grinder_utils
+/proj/Netmarble/RF온라인넥스트/scripts
+/proj/Netmarble/RF온라인넥스트/stores
+/proj/Netmarble/RF온라인넥스트/ui
