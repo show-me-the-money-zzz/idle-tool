@@ -33,7 +33,8 @@ class AreaStore:
                     self.items = json.load(f)
                     
                 if False == getattr(sys, 'frozen', False):  #utils.system.DEVAPP
-                    system.PrintDEV(f"{self.name}.Load(): {' / '.join(self.items)}")
+                    # system.PrintDEV(f"{self.name}.Load(): {' / '.join(self.items)}")
+                    system.PrintDEV(f"{self.name}.Load(): {len(self.items)}")
                     
                 return True
             except Exception as e:
