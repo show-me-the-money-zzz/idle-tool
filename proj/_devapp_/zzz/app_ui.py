@@ -84,6 +84,8 @@ class AppUI(QMainWindow):
         # 시그널 연결
         self.tasker.status_changed.connect(self.status_bar.set_status)
         self.tasker.logframe_addlog.connect(self.log_frame.add_log)
+        self.tasker.logframe_addlog_matching.connect(self.log_frame.add_log_matching)
+        self.tasker.logframe_addlog_notmatching.connect(self.log_frame.add_log_notmatching)
         self.tasker.logframe_addwarning.connect(self.log_frame.add_warning)
         self.tasker.logframe_adderror.connect(self.log_frame.add_error)
         self.tasker.logframe_addnotice.connect(self.log_frame.add_notice)

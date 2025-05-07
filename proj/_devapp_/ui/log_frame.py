@@ -4,6 +4,8 @@ from PySide6.QtCore import Qt, Signal, Slot
 
 from datetime import datetime
 
+from stores.task_base_step import TaskStep_Matching
+
 class LogFrame(QGroupBox):
     """로그 프레임 (이전의 인식된 텍스트 영역)"""
     
@@ -13,6 +15,8 @@ class LogFrame(QGroupBox):
         self.status_signal = status_signal
         
         self._color_toggle = False
+
+        self.before_step_matching = None
         
         self._setup_ui()
     
@@ -56,6 +60,27 @@ class LogFrame(QGroupBox):
         self.print_log(color, text)
         
         self._color_toggle = not self._color_toggle
+
+    def add_log_matching(self, step: TaskStep_Matching, matched_score: float, issuccess: bool):
+        succsstext = "성공" if issuccess else "실패"
+        resulttext = f"{matched_score:.1f}%({succsstext})"
+
+        if self.before_step_matching: pass
+        else:
+            # self.before_step_matching = {
+            #     "step": step,
+            # }
+
+            logtext = "[[[매칭]]] "
+            if 0 < step.waiting:
+                logtext += f"(잠깐만 {step.waiting} 초) "
+            logtext += f"[영역: {step.zone}]의 [이미지: {step.image}]의 [유사도] {step.Print_Score()}에서: "
+            self.add_log(logtext + resulttext)
+        
+    def add_log_notmatching(self, text):
+        # print(f"add_log_notmatching({text})")
+        self.before_step_matching = None
+        self.add_log(text)
     
     def add_warning(self, text): self.print_log("#ffe88c", text)    
     def add_error(self, text): self.print_log("#ff8c8c", text)

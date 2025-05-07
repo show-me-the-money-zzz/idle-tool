@@ -28,6 +28,8 @@ class Tasker(QObject):
     
     # 로그 메시지 시그널 추가
     logframe_addlog = Signal(str)
+    logframe_addlog_matching = Signal(TaskStep_Matching, float, bool)
+    logframe_addlog_notmatching = Signal(str)
     logframe_addwarning = Signal(str)
     logframe_adderror = Signal(str)
     logframe_addnotice = Signal(str)
@@ -94,16 +96,16 @@ class Tasker(QObject):
             matched = self.match_image_in_zone("메뉴_좌상", "메뉴_좌상-맵")
             # matching = self.match_image_in_zone("우상단메뉴", "우상단메뉴-인벤")
             # print(matched)
-            score = matched["score_percent"]
-            if limit_score <= score:
-                self.logframe_addlog.emit(f"ZONE:{matched['zone']}에서 IMG:{matched['image']} 찾음 ({score:.1f}%)")
+            # score = matched["score_percent"]
+            # if limit_score <= score:
+            #     self.logframe_addlog.emit(f"ZONE:{matched['zone']}에서 IMG:{matched['image']} 찾음 ({score:.1f}%)")
             
-            # if matching["matched"] and limit_score <= score:
-            if limit_score <= score:
-                x, y = matched["click"]
-                # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
-                WindowUtil.click_at_position(x, y)
-                self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
+            # # if matching["matched"] and limit_score <= score:
+            # if limit_score <= score:
+            #     x, y = matched["click"]
+            #     # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
+            #     WindowUtil.click_at_position(x, y)
+            #     self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
                 
             # matched = self.match_image_in_zone("메뉴_마을", "메뉴_마을-잡화")
             # # matched = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
@@ -192,20 +194,16 @@ class Tasker(QObject):
 
     async def Execute_Matching(self, step: TaskStep_Matching, task_key, step_key):
         """매칭 타입 단계 실행"""
-        logtext = "[[[매칭]]] "
         
         if 0 < step.waiting:
             await self.Execute_Waiting(step.waiting)
-            logtext += f"(잠깐만 {step.waiting} 초) "
         
         # 이미지 매칭 수행
         matched = self.match_image_in_zone(step.zone, step.image)
         matched_score = matched["score_percent"]
         isSuccess = step.evaluate_score_condition(matched_score)
-        
-        resulttext = "성공" if isSuccess else "실패"
-        logtext += f"[영역: {step.zone}]의 [이미지: {step.image}]의 [유사도] {step.Print_Score()}에서: {matched_score}%로 {resulttext}"
-        self.logframe_addlog.emit(logtext)
+
+        self.logframe_addlog_matching.emit(step, matched_score, isSuccess)
 
         self.running_task_steps.remove(step_key)
         
@@ -247,7 +245,7 @@ class Tasker(QObject):
         WindowUtil.scroll_mousewheel(step.amount)
 
         logtext += f"{step.amount} 만큼 스크롤"
-        self.logframe_addlog.emit(logtext)
+        self.logframe_addlog_notmatching.emit(logtext)
 
         self.running_task_steps.remove(step_key)
         
@@ -264,9 +262,9 @@ class Tasker(QObject):
         await self.Execute_Waiting(step.waiting)
         
         if step.dummy:
-            self.logframe_addlog.emit(f"[[[텔레그램 알림]]] 더미 모드 - 실제 전송 안함")
+            self.logframe_addlog_notmatching.emit(f"[[[텔레그램 알림]]] 더미 모드 - 실제 전송 안함")
         else:
-            self.logframe_addlog.emit(f"[[[텔레그램 알림]]] 메시지 전송")
+            self.logframe_addlog_notmatching.emit(f"[[[텔레그램 알림]]] 메시지 전송")
             # 실제 텔레그램 메시지 전송 코드 (구현 필요)
             # TODO: 텔레그램 API 연동 코드 추가
 
@@ -414,7 +412,7 @@ class Tasker(QObject):
         WindowUtil.click_at_position(x, y)
         logtext = f"[[[마우스 클릭]]] ({x}, {y})"
         if "" != caller: logtext += f" {caller}"
-        self.logframe_addlog.emit(logtext)
+        self.logframe_addlog_notmatching.emit(logtext)
     
     def __del__(self):
         """소멸자"""
