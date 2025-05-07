@@ -273,11 +273,11 @@ class AppUI(QMainWindow):
     def toggle_capture(self):
         """캡처 시작/중지 전환"""
         
-        if hasattr(self, '_toggling') and self._toggling:
-            return
+        # if hasattr(self, '_toggling') and self._toggling:
+        #     return
         
-        self._toggling = True
-        QTimer.singleShot(500, lambda: setattr(self, '_toggling', False))
+        # self._toggling = True
+        # QTimer.singleShot(500, lambda: setattr(self, '_toggling', False))
     
         if self.tasker.is_running:
             # 캡처 중지

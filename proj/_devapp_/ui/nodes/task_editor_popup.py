@@ -3,7 +3,8 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout,
                              QListWidget, QTabWidget, QWidget, QTextEdit,
                              QGroupBox, QFrame, QCheckBox, QScrollArea,
                              QGridLayout, QApplication, QMessageBox,
-                             QDoubleSpinBox, QSizePolicy, QInputDialog)
+                             QDoubleSpinBox, QSizePolicy, QInputDialog,
+                             QSpinBox, QStackedWidget)
 from PySide6.QtGui import QIcon, QFont
 from PySide6.QtCore import Qt, Signal, QEvent
 import sys
@@ -13,9 +14,10 @@ import datetime
 from ui.component.searchable_comboBox import SearchableComboBox
 from ui.component.draggable_label import DraggableLabel
 
+from stores.task_base_step import BaseStep, TaskStep_Matching, TaskStep_MouseWheel, TaskStep_TeltegramNoti
 import stores.task_manager as TaskMan
 import stores.areas as Areas
-from grinder_types.selected_task  import SelectedTask
+from grinder_types.selected_task import SelectedTask
 import ui.css as CSS
 from grinder_utils.pysider import ChangeText_ListWidget
 import zzz.app_config as APP_CONFIG
@@ -26,6 +28,7 @@ class TaskEditorPopup(QDialog):
     
     # 상태 신호 정의
     task_saved_signal = Signal(dict)
+    status_signal = Signal(str)  # 상태 메시지 시그널 추가
     
     def __init__(self, parent, tasker):
         super().__init__(parent)
@@ -109,26 +112,67 @@ class TaskEditorPopup(QDialog):
         main_layout.addLayout(buttons_layout)
         
     def Connect_ChangedUI(self):
+        """UI 컨트롤 변경 이벤트 연결"""
         self.automation_name_edit.textChanged.connect(lambda task_name: self.selectedTask.UpdateTask_Key(task_name))
         self.task_description.textChanged.connect(lambda: self.selectedTask.UpdateTask_Comment(self.task_description.toPlainText()))
         self.start_step_checkbox.stateChanged.connect(self.ProcessCheck_StartSetp)
         
-        # self.main_type_combo.currentTextChanged.connect(lambda type: print(f"type= {type}"))
+        # 스텝 타입 변경 시 해당 컨트롤 패널 표시
+        self.main_type_combo.currentTextChanged.connect(self.OnStepTypeChanged)
+        
         self.waiting_spin.valueChanged.connect(lambda waiting: self.selectedTask.UpdateStep_Waiting(waiting))
         self.step_name_edit.textChanged.connect(lambda step_name: self.selectedTask.UpdateStep_Key(step_name))
+        
+        # 매칭 타입 컨트롤 연결
         self.zone_combo.currentTextChanged.connect(lambda zone: self.selectedTask.UpdateStep_Zone(zone))
         self.image_select_combo.currentTextChanged.connect(lambda image: self.selectedTask.UpdateStep_Image(image))
         self.similarity_spin.valueChanged.connect(lambda similarity: self.selectedTask.UpdateStep_ScoreVal(similarity))
         self.comparison_combo.currentTextChanged.connect(lambda comparison: self.selectedTask.UpdateStep_ScoreDesc(comparison))
         self.click_type_combo.currentTextChanged.connect(lambda click: self.selectedTask.UpdateStep_ClickType(click))
         
+        # 마우스휠 타입 컨트롤 연결
+        self.mousewheel_amount_spin.valueChanged.connect(lambda amount: self.selectedTask.UpdateStep_MouseWheel_Amount(amount))
+        
+        # 텔레그램 알림 타입 컨트롤 연결
+        self.telegram_dummy_checkbox.stateChanged.connect(lambda state: self.selectedTask.UpdateStep_TelegramNoti_Dummy(state == Qt.Checked))
+        
+        # 공통 컨트롤 연결
         self.fail_step_combo.currentTextChanged.connect(lambda step: self.selectedTask.UpdateStep_FailStep(step))
 
-        # # self.next_steps_list.itemChanged.connect(lambda next_steps: print(f"fail_step= {next_steps}"))
-        ## self.selectedTask.UpdateStep_NextSteps에서 처리
-
         self.step_description.textChanged.connect(lambda: self.selectedTask.UpdateStep_Comment(self.step_description.toPlainText()))
-        # print("Connect_ChangedUI")
+    
+    def OnStepTypeChanged(self, type_str):
+        """단계 타입 변경 시 해당하는 위젯 표시"""
+        # 타입명을 매핑 (UI 표시용 -> 내부 타입 코드)
+        type_mapping = {
+            "영역-이미지 매칭": "matching",
+            "마우스 휠": "mousewheel",
+            "텔레그램 알림": "telegramNoti",
+        }
+        
+        internal_type = type_mapping.get(type_str, "matching")
+        
+        # 선택된 단계가 있을 때만 타입 변경 처리
+        if self.selectedTask.IsSelectStep():
+            # 실제 타입 변경
+            self.selectedTask.UpdateStep_Type(internal_type)
+            
+            # 타입에 맞는 패널 표시
+            self.ShowTypeSpecificPanel(internal_type)
+    
+    def ShowTypeSpecificPanel(self, type_str):
+        """타입에 맞는 패널 표시"""
+        # 스택 위젯의 인덱스 매핑
+        panel_index = {
+            "matching": 0,
+            "mousewheel": 1,
+            "telegramNoti": 2,
+        }
+        
+        # 해당 패널 표시
+        index = panel_index.get(type_str, 0)
+        self.step_type_stacked_widget.setCurrentIndex(index)
+    
     def ProcessCheck_StartSetp(self, state):
         startkey = self.selectedTask.UpdateTask_StartStepKey(state)
         self.start_step_checkbox.setEnabled(False)
@@ -137,42 +181,6 @@ class TaskEditorPopup(QDialog):
     def Reload_Tasks(self):
         # 작업 데이터 초기화
         self.tasks = TaskMan.GetAll_Tasks()
-        def DevTest_Tasks():
-            # for key, task in self.tasks.items():
-            #     print(f"[{key}] {task}")
-            task_keyz = self.tasks.keys()
-            # print(f"{task_keyz}")
-            사냥1 = self.tasks.get('사냥1')
-            # print(f"{사냥1}")
-            # 사냥1_keyz = 사냥1.steps.keys()
-            # print(f"{사냥1_keyz}")
-            사냥1_표준치료제찾기 = 사냥1.steps.get("표준치료제찾기")
-            print(f"{사냥1_표준치료제찾기}")
-        # DevTest_Tasks()
-        def DevTest_Selected():
-            selectedTask = SelectedTask(
-                origin_key="aa",
-                current_key="",
-                task=None,
-                origin_step_key = "",
-                current_step_key="")
-            print(f"{selectedTask.origin_key}, {selectedTask.task}")
-            
-            taskkey = "사냥1"
-            selectedTask.Set_Task(taskkey, self.tasks.get(taskkey))
-            # selectedTask.origin_key = "사냥1"
-            # selectedTask.task = self.tasks.get(selectedTask.origin_key)
-            # print(f"{selectedTask.task}")
-            # selectedTask.current_key = "사냥-손창욱"    # selectedTask.task가 변경될 때 원본 데이터 대체
-            selectedTask.ChangeKey_CurrentTask("사냥-손창욱")   # selectedTask.task가 변경될 때 원본 데이터 대체
-            
-            # selectedTask.origin_step_key = "잡화상점이동"
-            selectedTask.Set_StepKey("잡화상점 확인")
-            step = selectedTask.Get_Step()
-            print(f"{step}")
-            # selectedTask.current_step_key = "잡화상점이동해야지"    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
-            selectedTask.ChangeKey_CurrentStep("잡화상점이동해야지")    # origin_step_key 데이터를 복사해서 current_step_key 키로 저장
-        # DevTest_Selected()
         
         self.initialize_data()
         
@@ -183,34 +191,52 @@ class TaskEditorPopup(QDialog):
         
         # 작업 데이터에서 키 가져와서 추가
         for key in self.tasks.keys():
-        # for taskkey, steps in self.tasks.items():
             # addItem 사용 - 문자열 그대로 추가
             self.automation_list.addItem(key)
-        # self.automation_list.addItem("하하호호")  # DEV TEST
-        # self.automation_list.addItem("즐겁다")  # DEV TEST
         
         self.waiting_spin.setValue(0.0)
         self.step_name_edit.setText("")
         self.start_step_checkbox.setChecked(False)
         self.start_step_checkbox.setEnabled(False)
         
+        # 영역 콤보박스 초기화
         self.zone_combo.clear()
         self.zone_combo.addItem("")
         for keys in Areas.GetAll_ZoneAreas().keys():
             self.zone_combo.addItem(keys)
         
+        # 이미지 콤보박스 초기화
         self.image_select_combo.clear()
         self.image_select_combo.addItem("")
         for keys in Areas.GetAll_ImageAreas().keys():
             self.image_select_combo.addItem(keys)
+            
         self.similarity_spin.setValue(80.0)
         self.comparison_combo.setCurrentIndex(0)
         self.click_type_combo.setCurrentIndex(0)
         
+        # 마우스휠 컨트롤 초기화
+        self.mousewheel_amount_spin.setValue(0)
+        
+        # 텔레그램 알림 컨트롤 초기화
+        self.telegram_dummy_checkbox.setChecked(False)
+        
+        # 공통 컨트롤 초기화
         self.fail_step_combo.clear()
         self.next_step_combo.clear()
         self.step_description.setText("")
-        
+    
+    # 이벤트 필터 메서드
+    def eventFilter(self, obj, event):
+        # automation_list에서 Enter 키를 눌렀을 때의 동작 처리
+        if obj == self.automation_list and event.type() == QEvent.KeyPress:
+            if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+                # Enter 키 이벤트를 소비하고 false 반환하여 기본 동작 막기
+                return True
+    
+        # 기본 이벤트 처리로 돌아가기
+        return super().eventFilter(obj, event)
+    
     def _setup_basic_tab(self):
         """기본 탭 구성"""
         # 전체 레이아웃은 수직으로 배치
@@ -227,16 +253,6 @@ class TaskEditorPopup(QDialog):
         
         # 자동화 목록 - 비어있는 상태로 초기화
         self.automation_list = QListWidget()
-        # self.automation_list.addItems([f"자동화 항목 {i+1}" for i in range(10)])
-        # # 임시 테스트용 항목 (실제로는 initialize_automation_list()에서 초기화)
-        # # 올바른 방법 1: addItem 사용
-        # self.automation_list.addItem("사냥1")  # 하나의 항목으로 추가
-        
-        # # 올바른 방법 2: 리스트로 전달
-        # # self.automation_list.addItems(["사냥1"])  # 리스트 형태로 전달
-        
-        # 항목을 더블 클릭하면 수정 가능하도록 설정
-        # self.automation_list.itemDoubleClicked.connect(lambda: self.edit_automation_item(self.automation_list.currentItem(), False))
         
         # 선택 변경 시 삭제 버튼 활성화
         self.automation_list.itemSelectionChanged.connect(self.update_automation_buttons_state)
@@ -282,8 +298,7 @@ class TaskEditorPopup(QDialog):
         
         automation_layout.addWidget(left_content)
         
-        # # 자동화 이름 적용 버튼 핸들러 추가
-        # self.automation_name_edit.returnPressed.connect(self.apply_automation_name)
+        # 자동화 이름 적용 버튼 핸들러 추가
         self.automation_name_edit.returnPressed.connect(lambda: None)
         
         # 오른쪽 내용을 담을 위젯
@@ -316,9 +331,6 @@ class TaskEditorPopup(QDialog):
         
         # 상단 그룹을 레이아웃에 추가
         layout.addWidget(automation_group, 1)  # 비율 1
-        
-        # 하단 그룹은 변경 없이 유지...
-        # (이하 코드는 동일)
         
         # 하단 - 단계 목록 그룹 (왼쪽 패널의 내용을 기본 탭에 포함)
         step_group = QGroupBox("단계 목록")
@@ -368,18 +380,7 @@ class TaskEditorPopup(QDialog):
         
         # 하단 그룹을 레이아웃에 추가 - 비율 증가
         layout.addWidget(step_group, 2)  # 비율 2로 증가
-        
-    # 클래스 내에 이벤트 필터 메서드 추가
-    def eventFilter(self, obj, event):
-        # automation_list에서 Enter 키를 눌렀을 때의 동작 처리
-        if obj == self.automation_list and event.type() == QEvent.KeyPress:
-            if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
-                # Enter 키 이벤트를 소비하고 false 반환하여 기본 동작 막기
-                return True
-    
-        # 기본 이벤트 처리로 돌아가기
-        return super().eventFilter(obj, event)
-    
+
     def _setup_preview_tab(self):
         """프리뷰 탭 구성"""
         layout = QVBoxLayout(self.tab_preview)
@@ -410,7 +411,7 @@ class TaskEditorPopup(QDialog):
         preview_display_layout.addWidget(self.preview_display)
         
         layout.addWidget(preview_display_group, 1)  # 비율 1로 늘어남
-    
+
     def _create_center_panel(self):
         """중앙 패널 - 단계 기본정보 영역"""
         # GroupBox로 변경
@@ -427,9 +428,7 @@ class TaskEditorPopup(QDialog):
         type_layout.addWidget(type_label)
         
         self.main_type_combo = QComboBox()
-        type_items = ["영역-이미지 매칭",
-                    #   "기다리기", "클릭",
-                    ]
+        type_items = ["영역-이미지 매칭", "마우스 휠", "텔레그램 알림"]
         self.main_type_combo.addItems(type_items)
         
         # 항목 최대 길이에 맞게 너비 계산
@@ -485,6 +484,13 @@ class TaskEditorPopup(QDialog):
         
         layout.addLayout(name_layout)
         
+        # 타입별 컨트롤을 위한 스택 위젯 추가
+        self.step_type_stacked_widget = QStackedWidget()
+        
+        # --- 1. 매칭 타입 위젯 ---
+        matching_widget = QWidget()
+        matching_layout = QVBoxLayout(matching_widget)
+        
         # 영역 선택 - 검색 가능한 콤보박스로 변경
         zone_layout = QHBoxLayout()
         zone_label = QLabel("영역:")
@@ -497,7 +503,7 @@ class TaskEditorPopup(QDialog):
         self.zone_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         zone_layout.addWidget(self.zone_combo)
         
-        layout.addLayout(zone_layout)
+        matching_layout.addLayout(zone_layout)
         
         # 이미지 선택 - 검색 가능한 콤보박스로 변경
         image_layout = QHBoxLayout()
@@ -511,7 +517,7 @@ class TaskEditorPopup(QDialog):
         self.image_select_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         image_layout.addWidget(self.image_select_combo)
         
-        layout.addLayout(image_layout)
+        matching_layout.addLayout(image_layout)
         
         # 유사도 영역 - SpinBox와 콤보박스 크기 조정
         similarity_layout = QHBoxLayout()
@@ -548,7 +554,7 @@ class TaskEditorPopup(QDialog):
         self.current_game_btn.setMaximumWidth(120)  # 폭 제한
         similarity_layout.addWidget(self.current_game_btn)
         
-        layout.addLayout(similarity_layout)
+        matching_layout.addLayout(similarity_layout)
         
         # 클릭 선택 영역 (빈 값 허용)
         click_layout = QHBoxLayout()
@@ -577,7 +583,61 @@ class TaskEditorPopup(QDialog):
         # 오른쪽 여백 추가
         click_layout.addStretch(1)
         
-        layout.addLayout(click_layout)
+        matching_layout.addLayout(click_layout)
+        
+        # --- 2. 마우스휠 타입 위젯 ---
+        mousewheel_widget = QWidget()
+        mousewheel_layout = QVBoxLayout(mousewheel_widget)
+        
+        # 마우스휠 스크롤 양
+        amount_layout = QHBoxLayout()
+        amount_label = QLabel("스크롤 양:")
+        amount_label.setFixedWidth(min_label_width)
+        amount_layout.addWidget(amount_label)
+        
+        self.mousewheel_amount_spin = QSpinBox()
+        self.mousewheel_amount_spin.setRange(-1000, 1000)  # 음수는 위로, 양수는 아래로 스크롤
+        self.mousewheel_amount_spin.setSingleStep(120)     # 휠 한 단계 단위로 변경 (일반적인 값)
+        self.mousewheel_amount_spin.setValue(120)          # 기본값 (아래로 한 단계)
+        amount_layout.addWidget(self.mousewheel_amount_spin)
+        
+        # 설명 레이블 추가
+        help_label = QLabel("(양수: 아래로, 음수: 위로 스크롤)")
+        help_label.setStyleSheet("color: gray; font-size: 9pt;")
+        amount_layout.addWidget(help_label)
+        
+        # 오른쪽 여백 추가
+        amount_layout.addStretch(1)
+        
+        mousewheel_layout.addLayout(amount_layout)
+        
+        # 여백 추가 (나머지 공간 채우기)
+        mousewheel_layout.addStretch(1)
+        
+        # --- 3. 텔레그램 알림 타입 위젯 ---
+        telegram_widget = QWidget()
+        telegram_layout = QVBoxLayout(telegram_widget)
+        
+        # 더미 체크박스 (실제로는 다른 옵션이 추가될 수 있음)
+        dummy_layout = QHBoxLayout()
+        self.telegram_dummy_checkbox = QCheckBox("더미 모드 (실제 전송 안함)")
+        dummy_layout.addWidget(self.telegram_dummy_checkbox)
+        
+        # 오른쪽 여백 추가
+        dummy_layout.addStretch(1)
+        
+        telegram_layout.addLayout(dummy_layout)
+        
+        # 여백 추가 (나머지 공간 채우기)
+        telegram_layout.addStretch(1)
+        
+        # 스택 위젯에 각 타입별 패널 추가
+        self.step_type_stacked_widget.addWidget(matching_widget)       # 인덱스 0: 매칭
+        self.step_type_stacked_widget.addWidget(mousewheel_widget)     # 인덱스 1: 마우스휠
+        self.step_type_stacked_widget.addWidget(telegram_widget)       # 인덱스 2: 텔레그램
+        
+        # 스택 위젯을 레이아웃에 추가
+        layout.addWidget(self.step_type_stacked_widget)
         
         # 가이드 레이블 추가 (최하단)
         guide_layout = QHBoxLayout()
@@ -590,7 +650,7 @@ class TaskEditorPopup(QDialog):
         layout.addLayout(guide_layout)
         
         return group
-    
+        
     def _create_right_panel(self):
         """오른쪽 패널 - 단계 추가정보"""
         group = QGroupBox("단계 추가정보")
@@ -660,9 +720,6 @@ class TaskEditorPopup(QDialog):
         self.step_description.setMinimumHeight(40)  # 최소 높이 설정
         layout.addWidget(self.step_description)
         
-        # 여백 추가 (설명 컨트롤 추가로 여백 제거)
-        # layout.addStretch(1)
-        
         # 참고 레이블 추가 (최하단)
         guide_layout = QHBoxLayout()
         guide_label = QLabel("※실패 후 단계 / 다음 단계는 검색 가능")
@@ -673,16 +730,7 @@ class TaskEditorPopup(QDialog):
         layout.addLayout(guide_layout)
         
         return group
-        
-    def apply_automation_name(self):
-        """자동화 이름을 현재 선택된 항목에 적용"""
-        current_item = self.automation_list.currentItem()
-        if current_item:
-            new_name = self.automation_name_edit.text().strip()
-            if new_name:
-                current_item.setText(new_name)
-            
-    # 자동화 목록 관련 메서드 추가
+    
     def update_automation_buttons_state(self):
         """자동화 항목 선택 상태에 따라 버튼 활성화 상태 업데이트"""
         DEVDEV = False
@@ -700,9 +748,16 @@ class TaskEditorPopup(QDialog):
         self.start_step_checkbox.setEnabled(False)
         self.step_name_edit.setText("")
         
+        # 모든 타입별 패널 초기화
         self.zone_combo.setCurrentText("")
         self.image_select_combo.setCurrentText("")
+        self.similarity_spin.setValue(70.0)
+        self.comparison_combo.setCurrentIndex(0)
+        self.click_type_combo.setCurrentIndex(0)
+        self.mousewheel_amount_spin.setValue(0)
+        self.telegram_dummy_checkbox.setChecked(False)
         
+        # 공통 컨트롤 초기화
         self.fail_step_combo.clear()
         self.next_step_combo.clear()
         self.step_description.setText("")
@@ -765,22 +820,28 @@ class TaskEditorPopup(QDialog):
         # 선택된 항목이 있는지 확인
         self.selectedTask.Reset_Step()
         
-        # self.main_type_combo
+        # 기본 컨트롤 초기화
         self.start_step_checkbox.setChecked(False)
         self.start_step_checkbox.setEnabled(False)
         self.waiting_spin.setValue(0.00)
         self.step_name_edit.setText("")
         
+        # 타입별 컨트롤 초기화
+        # 매칭 컨트롤
         self.zone_combo.setCurrentText("")
         self.image_select_combo.setCurrentText("")
-        
         self.similarity_spin.setValue(70.0)
         self.comparison_combo.setCurrentIndex(0)
-        
         self.click_type_combo.setCurrentIndex(0)
         
-        self.next_steps_list.clear()
+        # 마우스휠 컨트롤
+        self.mousewheel_amount_spin.setValue(0)
         
+        # 텔레그램 알림 컨트롤
+        self.telegram_dummy_checkbox.setChecked(False)
+        
+        # 공통 컨트롤
+        self.next_steps_list.clear()
         self.step_description.setText("")
         
         # 여기까지 초기화
@@ -801,8 +862,8 @@ class TaskEditorPopup(QDialog):
             return
         
         step = self.selectedTask.Set_StepKey(key)
-        # step = self.selectedTask.Get_Step()
         
+        # 공통 속성 설정
         isStartStep = (key == self.selectedTask.Get_StartKey())
         self.start_step_checkbox.setChecked(isStartStep)
         self.start_step_checkbox.setEnabled(not isStartStep)
@@ -810,115 +871,75 @@ class TaskEditorPopup(QDialog):
         self.waiting_spin.setValue(step.waiting)
         self.step_name_edit.setText(key)
         
-        self.zone_combo.setCurrentText(step.zone)
-        self.image_select_combo.setCurrentText(step.image)
+        # 타입 설정
+        type_ui_mapping = {
+            "matching": "영역-이미지 매칭",
+            "mousewheel": "마우스 휠",
+            "telegramNoti": "텔레그램 알림",
+        }
+        self.main_type_combo.setCurrentText(type_ui_mapping.get(step.type, "영역-이미지 매칭"))
         
-        num, op, op_text = step.parse_score()
-        # print(f"({num}, {op}, {op_text}): {TaskMan.TaskStep.operator_to_desc(op)}")
-        self.similarity_spin.setValue(float(num))
-        self.comparison_combo.setCurrentText(op_text)
+        # 타입에 맞는 패널 표시
+        self.ShowTypeSpecificPanel(step.type)
         
-        # click_items = ["", "이미지", "영역"]
-        click_type = ""
-        if "image" == step.finded_click: click_type = "이미지"
-        elif "zone" == step.finded_click: click_type = "영역"
-        self.click_type_combo.setCurrentText(click_type)
+        # 타입별 속성 설정
+        if step.type == "matching" and hasattr(step, "zone"):
+            self.zone_combo.setCurrentText(step.zone)
+            self.image_select_combo.setCurrentText(step.image)
+            
+            num, op, op_text = step.parse_score()
+            self.similarity_spin.setValue(float(num))
+            self.comparison_combo.setCurrentText(op_text)
+            
+            click_type = ""
+            if "image" == step.finded_click: click_type = "이미지"
+            elif "zone" == step.finded_click: click_type = "영역"
+            self.click_type_combo.setCurrentText(click_type)
+            
+        elif step.type == "mousewheel" and hasattr(step, "amount"):
+            self.mousewheel_amount_spin.setValue(step.amount)
+            
+        elif step.type == "telegramNoti" and hasattr(step, "dummy"):
+            self.telegram_dummy_checkbox.setChecked(step.dummy)
         
+        # 공통 속성 설정 - 실패 단계
         self.fail_step_combo.setCurrentText(step.fail_step)
+        
+        # 다음 단계 설정
         for nextstep in step.next_step:
             self.next_steps_list.addItem(nextstep)
         self.selectedTask.UpdateStep_NextSteps(self.next_steps_list)
+        
+        # 설명 설정
         self.step_description.setText(step.comment)
 
-        if not APP_CONFIG.RELEASE_APP: self.Update_GuideLabel_StepNormalInfo()
-
+        if not APP_CONFIG.RELEASE_APP: 
+            self.Update_GuideLabel_StepNormalInfo()
+            
     def Update_GuideLabel_StepNormalInfo(self):
+        """단계 정보 가이드 레이블 업데이트"""
+        step = self.selectedTask.Get_Step()
+        
+        if not step:
+            text = "※영역 / 이미지는 검색 가능"
+            self.guide_label_step_normalinfo.setText(text)
+            return
+            
+        # 기본 텍스트
         text = "※영역 / 이미지는 검색 가능"
+        
+        # 디버그 모드일 경우 추가 정보 표시
         if not APP_CONFIG.RELEASE_APP:
-            step = self.selectedTask.Get_Step()
-            if step: text += f" (seq: {step.seq})"
+            text += f" (seq: {step.seq}, type: {step.type})"
+            
+            # 타입별 추가 정보
+            if step.type == "matching" and hasattr(step, "zone"):
+                text += f", score: {step.score}"
+            elif step.type == "mousewheel" and hasattr(step, "amount"):
+                text += f", amount: {step.amount}"
         
         self.guide_label_step_normalinfo.setText(text)
         
-    def add_automation(self):
-        """새 자동화 항목 추가"""
-        count = self.automation_list.count()
-        new_item_name = f"새 자동화 {count+1}"
-
-        # 즉시 편집 모드로 전환
-        # self.edit_automation_item(self.automation_list.currentItem(), True)
-        new_text, ok = QInputDialog.getText(self, "자동화 추가",
-                                            "새 이름을 입력하세요:",
-                                            QLineEdit.Normal, new_item_name)
-        if ok and new_text.strip():
-            # print(f"new_text= {new_text}")
-
-            duplication = self.tasks.get(new_text)
-            if duplication:
-                QMessageBox.critical(self, "중복 KEY",
-                                     "키가 중복됩니다. 다른 이름을 사용하세요.")
-                return
-
-            self.tasks[new_text] = TaskMan.Task(
-                steps={},
-                start_key="",
-                comment="",
-            )
-
-            # 새 항목 추가
-            self.automation_list.addItem(new_text)
-
-            # 새 항목 선택
-            self.automation_list.setCurrentRow(count)
-
-    def remove_automation(self):
-        """선택한 자동화 항목 삭제"""
-        current_row = self.automation_list.currentRow()
-        taskkey = self.automation_list.item(current_row).text()
-
-        if current_row >= 0:
-            # 삭제 전 확인 대화상자
-            reply = QMessageBox.question(self, '자동화 삭제', 
-                                        f"선택한 자동화({taskkey})를 삭제하시겠습니까?\n" +
-                                        "파일에 바로 저장합니다.",
-                                        QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-            
-            if reply == QMessageBox.Yes:
-                self.selectedTask.RemoveTask(taskkey)
-                
-                if TaskMan.Delete_Task(taskkey):
-                    self.tasks = TaskMan.GetAll_Tasks()
-                    # print("update_automation_buttons_state(): 파일 저장")
-                    # print(f"{self.tasks}")
-
-                    # newtask = TaskMan.Delete_Task(taskkey)
-                    # if newtask:
-                    #     self.tasks = newtask
-
-                    #     if (originkey != currentkey):
-                    #         ChangeText_ListWidget(self.automation_list, originkey, currentkey)
-
-                self.automation_list.takeItem(current_row)
-                self.update_automation_buttons_state()
-
-    def edit_automation_item(self, item, isNew):
-        """자동화 항목 편집"""
-        if item:
-            current_text = item.text()
-            
-            text_title = "자동화 추가" if isNew else "자동화 이름 편집"
-            text_conts = "새 이름을 입력하세요:" if isNew else "변경할 이름을 입력하세요"
-            
-            # 인라인 편집을 위해 텍스트 입력 대화상자 표시
-            new_text, ok = QInputDialog.getText(self, text_title,
-                                                text_conts, 
-                                                QLineEdit.Normal, current_text)
-            
-            # 사용자가 확인을 누르고 텍스트가 비어있지 않으면 항목 업데이트
-            if ok and new_text.strip():
-                print(f"new_text= {new_text}")
-                item.setText(new_text)
-
     def filter_automation_list(self, text):
         """자동화 목록 필터링"""
         text = text.lower()
@@ -938,8 +959,108 @@ class TaskEditorPopup(QDialog):
                 item.setHidden(False)
             else:
                 item.setHidden(True)
+                
+    def update_next_step_buttons_state(self):
+        """다음 단계 항목 선택 상태에 따라 버튼 활성화 상태 업데이트"""
+        # 선택된 항목이 있는지 확인
+        has_selection = len(self.next_steps_list.selectedItems()) > 0
+        
+        # 삭제 버튼 활성화/비활성화
+        self.remove_next_step_btn.setEnabled(has_selection)
+        
+    def save_task(self):
+        """작업 저장"""
+        isSaved = False
+        isChanged = False
+        if self.selectedTask.IsSelect():            
+            originkey, currentkey = self.selectedTask.Get_Keys()
+            isChanged = (originkey != currentkey)   # 키 변경 체크
+            
+            if not isChanged:   # 데이터 변경 체크
+                orgintask = self.tasks.get(originkey)
+                if orgintask:
+                    deeporgintask = copy.deepcopy(orgintask)
+                    isChanged = (deeporgintask != self.selectedTask.task)
 
-    # 다음단계 관련 메서드 추가
+            if not isChanged:   # 새로운 아이템인지
+                findTask = TaskMan.Get_Task(originkey, None)
+                isChanged = not findTask
+                    
+            if isChanged:
+                # X 버튼은 QMessageBox.No 또는 QMessageBox.Cancel 값과 같은 결과 반환
+                reply = QMessageBox.question(self, '데이터 수정됨',
+                                             "수정된 데이터를 저장하시겠습니까?\n" +
+                                             "('No'는 저장된 상태로 돌아갑니다.)",
+                                             QMessageBox.Yes | QMessageBox.No,  # 포함 버튼들
+                                             QMessageBox.Yes    # 기본 버튼(Enter 키 누를 때 선택되는 버튼)
+                                             )
+                if QMessageBox.Yes == reply:
+                    newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
+                    if newtask:
+                        self.tasks = newtask
+
+                        if (originkey != currentkey):
+                            ChangeText_ListWidget(self.automation_list, originkey, currentkey)
+                        isSaved = True
+                # elif QMessageBox.No == reply:
+                else:
+                    isChanged = False
+                    QMessageBox.warning(self, "저장 취소", "저장을 취소하였습니다.")
+        
+        if isSaved:
+            QMessageBox.information(self, "저장 성공", "저장에 성공하였습니다.")
+        else:
+            if isChanged:
+                QMessageBox.information(self, "저장 실패", "저장에 실패하였습니다.")
+                
+    def Close_Editor(self):
+        self.save_task()
+        self.close()
+
+    def OnClick_Reload(self):
+        self.selectedTask.Reset_Task()
+        self.Reload_Tasks()
+        
+    def add_step(self):
+        """새 단계 추가"""
+        # 현재 항목 수 확인
+        count = self.step_list.count()
+        lastseq = self.selectedTask.Get_Step_LastSeq()
+        newseq = lastseq + 1
+        
+        # 현재 선택된 타입 가져오기
+        type_ui_mapping = {
+            "영역-이미지 매칭": "matching",
+            "마우스 휠": "mousewheel",
+            "텔레그램 알림": "telegramNoti",
+        }
+        current_type = type_ui_mapping.get(self.main_type_combo.currentText(), "matching")
+        
+        # 새 항목 추가
+        key = f"새 단계 {newseq + 1}"
+        self.step_list.addItem(key)
+        self.selectedTask.NewStep(key, current_type, newseq)
+        
+        # 새 항목 선택
+        self.step_list.setCurrentRow(count)
+
+    def remove_step(self):
+        """선택한 단계 삭제"""
+        # 현재 선택된 행 가져오기
+        current_row = self.step_list.currentRow()
+        
+        if current_row < 0:
+            return  # 선택된 항목이 없음
+            
+        stepkey = self.step_list.item(current_row).text()
+        self.selectedTask.RemoveStep(stepkey)
+        
+        # 항목 삭제
+        self.step_list.takeItem(current_row)
+        
+        # 버튼 상태 업데이트
+        self.update_step_buttons_state()
+            
     def add_next_step(self):
         """다음 단계 추가"""
         current_text = self.next_step_combo.currentText()
@@ -964,76 +1085,84 @@ class TaskEditorPopup(QDialog):
             # 버튼 상태 업데이트
             self.update_next_step_buttons_state()
         self.selectedTask.UpdateStep_NextSteps(self.next_steps_list)
+        
+    def add_automation(self):
+        """새 자동화 항목 추가"""
+        count = self.automation_list.count()
+        new_item_name = f"새 자동화 {count+1}"
 
-    def update_next_step_buttons_state(self):
-        """다음 단계 항목 선택 상태에 따라 버튼 활성화 상태 업데이트"""
-        # 선택된 항목이 있는지 확인
-        has_selection = len(self.next_steps_list.selectedItems()) > 0
-        
-        # 삭제 버튼 활성화/비활성화
-        self.remove_next_step_btn.setEnabled(has_selection)
+        # 즉시 편집 모드로 전환
+        new_text, ok = QInputDialog.getText(self, "자동화 추가",
+                                            "새 이름을 입력하세요:",
+                                            QLineEdit.Normal, new_item_name)
+        if ok and new_text.strip():
+            duplication = self.tasks.get(new_text)
+            if duplication:
+                QMessageBox.critical(self, "중복 KEY",
+                                     "키가 중복됩니다. 다른 이름을 사용하세요.")
+                return
 
-    def add_step(self):
-        """새 단계 추가"""
-        # 현재 항목 수 확인
-        count = self.step_list.count()
-        lastseq = self.selectedTask.Get_Step_LastSeq()
-        newseq = lastseq + 1
-        
-        # 새 항목 추가
-        key = f"새 단계 {newseq + 1}"
-        self.step_list.addItem(key)
-        self.selectedTask.NewStep(key, newseq)
-        # # originkey, _ = self.selectedTask.Get_Keys()
-        # # print(f"add_step(): self.tasks[{originkey}].steps= {self.tasks.get(originkey).steps.items()}")
-        # print(f"add_step(): selectedTask.task.steps= {self.selectedTask.task.steps.items()}")
-        
-        # 새 항목 선택
-        self.step_list.setCurrentRow(count)
+            self.tasks[new_text] = TaskMan.Task(
+                steps={},
+                start_key="",
+                comment="",
+            )
 
-    def remove_step(self):
-        """선택한 단계 삭제"""
-        # 현재 선택된 행 가져오기
-        current_row = self.step_list.currentRow()
-        
-        stepkey = self.step_list.item(current_row).text()
-        self.selectedTask.RemoveStep(stepkey)
-        
-        # 유효한 행이 선택되었는지 확인
-        if current_row >= 0:
-            # 항목 삭제
-            self.step_list.takeItem(current_row)
+            # 새 항목 추가
+            self.automation_list.addItem(new_text)
 
-            # print(f"{self.selectedTask.task}")
-            # taskkey, _ = self.selectedTask.Get_Keys()
-            # print(f"taskkey= {taskkey}")
-            # steps = self.tasks.get(taskkey).steps
-            # print(f"{self.tasks.get(taskkey).steps}")
+            # 새 항목 선택
+            self.automation_list.setCurrentRow(count)
+
+    def remove_automation(self):
+        """선택한 자동화 항목 삭제"""
+        current_row = self.automation_list.currentRow()
+        if current_row < 0:
+            return  # 선택된 항목이 없음
             
-            # 버튼 상태 업데이트
-            self.update_step_buttons_state()
+        taskkey = self.automation_list.item(current_row).text()
+
+        # 삭제 전 확인 대화상자
+        reply = QMessageBox.question(self, '자동화 삭제', 
+                                    f"선택한 자동화({taskkey})를 삭제하시겠습니까?\n" +
+                                    "파일에 바로 저장합니다.",
+                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        
+        if reply == QMessageBox.Yes:
+            self.selectedTask.RemoveTask(taskkey)
             
-    # # dataclass는 내부적으로 __eq__()를 제공하므로 객체 비교가 가능
-    # def is_task_modified(self): return self.selectedTask != self.originalTask
-    # def is_step_modified(self): return self.selectedTaskStep != self.originalTaskStep
+            if TaskMan.Delete_Task(taskkey):
+                self.tasks = TaskMan.GetAll_Tasks()
 
-    # def OpenPopup_WarningSave(self):
-    #     reply = QMessageBox.question(
-    #         self,
-    #         "변경 내용 확인",
-    #         "변경된 내용이 있습니다. 저장하시겠습니까?",
-    #         QMessageBox.Yes | QMessageBox.No,
-    #         QMessageBox.No
-    #     )
-    #     # print(reply)
-    #     return (True if QMessageBox.Yes == reply else False)
-    #     # if reply == QMessageBox.No:
-    #         # return
-    #     # self.reject()
+            self.automation_list.takeItem(current_row)
+            self.update_automation_buttons_state()
 
+    def edit_automation_item(self, item, isNew):
+        """자동화 항목 편집"""
+        if item:
+            current_text = item.text()
+            
+            text_title = "자동화 추가" if isNew else "자동화 이름 편집"
+            text_conts = "새 이름을 입력하세요:" if isNew else "변경할 이름을 입력하세요"
+            
+            # 인라인 편집을 위해 텍스트 입력 대화상자 표시
+            new_text, ok = QInputDialog.getText(self, text_title,
+                                                text_conts, 
+                                                QLineEdit.Normal, current_text)
+            
+            # 사용자가 확인을 누르고 텍스트가 비어있지 않으면 항목 업데이트
+            if ok and new_text.strip():
+                item.setText(new_text)
+    
     def on_current_game_clicked(self):
         """현재 게임 화면에서 선택한 zone에서 image를 찾고 결과를 표시합니다."""
         try:
+            # 선택된 단계의 타입 확인
+            step = self.selectedTask.Get_Step()
+            if not step or step.type != "matching":
+                QMessageBox.warning(self, "경고", "영역-이미지 매칭 타입에서만 사용 가능합니다.")
+                return
+                
             # 선택된 zone과 image 가져오기
             zone_key = self.zone_combo.currentText()
             image_key = self.image_select_combo.currentText()
@@ -1059,88 +1188,21 @@ class TaskEditorPopup(QDialog):
                 self.result_label.setText(result_text)
                 self.result_label.show()
                 
-                # # 사용자에게 피드백 제공
-                # self.status_signal.emit(f"이미지 매칭 완료: 유사도 {score_percent:.2f}%")
-                
                 # 추가 정보 표시 (위치 등이 있다면)
                 if 'center_x' in result and 'center_y' in result:
                     center_x = result['center_x']
                     center_y = result['center_y']
-                    self.status_signal.emit(f"중심점: X={center_x}, Y={center_y}")
+                    if hasattr(self, 'status_signal'):
+                        self.status_signal.emit(f"중심점: X={center_x}, Y={center_y}")
             else:
                 # 매칭 실패
                 self.result_label.setText(f"{current_time} 매칭 실패")
                 self.result_label.show()
                 QMessageBox.information(self, "정보", "해당 영역에서 이미지를 찾을 수 없습니다.")
-                self.status_signal.emit("이미지 매칭 실패")
+                if hasattr(self, 'status_signal'):
+                    self.status_signal.emit("이미지 매칭 실패")
                 
         except Exception as e:
             QMessageBox.critical(self, "오류", f"이미지 매칭 중 오류 발생: {str(e)}")
-            self.status_signal.emit(f"오류: {str(e)}")
-    
-    def save_task(self):
-        """작업 저장"""
-        # self.accept()
-        # self.close()
-
-        isSaved = False
-        isChanged = False
-        if self.selectedTask.IsSelect():            
-            originkey, currentkey = self.selectedTask.Get_Keys()
-            isChanged = (originkey != currentkey)   # 키 변경 체크
-            # print(f"key 변경= {isChanged}")
-        
-            if not isChanged:   # 데이터 변경 체크
-                orgintask = self.tasks.get(originkey)
-                if orgintask:
-                    deeporgintask = copy.deepcopy(orgintask)
-                    isChanged = (deeporgintask != self.selectedTask.task)
-
-            if not isChanged:   # 새로운 아이템인지
-                findTask = TaskMan.Get_Task(originkey, None)
-                isChanged = not findTask
-                    
-            if isChanged:
-                # X 버튼은 QMessageBox.No 또는 QMessageBox.Cancel 값과 같은 결과 반환
-                reply = QMessageBox.question(self, '데이트 수정됨',
-                                             "수정된 데이터를 저장하시겠습니까?\n" +
-                                             "('No'는 저장된 상태로 돌아갑니다.)",
-                                             QMessageBox.Yes | QMessageBox.No,  # 포함 버튼들
-                                             QMessageBox.Yes    # 기본 버튼(Enter 키 누를 때 선택되는 버튼)
-                                             )
-                if QMessageBox.Yes == reply:
-                    # print("update_automation_buttons_state(): 파일 저장")
-                    newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
-                    if newtask:
-                        self.tasks = newtask
-
-                        if (originkey != currentkey):
-                            ChangeText_ListWidget(self.automation_list, originkey, currentkey)
-                        isSaved = True
-                    # print(self.tasks.items())
-                # elif QMessageBox.No == reply:
-                else:
-                    isChanged = False
-                    QMessageBox.warning(self, "저장 취소", "저장을 취소하였습니다.")
-                    # print("파일 저장 취소 (리로드)")
-        
-        if isSaved:
-            QMessageBox.information(self, "저장 성공", "저장에 성공하였습니다.")
-        else:
-            if isChanged:
-                QMessageBox.information(self, "저장 실패", "저장에 실패하였습니다.")
-            # else: QMessageBox.information(self, "저장 X", "변경 사항이 없습니다.")
-        
-    def Close_Editor(self):
-        self.save_task()
-
-        self.close()
-
-    def OnClick_Reload(self):
-        # print("리로드")
-
-        self.selectedTask.Reset_Task()
-        # print(f"{self.selectedTask.IsSelect()}")
-        # # self.selectedTask.Reset_Step()
-
-        self.Reload_Tasks()
+            if hasattr(self, 'status_signal'):
+                self.status_signal.emit(f"오류: {str(e)}")

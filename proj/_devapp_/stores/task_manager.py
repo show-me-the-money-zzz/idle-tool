@@ -1,99 +1,25 @@
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Union, Type
 from dataclasses import dataclass, field
 import operator
 import re
 
 from grinder_utils import finder, system
+from stores.task_base_step import BaseStep, TaskStep_Matching, TaskStep_MouseWheel, TaskStep_TeltegramNoti
 
-@dataclass
-class TaskStep:
-    seq: int
-    waiting: float
-    type: str
-    zone: str
-    image: str
-    score: str
-    finded_click: str
-    next_step: list[str]
-    fail_step: str
-    comment: str
+# Dictionary mapping type strings to step classes
+STEP_TYPE_MAP = {
+    "matching": TaskStep_Matching,
+    "mousewheel": TaskStep_MouseWheel,
+    "telegramNoti": TaskStep_TeltegramNoti,
+    
+    # "waiting": TaskStep_Waiting,
+}
 
-    def parse_score(self) -> tuple:
-        """score 문자열을 (숫자, 연산자, 설명) 형태의 튜플로 반환"""
-        match = re.match(r"(<=|>=|<|>|==|!=)?\s*(\d+(?:\.\d+)?)", self.score.strip())
-        if not match:
-            return (0, "==", "일치")
-
-        op_str, value = match.groups()
-        
-        # 연산자가 없을 경우 기본값 설정
-        if not op_str:
-            op_str = "=="
-            
-        return (float(value), op_str, self.operator_to_desc(op_str))
-    
-    @staticmethod
-    def operator_to_desc(op_str: str) -> str:
-        """연산자 문자열을 설명 문자열로 변환"""
-        op_map = {
-            "<=": "이상",
-            ">=": "이하",
-            "<": "초과",
-            ">": "미만",
-            "==": "일치",
-            "!=": "다른"
-        }
-        return op_map.get(op_str, "일치")
-    
-    @staticmethod
-    def desc_to_operator(desc: str) -> str:
-        """설명 문자열을 연산자 문자열로 변환"""
-        desc_map = {
-            "이상": "<=",
-            "이하": ">=",
-            "초과": "<",
-            "미만": ">",
-            "일치": "==",
-            "다른": "!="
-        }
-        return desc_map.get(desc, "==")
-    
-    @staticmethod
-    def make_score_string(value: float, desc: str) -> str:
-        """숫자와 설명을 받아 score 문자열 생성"""
-        op_str = TaskStep.desc_to_operator(desc)
-        return f"{op_str}{value}"
-
-    def evaluate_score_condition(self, actual: float) -> bool:
-        """점수 조건 평가: '<=65'는 '실제 점수가 65 이상이면 참'으로 해석"""
-        value, op_str, _ = self.parse_score()
-        
-        # 점수 조건 해석 (매칭 방향과 반대로 해석)
-        if op_str == "<=":
-            return actual >= value
-        elif op_str == ">=":
-            return actual <= value
-        elif op_str == ">":
-            return actual < value
-        elif op_str == "<":
-            return actual > value
-        elif op_str == "==":
-            return actual == value
-        elif op_str == "!=":
-            return actual != value
-        else:
-            return actual == value
-        
-    def Print_Score(self) -> str:
-        """점수 조건을 한글로 설명하는 함수"""
-        value, _, desc = self.parse_score()
-        return f"{value}% {desc}"
-    
 @dataclass
 class Task:
-    steps: dict[str, TaskStep]
+    steps: dict[str, BaseStep]  # Now using BaseStep instead of TaskStep
     start_key: str
     comment: str
 
@@ -166,20 +92,35 @@ class TaskManager:
             "comment": task.comment
         }
         
-        # 각 TaskStep을 딕셔너리로 변환
+        # 각 BaseStep을 딕셔너리로 변환
         for step_key, step in task.steps.items():
-            task_dict["steps"][step_key] = {
+            step_dict = {
                 "seq": step.seq,
                 "waiting": step.waiting,
                 "type": step.type,
-                "zone": step.zone,
-                "image": step.image,
-                "score": step.score,
-                "finded_click": step.finded_click,
                 "next_step": step.next_step,
                 "fail_step": step.fail_step,
                 "comment": step.comment
             }
+            
+            # 해당 타입에 따라 추가 필드 저장
+            if step.type == "matching" and isinstance(step, TaskStep_Matching):
+                step_dict.update({
+                    "zone": step.zone,
+                    "image": step.image,
+                    "score": step.score,
+                    "finded_click": step.finded_click,
+                })
+            elif step.type == "mousewheel" and isinstance(step, TaskStep_MouseWheel):
+                step_dict.update({
+                    "amount": step.amount,
+                })
+            elif step.type == "telegramNoti" and isinstance(step, TaskStep_TeltegramNoti):
+                step_dict.update({
+                    "dummy": step.dummy,
+                })
+            
+            task_dict["steps"][step_key] = step_dict
         
         # 변환된 딕셔너리 저장
         self.add(key, task_dict, save)
@@ -201,9 +142,9 @@ class TaskManager:
         
         # print(f"<<<<<<<<<<BEFORE>>>>>>>>>\n{self.tasks.items()}")
         tasklist = {}
-        for tsakkey, taskvar in self.tasks.items():
+        for taskkey, taskvar in self.tasks.items():
             # print(f"{[tsakkey]} {taskvar}")
-            if old_key == tsakkey:  #덮어쓰기
+            if old_key == taskkey:  #덮어쓰기
                 keyname = old_key
                 if new_key and old_key != new_key:  # new_key가 유효하고 old_key와 다르면
                     keyname = new_key
@@ -213,22 +154,39 @@ class TaskManager:
                     "start_key": task.start_key,
                     "comment": task.comment
                 }
+                
                 for stepkey, stepvar in task.steps.items(): #단계 복사
-                    task_dict["steps"][stepkey] = {
+                    step_dict = {
                         "seq": stepvar.seq,
                         "waiting": stepvar.waiting,
                         "type": stepvar.type,
-                        "zone": stepvar.zone,
-                        "image": stepvar.image,
-                        "score": stepvar.score,
-                        "finded_click": stepvar.finded_click,
                         "next_step": stepvar.next_step,
                         "fail_step": stepvar.fail_step,
                         "comment": stepvar.comment
                     }
+                    
+                    # 해당 타입에 따라 추가 필드 저장
+                    if stepvar.type == "matching" and isinstance(stepvar, TaskStep_Matching):
+                        step_dict.update({
+                            "zone": stepvar.zone,
+                            "image": stepvar.image,
+                            "score": stepvar.score,
+                            "finded_click": stepvar.finded_click,
+                        })
+                    elif stepvar.type == "mousewheel" and isinstance(stepvar, TaskStep_MouseWheel):
+                        step_dict.update({
+                            "amount": stepvar.amount,
+                        })
+                    elif stepvar.type == "telegramNoti" and isinstance(stepvar, TaskStep_TeltegramNoti):
+                        step_dict.update({
+                            "dummy": stepvar.dummy,
+                        })
+                    
+                    task_dict["steps"][stepkey] = step_dict
+                
                 tasklist[keyname] = task_dict
             else:   # 기존 정보는 그대로
-                tasklist[tsakkey] = taskvar
+                tasklist[taskkey] = taskvar
         
         self.tasks = tasklist
         # print(f"<<<<<<<<<<AFTER>>>>>>>>>\n{self.tasks.items()}")
@@ -245,52 +203,116 @@ Load_Task = Tasks._load
 Add_Task = Tasks.add
 Delete_Task = Tasks.delete
 _Get_Task = Tasks.get
+
+def _create_step_instance(step_type: str, step_data: dict) -> BaseStep:
+    """주어진 타입에 맞는 BaseStep 파생 객체 생성"""
+    # 기본 공통 필드
+    base_params = {
+        "seq": step_data.get("seq", 0),
+        "waiting": step_data.get("waiting", 0.0),
+        "type": step_type,
+        "next_step": step_data.get("next_step", []),
+        "fail_step": step_data.get("fail_step", ""),
+        "comment": step_data.get("comment", ""),
+    }
+    
+    # 타입별 특화 클래스 선택
+    if step_type == "matching":
+        return TaskStep_Matching(
+            **base_params,
+            zone=step_data.get("zone", ""),
+            image=step_data.get("image", ""),
+            score=step_data.get("score", "<=85.0"),
+            finded_click=step_data.get("finded_click", ""),
+        )
+    elif step_type == "mousewheel":
+        return TaskStep_MouseWheel(
+            **base_params,
+            amount=step_data.get("amount", 0),
+        )
+    elif step_type == "telegramNoti":
+        return TaskStep_TeltegramNoti(
+            **base_params,
+            dummy=step_data.get("dummy", False),
+        )
+    else:
+        # 알 수 없는 타입은 기본 BaseStep 반환
+        return BaseStep(**base_params)
+
 def Get_Task(key, default=None):
     data = Tasks.get(key, default)
-    # print("seq 1")
     if not data:
         return default
 
-    # print("seq 2")
-    # # step dict를 TaskStep 객체로 변환
-    # print(data["steps"].items())
+    # step dict를 BaseStep 파생 객체로 변환
     step_dict = {}
     for key, val in data["steps"].items():
         try:
-            # print(f"[{key}] {val}")
-            step_dict[key] = TaskStep(**val)
+            step_type = val.get("type", "matching")  # 기본값은 matching
+            step_dict[key] = _create_step_instance(step_type, val)
         except Exception as e:
             print(f"[Step Load Error] '{key}' 변환 실패: {e}")
-    # print(f"{step_dict}")
-    # print("seq 3")
 
     ret = Task(
         steps=step_dict,
-        # tasks = {},
-
         start_key=data["start_key"],
         comment=data.get("comment", "")
     )
     return ret
-_GetAll_Tasks = Tasks.all
+
 def GetAll_Tasks() -> dict[str, Task]:
     raw = Tasks.all()
     results: dict[str, Task] = {}
 
-    # for key, data in raw.items():
     for key in raw.keys():
         try:
             results[key] = Get_Task(key)
         except Exception as e:
             print(f"[Task Load Error] '{key}' 변환 실패: {e}")
     return results
+
 Save_Tasks = Tasks.save
 Add_Task = Tasks.add_task
 Update_Task = Tasks.update_task
+
 def Update_Task(old_key: str, task: Task, new_key: str = None, save: bool = True):
     if Tasks.update_task(old_key, task, new_key, save):
         return GetAll_Tasks()
     return None
+
+def Create_Empty_Step(step_type: str, seq: int = 0) -> BaseStep:
+    """새로운 빈 단계를 생성하는 함수"""
+    # 공통 파라미터
+    base_params = {
+        "seq": seq,
+        "waiting": 0.0,
+        "type": step_type,
+        "next_step": [],
+        "fail_step": "",
+        "comment": "",
+    }
+    
+    # 타입별 객체 생성
+    if step_type == "matching":
+        return TaskStep_Matching(
+            **base_params,
+            zone="",
+            image="",
+            score="<=85.0",
+            finded_click="",
+        )
+    elif step_type == "mousewheel":
+        return TaskStep_MouseWheel(
+            **base_params,
+            amount=0,
+        )
+    elif step_type == "telegramNoti":
+        return TaskStep_TeltegramNoti(
+            **base_params,
+            dummy=False,
+        )
+    else:
+        return BaseStep(**base_params)
 
 class RunningTask:
     key = ""
@@ -306,6 +328,7 @@ class RunningTask:
     def reset_key(self): self.key = ""
     def get(self):
         return (self.key, Get_Task(self.key, None))
+
 _runnging_task = RunningTask("")
 SetKey_RunningTask = _runnging_task.set_key
 ResetKey_RunningTask = _runnging_task.reset_key

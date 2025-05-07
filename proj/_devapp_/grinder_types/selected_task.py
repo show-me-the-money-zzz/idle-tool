@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QListWidget
 
 import copy
 
+from stores.task_base_step import BaseStep, TaskStep_Matching, TaskStep_MouseWheel, TaskStep_TeltegramNoti
 import stores.task_manager as TaskMan
 
 @dataclass
@@ -125,20 +126,12 @@ class SelectedTask:
             for k, step in self.task.steps.items():
                 if seq < step.seq: seq = step.seq
         return seq
-    def NewStep(self, key, seq = 0):
-        self.task.steps[key] = TaskMan.TaskStep(
-            seq= seq,
-            waiting= 0.01,
-            type= "matching",
-            zone= "",
-            image= "",
-            score= "<=85.0",
-            finded_click= "",
-            next_step= [],
-            fail_step= "",
-            comment= "",
-        )
+    
+    def NewStep(self, key, step_type="matching", seq=0):
+        """새 단계 생성"""
+        self.task.steps[key] = TaskMan.Create_Empty_Step(step_type, seq)
         return seq
+    
     def RemoveStep(self, key):
         # print(f"RemoveStep({key})")
         if "" != key:
@@ -156,51 +149,134 @@ class SelectedTask:
             return True
         return False
     
+    def UpdateStep_Type(self, type_str):
+        """단계 타입 변경 - 타입이 변경되면 새 객체를 생성해야 함"""
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return
+        
+        current_step = self.Get_Step()
+        if current_step.type == type_str:
+            return  # 타입이 같으면 아무것도 하지 않음
+            
+        # 현재 단계의 공통 속성 추출
+        base_params = {
+            "seq": current_step.seq,
+            "waiting": current_step.waiting,
+            "type": type_str,
+            "next_step": current_step.next_step,
+            "fail_step": current_step.fail_step,
+            "comment": current_step.comment,
+        }
+        
+        # 새 타입의 객체 생성
+        new_step = None
+        if type_str == "matching":
+            new_step = TaskStep_Matching(
+                **base_params,
+                zone="",
+                image="",
+                score="<=85.0",
+                finded_click="",
+            )
+        elif type_str == "mousewheel":
+            new_step = TaskStep_MouseWheel(
+                **base_params,
+                amount=0,
+            )
+        elif type_str == "telegramNoti":
+            new_step = TaskStep_TeltegramNoti(
+                **base_params,
+                dummy=False,
+            )
+        else:
+            new_step = BaseStep(**base_params)
+            
+        # 새 단계로 교체
+        self.task.steps[self.origin_step_key] = new_step
+    
     def UpdateStep_Waiting(self, sec):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
         self.Get_Step().waiting = sec
+        
     def UpdateStep_Key(self, key):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
         self.ChangeKey_CurrentStep(key)
         # print(f"step key: {self.origin_step_key} vs {self.current_step_key}")
+    
+    # --------- TaskStep_Matching 전용 메서드 ---------
     def UpdateStep_Zone(self, zone):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
-        self.Get_Step().zone = zone
+            
+        step = self.Get_Step()
+        if isinstance(step, TaskStep_Matching):
+            step.zone = zone
+            
     def UpdateStep_Image(self, image):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
-        self.Get_Step().image = image
+            
+        step = self.Get_Step()
+        if isinstance(step, TaskStep_Matching):
+            step.image = image
+            
     def UpdateStep_ScoreVal(self, score):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
-        val, op_str, desc = self.Get_Step().parse_score()
-        # print(f"{val}, {op_str}, {desc}")
-        scorestr = TaskMan.TaskStep.desc_to_operator(desc) + str(score)
-        # print(f"{scorestr}")
-        self.Get_Step().score = scorestr
-        # print(f"{self.task}")
+            
+        step = self.Get_Step()
+        if isinstance(step, TaskStep_Matching):
+            val, op_str, desc = step.parse_score()
+            scorestr = TaskStep_Matching.desc_to_operator(desc) + str(score)
+            step.score = scorestr
+            
     def UpdateStep_ScoreDesc(self, scoredesc):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
-        val, op_str, desc = self.Get_Step().parse_score()
-        scorestr = TaskMan.TaskStep.desc_to_operator(scoredesc) + str(val)
-        # print(f"{scorestr}")
-        self.Get_Step().score = scorestr
-        # print(f"{self.task}")
+            
+        step = self.Get_Step()
+        if isinstance(step, TaskStep_Matching):
+            val, op_str, desc = step.parse_score()
+            scorestr = TaskStep_Matching.desc_to_operator(scoredesc) + str(val)
+            step.score = scorestr
+            
     def UpdateStep_ClickType(self, type):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
-        save_click = ""
-        if "이미지" == type: save_click = "image"
-        elif "영역" == type: save_click = "zone"
-        self.Get_Step().finded_click = save_click
+            
+        step = self.Get_Step()
+        if isinstance(step, TaskStep_Matching):
+            save_click = ""
+            if "이미지" == type: save_click = "image"
+            elif "영역" == type: save_click = "zone"
+            step.finded_click = save_click
+    
+    # --------- TaskStep_MouseWheel 전용 메서드 ---------
+    def UpdateStep_MouseWheel_Amount(self, amount):
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return
+            
+        step = self.Get_Step()
+        if isinstance(step, TaskStep_MouseWheel):
+            step.amount = amount
+    
+    # --------- TaskStep_TeltegramNoti 전용 메서드 ---------
+    def UpdateStep_TelegramNoti_Dummy(self, dummy):
+        if "" == self.origin_key or "" == self.origin_step_key:
+            return
+            
+        step = self.Get_Step()
+        if isinstance(step, TaskStep_TeltegramNoti):
+            step.dummy = dummy
+    
+    # --------- 공통 메서드 ---------
     def UpdateStep_FailStep(self, step):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
         self.Get_Step().fail_step = step
+        
     def UpdateStep_NextSteps(self, widget: QListWidget):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
@@ -212,10 +288,7 @@ class SelectedTask:
         self.Get_Step().next_step = steps
         # print(f"{self.task}")
         
-        # from stores.task_manager import Get_Task
-        # print(f"{self.task.Get_Step(self.origin_step_key)}")
     def UpdateStep_Comment(self, text):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
         self.Get_Step().comment = text
-        

@@ -16,6 +16,7 @@ from stores.areas import *
 import stores.sanner as Scanner
 from core.config import LOOP_TEXT_KEYWORD
 import stores.task_manager as TaskMan
+from stores.task_base_step import BaseStep, TaskStep_Matching, TaskStep_MouseWheel, TaskStep_TeltegramNoti
 
 class Tasker(QObject):
     """
@@ -127,33 +128,39 @@ class Tasker(QObject):
         task_key, task = TaskMan.Get_RunningTask()
         # print(f"Tasker.Loop(): [{task_key}] {task}")
         self.running_task = task
-        self.running_task_steps = [ task.start_key ]
+        self.running_task_steps = [task.start_key]
         
         try:
             while self.is_running:
-                 # Check at the top of each loop if we should still be running
+                # Check at the top of each loop if we should still be running
                 if not self.is_running:
                     break
                 
                 if not WindowUtil.update_window_info():
-                    # self.stop_capture_callback()  # Use stop instead of toggle
-                    # self.status_changed.emit("창이 닫혔습니다.")
-                    # return
                     self.logframe_addwarning.emit("창이 닫혔습니다.")
                     self.toggle_capture_callback()
                     break
-                
-                # await self.Task_GS23_RF()
-
+                # await self.Task_GS23_RF()	# DEV TEST
+				
+                # 현재 실행 중인 단계 처리
                 for step_key in self.running_task_steps:
                     step = self.running_task.Get_Step(step_key)
                     # print(f"step.seq= {step.seq}")
                     if None == step:
                         self.logframe_adderror.emit(f"{task_key}-{step_key} 단계가 유효하지 않습니다.")
-                        self.toggle_capture_callback()                        
-
-                    if "matching" == step.type: await self.Matching(step, task_key, step_key)
-                    elif "waiting" == step.type: await self.Waiting(step)
+                        self.toggle_capture_callback()
+                        break
+                    
+                    # BaseStep 타입에 따라 적절한 처리 메서드 호출
+                    if isinstance(step, TaskStep_Matching):
+                        await self.Execute_Matching(step, task_key, step_key)
+                    elif isinstance(step, TaskStep_MouseWheel):
+                        await self.Execute_MouseWheel(step, task_key, step_key)
+                    elif isinstance(step, TaskStep_TeltegramNoti):
+                        await self.Execute_TelegramNoti(step, task_key, step_key)
+                    else:
+                        # 기본 대기 처리 (타입에 관계없이 대기 시간이 있으면 처리)
+                        await self.Execute_Waiting(step, task_key, step_key)
                 
                 # self.logframe_addlog.emit("foo~~")
                 await self.async_helper.sleep(0)
@@ -168,13 +175,30 @@ class Tasker(QObject):
             # 예외 처리
             self.logframe_adderror.emit(f"작업 중 오류 발생: {str(e)}")
             self.toggle_capture_callback()
-            
-    async def Matching(self, step: TaskMan.TaskStep, taskkey, stepkey):
-        logtext = "[[[매칭]]] "
-        if 0.0 < step.waiting:
-            logtext += f"(잠깐만 {step.waiting} 초) "
-            await self.async_helper.sleep(step.waiting)
+
+    # async def Execute_Waiting(self, step: BaseStep, task_key, step_key):
+    async def Execute_Waiting(self, waiting: float):
+        """모든 BaseStep 공통 대기 처리"""
+        if waiting > 0:
+            # self.logframe_addlog.emit(f"[[[대기]]] {waiting} 초")
+            await self.async_helper.sleep(waiting)
         
+        # # 다음 단계 결정
+        # if step.next_step and len(step.next_step) > 0:
+        #     self.running_task_steps = step.next_step
+        # else:
+        #     self.logframe_addwarning.emit(f"다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
+        #     self.toggle_capture_callback()
+
+    async def Execute_Matching(self, step: TaskStep_Matching, task_key, step_key):
+        """매칭 타입 단계 실행"""
+        logtext = "[[[매칭]]] "
+        
+        if 0 < step.waiting:
+            await self.Execute_Waiting(step.waiting)
+            logtext += f"(잠깐만 {step.waiting} 초) "
+        
+        # 이미지 매칭 수행
         matched = self.match_image_in_zone(step.zone, step.image)
         matched_score = matched["score_percent"]
         isSuccess = step.evaluate_score_condition(matched_score)
@@ -182,32 +206,78 @@ class Tasker(QObject):
         resulttext = "성공" if isSuccess else "실패"
         logtext += f"[영역: {step.zone}]의 [이미지: {step.image}]의 [유사도] {step.Print_Score()}에서: {matched_score}%로 {resulttext}"
         self.logframe_addlog.emit(logtext)
-        
-        if isSuccess:
-            if "" != step.finded_click:
-                click_key = "click_image" if "image" == step.finded_click else "click_zone"
-                x, y = matched[click_key]
-                # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
-                self.Click(x, y, f"{taskkey}-{stepkey}")
 
-            if 0 >= len(step.next_step):
-                self.logframe_addwarning.emit(f"시작 단계가 [{taskkey} - {stepkey}] 에 없어서 종료합니다.")
-                self.toggle_capture_callback()
-                # Don't call any external methods at this point
-            else:
-                self.running_task_steps = step.next_step
-        else:
-            if "" == step.fail_step:
-                self.logframe_addwarning.emit(f"실패 단계가 [{taskkey} - {stepkey}] 에 없어서 종료합니다.")
-                self.toggle_capture_callback()
-                # Don't call any external methods at this point
-            else:
-                self.running_task_steps = [ step.fail_step ]
-            
-    async def Waiting(self, step: TaskMan.TaskStep):
-        self.logframe_addlog.emit(f"[[[잠깐대기]]] {step.waiting} 초")
+        self.running_task_steps.remove(step_key)
         
-        await self.async_helper.sleep(step.waiting)
+        # 결과에 따른 처리
+        if isSuccess:
+            # 클릭 처리
+            if step.finded_click:
+                click_key = "click_image" if step.finded_click == "image" else "click_zone"
+                x, y = matched[click_key]
+                self.Click(x, y, f"{task_key}-{step_key}")
+            
+            # 다음 단계 설정
+            if 0 >= len(step.next_step):
+                # print(f"not next: running_task_steps= {self.running_task_steps}")
+                self.logframe_addwarning.emit(f"성공 후 다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
+                self.toggle_capture_callback()
+            else:
+                self.running_task_steps += step.next_step
+                # print(f"next: running_task_steps= {self.running_task_steps}")
+        else:
+            # 실패 시 처리
+            if "" == step.fail_step:
+                # print(f"not fail: running_task_steps= {self.running_task_steps}")
+                self.logframe_addwarning.emit(f"실패 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
+                self.toggle_capture_callback()
+            else:
+                self.running_task_steps.append(step.fail_step)
+                # print(f"fail: running_task_steps= {self.running_task_steps}")
+
+    async def Execute_MouseWheel(self, step: TaskStep_MouseWheel, task_key, step_key):
+        """마우스휠 타입 단계 실행"""
+        logtext = "[[[마우스 휠]]] "
+        
+        if 0 < step.waiting:
+            await self.Execute_Waiting(step.waiting)
+            logtext += f"(잠깐만 {step.waiting} 초) "
+        
+        # 마우스 휠 동작 수행
+        WindowUtil.scroll_mousewheel(step.amount)
+
+        logtext += f"{step.amount} 만큼 스크롤"
+        self.logframe_addlog.emit(logtext)
+
+        self.running_task_steps.remove(step_key)
+        
+        # 다음 단계 설정
+        if 0 >= len(step.next_step):
+            self.logframe_addwarning.emit(f"다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
+            self.toggle_capture_callback()
+        else:
+            self.running_task_steps += step.next_step
+
+    async def Execute_TelegramNoti(self, step: TaskStep_TeltegramNoti, task_key, step_key):
+        """텔레그램 알림 타입 단계 실행"""
+        
+        await self.Execute_Waiting(step.waiting)
+        
+        if step.dummy:
+            self.logframe_addlog.emit(f"[[[텔레그램 알림]]] 더미 모드 - 실제 전송 안함")
+        else:
+            self.logframe_addlog.emit(f"[[[텔레그램 알림]]] 메시지 전송")
+            # 실제 텔레그램 메시지 전송 코드 (구현 필요)
+            # TODO: 텔레그램 API 연동 코드 추가
+
+        self.running_task_steps.remove(step_key)
+        
+        # 다음 단계 설정
+        if step.next_step and len(step.next_step) > 0:
+            self.running_task_steps += step.next_step
+        else:
+            self.logframe_addwarning.emit(f"다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
+            self.toggle_capture_callback()
     
     def match_image_in_zone(self, zone_key, image_key):
         """
