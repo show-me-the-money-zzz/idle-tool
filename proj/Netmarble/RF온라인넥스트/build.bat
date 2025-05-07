@@ -1,9 +1,9 @@
 @echo off
 
 @REM grinder | miner
-set EXE_NAME=DiaMiner-[ZZXX]
+set EXE_NAME=DiaMiner-RFOnlineNext
 @REM set PUBLISH_NAME=%EXE_NAME%
-set PUBLISH_NAME=%EXE_NAME%_d
+set PUBLISH_NAME=%EXE_NAME%
 
 set USE_CONSOLE=false
 @REM set USE_CONSOLE=true
