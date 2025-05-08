@@ -78,8 +78,8 @@ class LogFrame(QGroupBox):
                 f.write(log_content)
                 
             # 성공 메시지
-            self.status_signal.emit(f"로그가 저장되었습니다: {file_path}")
-            # self.add_notice(f"로그가 저장되었습니다: {filename}")
+            # self.status_signal.emit(f"로그가 저장되었습니다: {file_path}")
+            self.add_notice(f"로그가 저장되었습니다: {filename}")
             
             return True
         except Exception as e:
