@@ -33,6 +33,7 @@ class Tasker(QObject):
     logframe_addwarning = Signal(str)
     logframe_adderror = Signal(str)
     logframe_addnotice = Signal(str)
+    logframe_addchnagetaskstep = Signal(str)
     
     def __init__(self, parent, toggle_capture_callback, stop_capture_callback, capture_manager):
         super().__init__(parent)
@@ -126,11 +127,16 @@ class Tasker(QObject):
             
     def Make_Task_GS23_RF(self): return {}
     
+    def Print_RunningSteps(self):
+        log = f"🎯 단계 변경: {' / '.join(self.running_task_steps)}"
+        self.logframe_addchnagetaskstep.emit(log)
+    
     async def Loop(self):
         task_key, task = TaskMan.Get_RunningTask()
         # print(f"Tasker.Loop(): [{task_key}] {task}")
         self.running_task = task
         self.running_task_steps = [ TaskMan.GetKey_StartStep() ]
+        self.Print_RunningSteps()
         
         try:
             while self.is_running:
@@ -206,6 +212,7 @@ class Tasker(QObject):
         self.logframe_addlog_matching.emit(task_key, step_key, step, matched_score, isSuccess)
 
         self.running_task_steps.remove(step_key)
+        self.Print_RunningSteps()
         
         # 결과에 따른 처리
         if isSuccess:
@@ -222,6 +229,7 @@ class Tasker(QObject):
                 self.toggle_capture_callback()
             else:
                 self.running_task_steps += step.next_step
+                self.Print_RunningSteps()
                 # print(f"next: running_task_steps= {self.running_task_steps}")
         else:
             # 실패 시 처리
@@ -231,6 +239,7 @@ class Tasker(QObject):
                 self.toggle_capture_callback()
             else:
                 self.running_task_steps.append(step.fail_step)
+                self.Print_RunningSteps()
                 # print(f"fail: running_task_steps= {self.running_task_steps}")
 
     async def Execute_MouseWheel(self, step: TaskStep_MouseWheel, task_key, step_key):
@@ -248,6 +257,7 @@ class Tasker(QObject):
         self.logframe_addlog_notmatching.emit(logtext)
 
         self.running_task_steps.remove(step_key)
+        self.Print_RunningSteps()
         
         # 다음 단계 설정
         if 0 >= len(step.next_step):
@@ -255,6 +265,7 @@ class Tasker(QObject):
             self.toggle_capture_callback()
         else:
             self.running_task_steps += step.next_step
+            self.Print_RunningSteps()
 
     async def Execute_TelegramNoti(self, step: TaskStep_TeltegramNoti, task_key, step_key):
         """텔레그램 알림 타입 단계 실행"""
@@ -269,10 +280,12 @@ class Tasker(QObject):
             # TODO: 텔레그램 API 연동 코드 추가
 
         self.running_task_steps.remove(step_key)
+        self.Print_RunningSteps()
         
         # 다음 단계 설정
         if step.next_step and len(step.next_step) > 0:
             self.running_task_steps += step.next_step
+            self.Print_RunningSteps()
         else:
             self.logframe_addwarning.emit(f"다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
             self.toggle_capture_callback()

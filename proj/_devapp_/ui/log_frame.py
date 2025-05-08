@@ -163,6 +163,10 @@ class LogFrame(QGroupBox):
     def add_notice(self, text):
         self.before_step_matching = None
         self.print_log("#00ff00", text)
+
+    def add_chnagetaskstep(self, text):
+        self.before_step_matching = None
+        self.print_log("#afffdc", text)
         
     def print_log(self, color, text):
         timestamp = LogFrame.GetText_Timestamp(datetime.now())
