@@ -18,7 +18,6 @@ class ControlFrame(QFrame):
     
     RUNNER_BUTTON_START_TEXT = "일해 ▶️" 
     RUNNER_BUTTON_STOP_TEXT = "정지 🟥"
-    ICON_START_STEP = "🚩"
     
     def __init__(self, parent, status_signal, toggle_capture_callback, 
                  apply_interval_callback,
@@ -188,12 +187,12 @@ class ControlFrame(QFrame):
                 
         # 단계 키를 콤보박스에 추가 (시작 단계는 특별한 접두사 추가)
         for step_key in task.steps.keys():
-            display_text = f"{ControlFrame.ICON_START_STEP} {step_key}" if step_key == start_key else step_key
+            display_text = f"{TaskMan.ICON_START_STEP} {step_key}" if step_key == start_key else step_key
             self.step_combo.addItem(display_text, step_key)  # 실제 키를 userData로 저장
         
         # 시작 단계가 설정되어 있으면 해당 단계 선택
         if start_key and start_key in task.steps:
-            display_text = f"{ControlFrame.ICON_START_STEP} {start_key}"
+            display_text = f"{TaskMan.ICON_START_STEP} {start_key}"
             index = self.step_combo.findText(display_text)
             if index >= 0:
                 self.step_combo.setCurrentIndex(index)
@@ -204,8 +203,8 @@ class ControlFrame(QFrame):
             self.step_combo.setCurrentIndex(0)
 
     def Change_Step(self, display_text):
-        # 표시 텍스트에서 실제 키 추출 (⭐ 제거)    #ControlFrame.ICON_START_STEP
-        step_key = display_text.replace(f"{ControlFrame.ICON_START_STEP} ", "") if display_text.startswith(f"{ControlFrame.ICON_START_STEP} ") else display_text
+        # 표시 텍스트에서 실제 키 추출 (⭐ 제거)    #TaskMan.ICON_START_STEP
+        step_key = display_text.replace(f"{TaskMan.ICON_START_STEP} ", "") if display_text.startswith(f"{TaskMan.ICON_START_STEP} ") else display_text
         # print(f"Change_Step({step_key})")
         TaskMan.SetKey_StartStep(step_key)
 

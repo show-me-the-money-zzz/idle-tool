@@ -343,6 +343,8 @@ Get_RunningTask = _runnging_task.get
 SetKey_StartStep = _runnging_task.set_startstep
 GetKey_StartStep = _runnging_task.get_startstep
 
+ICON_START_STEP = "🚩"
+
 def initialize():
     Tasks.save()
 

@@ -789,10 +789,17 @@ class TaskEditorPopup(QDialog):
             self.start_key_input.setText(task.start_key)
             self.task_description.setText(task.comment)
             
+            # 시작 단계 가져오기
+            start_key = task.start_key if hasattr(task, 'start_key') else ""
+            
             self.fail_step_combo.addItem("")
             self.next_step_combo.addItem("")
+            
+            # 단계 목록에 추가 (시작 단계는 특별한 접두사 추가)
             for key in task.steps.keys():
-                self.step_list.addItem(key)
+                display_text = f"{TaskMan.ICON_START_STEP} {key}" if key == start_key else key
+                self.step_list.addItem(display_text)
+                # 검색 가능한 콤보박스에는 원래 키를 추가
                 self.fail_step_combo.addItem(key)
                 self.next_step_combo.addItem(key)
         else:
@@ -861,6 +868,10 @@ class TaskEditorPopup(QDialog):
         
         selectedItem = items[0]
         key = selectedItem.text()
+
+        # 아이콘 제거하여 실제 키 가져오기
+        if key.startswith(f"{TaskMan.ICON_START_STEP} "):
+            key = key.replace(f"{TaskMan.ICON_START_STEP} ", "")
         
         if not self.selectedTask.IsExistStep(key):
             return
@@ -1057,6 +1068,11 @@ class TaskEditorPopup(QDialog):
             return  # 선택된 항목이 없음
             
         stepkey = self.step_list.item(current_row).text()
+        
+        # 아이콘 제거하여 실제 키 가져오기
+        if stepkey.startswith(f"{TaskMan.ICON_START_STEP} "):
+            stepkey = stepkey.replace(f"{TaskMan.ICON_START_STEP} ", "")
+        
         self.selectedTask.RemoveStep(stepkey)
         
         # 항목 삭제
