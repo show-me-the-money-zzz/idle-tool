@@ -18,6 +18,7 @@ class ControlFrame(QFrame):
     
     RUNNER_BUTTON_START_TEXT = "일해 ▶️" 
     RUNNER_BUTTON_STOP_TEXT = "정지 🟥"
+    ICON_START_STEP = "🚩"
     
     def __init__(self, parent, status_signal, toggle_capture_callback, 
                  apply_interval_callback,
@@ -171,34 +172,42 @@ class ControlFrame(QFrame):
         self.update_step_combo(task)
 
     def update_step_combo(self, task_key):
-        """작업에 따라 단계 콤보박스 업데이트하고 시작 단계 선택"""
+        """작업에 따라 단계 콤보박스 업데이트하고 시작 단계 구분해서 표시"""
         self.step_combo.clear()
         
         if not task_key:
             return
-            
+                
         # 작업에서 단계 가져오기
         task = TaskMan.Get_Task(task_key)
         if not task or not hasattr(task, 'steps'):
             return
-            
-        # 단계 키를 콤보박스에 추가
+        
+        # 시작 단계 가져오기
+        start_key = task.start_key if hasattr(task, 'start_key') else ""
+                
+        # 단계 키를 콤보박스에 추가 (시작 단계는 특별한 접두사 추가)
         for step_key in task.steps.keys():
-            self.step_combo.addItem(step_key)
+            display_text = f"{ControlFrame.ICON_START_STEP} {step_key}" if step_key == start_key else step_key
+            self.step_combo.addItem(display_text, step_key)  # 실제 키를 userData로 저장
         
         # 시작 단계가 설정되어 있으면 해당 단계 선택
-        if hasattr(task, 'start_key') and task.start_key and task.start_key in task.steps:
-            self.step_combo.setCurrentText(task.start_key)
-            # 상태 표시 업데이트 (옵션)
-            self.status_signal.emit(f"시작 단계: {task.start_key}")
+        if start_key and start_key in task.steps:
+            display_text = f"{ControlFrame.ICON_START_STEP} {start_key}"
+            index = self.step_combo.findText(display_text)
+            if index >= 0:
+                self.step_combo.setCurrentIndex(index)
+                # 상태 표시 업데이트 (옵션)
+                self.status_signal.emit(f"시작 단계: {start_key}")
         elif self.step_combo.count() > 0:
             # 시작 단계가 없거나 유효하지 않으면 첫 번째 단계 선택
-            first_step = self.step_combo.itemText(0)
-            self.step_combo.setCurrentText(first_step)
+            self.step_combo.setCurrentIndex(0)
 
-    def Change_Step(self, step):
-        # print(f"Change_Step({step})")
-        TaskMan.SetKey_StartStep(step)
+    def Change_Step(self, display_text):
+        # 표시 텍스트에서 실제 키 추출 (⭐ 제거)    #ControlFrame.ICON_START_STEP
+        step_key = display_text.replace(f"{ControlFrame.ICON_START_STEP} ", "") if display_text.startswith(f"{ControlFrame.ICON_START_STEP} ") else display_text
+        # print(f"Change_Step({step_key})")
+        TaskMan.SetKey_StartStep(step_key)
 
     def reload_tasks(self):
         """작업 목록 새로고침"""
