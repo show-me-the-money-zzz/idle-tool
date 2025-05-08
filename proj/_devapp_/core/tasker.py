@@ -128,6 +128,8 @@ class Tasker(QObject):
     def Make_Task_GS23_RF(self): return {}
     
     def Print_RunningSteps(self):
+        if 0 >= len(self.running_task_steps): return
+        
         log = f"🎯 단계 변경: {' / '.join(self.running_task_steps)}"
         self.logframe_addchnagetaskstep.emit(log)
     
@@ -211,11 +213,11 @@ class Tasker(QObject):
 
         self.logframe_addlog_matching.emit(task_key, step_key, step, matched_score, isSuccess)
 
-        self.running_task_steps.remove(step_key)
-        self.Print_RunningSteps()
+        self.running_task_steps.remove(step_key)        
         
         # 결과에 따른 처리
         if isSuccess:
+            self.Print_RunningSteps()   # 실패는 패스
             # 클릭 처리
             if step.finded_click:
                 click_key = "click_image" if step.finded_click == "image" else "click_zone"
@@ -239,7 +241,7 @@ class Tasker(QObject):
                 self.toggle_capture_callback()
             else:
                 self.running_task_steps.append(step.fail_step)
-                self.Print_RunningSteps()
+                # self.Print_RunningSteps()
                 # print(f"fail: running_task_steps= {self.running_task_steps}")
 
     async def Execute_MouseWheel(self, step: TaskStep_MouseWheel, task_key, step_key):
