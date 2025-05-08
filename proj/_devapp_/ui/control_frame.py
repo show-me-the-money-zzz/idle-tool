@@ -56,6 +56,16 @@ class ControlFrame(QFrame):
         self.create_item_btn.clicked.connect(self.open_popup_callback)
         top_row.addWidget(self.create_item_btn)
         
+        # 리로드 버튼 추가 (아이템 버튼 우측으로 이동)
+        try:
+            self.reload_btn = QPushButton("🔄 파일 다시 읽기", self)
+            self.reload_btn.setToolTip("작업 목록 새로고침")
+            self.reload_btn.setFixedWidth(110)
+            self.reload_btn.clicked.connect(self.reload_tasks)
+            top_row.addWidget(self.reload_btn)
+        except Exception as e:
+            print(f"리로드 버튼 생성 오류: {e}")
+        
         # 여백 추가 (가운데)
         top_row.addStretch(1)
         
@@ -74,13 +84,16 @@ class ControlFrame(QFrame):
         # 첫 번째 행을 메인 레이아웃에 추가
         main_layout.addLayout(top_row)
         
-        # 두 번째 행 - 작업 콤보박스와 리로드 버튼
-        bottom_row = QHBoxLayout()
+        # 두 번째 행 - "자동화" 레이블과 작업 콤보박스
+        task_row = QHBoxLayout()
         
-        # 콤보박스의 최대 너비 설정 (필요시 주석 해제)
+        # "자동화" 레이블 추가
+        task_row.addWidget(QLabel("자동화:"))
+        
+        # 콤보박스의 최대 너비 설정
         combo_max_width = 508  # 적절한 너비로 조정
         
-        # 검색 가능한 콤보박스 추가
+        # 작업 콤보박스 추가
         try:
             task_items = [
                 "한국노총, 민주당 이재명 대선후보 지지…공동선대위 구성 추진(종합)",
@@ -89,40 +102,43 @@ class ControlFrame(QFrame):
                 "이 후보는 정책 협약 체결에 이어 한국노총 노동절 대회에 참석할 예정이다",
             ]
             self.task_combo = SearchableComboBox(items=task_items)
-            # self.task_combo.setFixedWidth(480)
-            # self.task_combo.addItem("작업 선택...")
         except Exception as e:
             print(f"SearchableComboBox 생성 오류: {e}")
             self.task_combo = QComboBox(self)
             self.task_combo.addItem("작업 선택...")
         
-        # 콤보박스 크기 설정 (고정 너비 또는 최소/최대 너비)
+        # 콤보박스 크기 설정
         try:
-            # self.task_combo.setMinimumWidth(150)
-            # self.task_combo.setMaximumWidth(combo_max_width)
             self.task_combo.setFixedWidth(combo_max_width)
             self.task_combo.currentTextChanged.connect(lambda task: self.Change_Task(task))
         except Exception as e:
             print(f"콤보박스 크기 설정 오류: {e}")
         
-        bottom_row.addWidget(self.task_combo)
+        task_row.addWidget(self.task_combo)
         
-        # 리로드 버튼 추가
-        try:
-            self.reload_btn = QPushButton("🔄 파일 다시 읽기", self)
-            self.reload_btn.setToolTip("작업 목록 새로고침")
-            self.reload_btn.setFixedWidth(110)
-            # self.reload_btn.setFixedSize(30, 30)
-            self.reload_btn.clicked.connect(self.reload_tasks)
-            bottom_row.addWidget(self.reload_btn)
-        except Exception as e:
-            print(f"리로드 버튼 생성 오류: {e}")
-        
-        # 나머지 공간을 여백으로 채움
-        bottom_row.addStretch(1)
+        # 여백 추가
+        task_row.addStretch(1)
         
         # 두 번째 행을 메인 레이아웃에 추가
-        main_layout.addLayout(bottom_row)
+        main_layout.addLayout(task_row)
+        
+        # 세 번째 행 - "단계" 레이블과 단계 콤보박스
+        step_row = QHBoxLayout()
+        
+        # "단계" 레이블 추가
+        step_row.addWidget(QLabel("단계:"))
+        
+        # 단계 콤보박스 추가
+        self.step_combo = SearchableComboBox()
+        self.step_combo.setFixedWidth(combo_max_width)
+        # self.step_combo.currentTextChanged.connect(lambda step: self.Change_Step(step))
+        step_row.addWidget(self.step_combo)
+        
+        # 여백 추가
+        step_row.addStretch(1)
+        
+        # 세 번째 행을 메인 레이아웃에 추가
+        main_layout.addLayout(step_row)
         
         # 크기 정책 설정
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -151,27 +167,57 @@ class ControlFrame(QFrame):
         return frame
     
     def Change_Task(self, task):
-        # print(f"ControlFrame.Change_Task({task})")
+        # TaskMan.SetKey_RunningTask 호출
         TaskMan.SetKey_RunningTask(task)
-        # pass
+        
+        # 단계 콤보박스 업데이트
+        self.update_step_combo(task)
+
+    def update_step_combo(self, task_key):
+        """작업에 따라 단계 콤보박스 업데이트하고 시작 단계 선택"""
+        self.step_combo.clear()
+        
+        if not task_key:
+            return
+            
+        # 작업에서 단계 가져오기
+        task = TaskMan.Get_Task(task_key)
+        if not task or not hasattr(task, 'steps'):
+            return
+            
+        # 단계 키를 콤보박스에 추가
+        for step_key in task.steps.keys():
+            self.step_combo.addItem(step_key)
+        
+        # 시작 단계가 설정되어 있으면 해당 단계 선택
+        if hasattr(task, 'start_key') and task.start_key and task.start_key in task.steps:
+            self.step_combo.setCurrentText(task.start_key)
+            # 상태 표시 업데이트 (옵션)
+            self.status_signal.emit(f"시작 단계: {task.start_key}")
+        elif self.step_combo.count() > 0:
+            # 시작 단계가 없거나 유효하지 않으면 첫 번째 단계 선택
+            first_step = self.step_combo.itemText(0)
+            self.step_combo.setCurrentText(first_step)
 
     def reload_tasks(self):
         """작업 목록 새로고침"""
-        # print("작업 목록 새로고침")
-
-        # pass
-
         Areas.Load_All()
 
         # 콤보박스 내용 업데이트 코드
         TaskMan.Load_Task()
         self.task_combo.clear()
-        # self.task_combo.addItem("")
 
         task_keys = TaskMan.GetAll_Tasks().keys()
         for key in task_keys:
             self.task_combo.addItem(key)
-        # print(f"{task_keys}")
+            
+        # 첫 번째 작업 선택 및 단계 업데이트
+        if task_keys:
+            first_task = next(iter(task_keys))
+            self.task_combo.setCurrentText(first_task)
+            self.update_step_combo(first_task)
+        else:
+            self.step_combo.clear()
     
     def update_capture_button_text(self, is_capturing):
         """캡처 버튼 텍스트 업데이트"""
