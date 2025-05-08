@@ -88,7 +88,7 @@ class Tasker(QObject):
     
     def _complete_stop_tasks(self):
         """작업 중지 완료 후 처리"""
-        self.logframe_addnotice.emit("Tasker: 작업이 중지되었습니다.")
+        self.logframe_addnotice.emit("⛔ 작업이 중지되었습니다.")
     
     async def Task_GS23_RF(self):
         limit_score = 50
@@ -177,11 +177,11 @@ class Tasker(QObject):
                 
         except asyncio.CancelledError:
             # 작업 취소 처리
-            self.logframe_addwarning.emit("작업이 취소되었습니다.")
+            self.logframe_addwarning.emit("🚫 작업이 취소되었습니다.")
             self.toggle_capture_callback()
         except Exception as e:
             # 예외 처리
-            self.logframe_adderror.emit(f"작업 중 오류 발생: {str(e)}")
+            self.logframe_adderror.emit(f"🚨 오류 발생: {str(e)}")
             self.toggle_capture_callback()
 
     # async def Execute_Waiting(self, step: BaseStep, task_key, step_key):
@@ -225,7 +225,7 @@ class Tasker(QObject):
             # 다음 단계 설정
             if 0 >= len(step.next_step):
                 # print(f"not next: running_task_steps= {self.running_task_steps}")
-                self.logframe_addwarning.emit(f"성공 후 다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
+                self.logframe_addwarning.emit(f"🛑 성공 후 다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
                 self.toggle_capture_callback()
             else:
                 self.running_task_steps += step.next_step
@@ -235,7 +235,7 @@ class Tasker(QObject):
             # 실패 시 처리
             if "" == step.fail_step:
                 # print(f"not fail: running_task_steps= {self.running_task_steps}")
-                self.logframe_addwarning.emit(f"실패 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
+                self.logframe_addwarning.emit(f"🛑 실패 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
                 self.toggle_capture_callback()
             else:
                 self.running_task_steps.append(step.fail_step)
@@ -244,7 +244,7 @@ class Tasker(QObject):
 
     async def Execute_MouseWheel(self, step: TaskStep_MouseWheel, task_key, step_key):
         """마우스휠 타입 단계 실행"""
-        logtext = "🖱️ 마우스 휠: "
+        logtext = "🖲️ 마우스 휠: "
         
         if 0 < step.waiting:
             await self.Execute_Waiting(step.waiting)
@@ -261,7 +261,7 @@ class Tasker(QObject):
         
         # 다음 단계 설정
         if 0 >= len(step.next_step):
-            self.logframe_addwarning.emit(f"다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
+            self.logframe_addwarning.emit(f"🛑 다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
             self.toggle_capture_callback()
         else:
             self.running_task_steps += step.next_step
@@ -287,7 +287,7 @@ class Tasker(QObject):
             self.running_task_steps += step.next_step
             self.Print_RunningSteps()
         else:
-            self.logframe_addwarning.emit(f"다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
+            self.logframe_addwarning.emit(f"🛑 다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
             self.toggle_capture_callback()
     
     def match_image_in_zone(self, zone_key, image_key):
@@ -431,7 +431,7 @@ class Tasker(QObject):
 
     def Click(self, x, y, caller=""):
         WindowUtil.click_at_position(x, y)
-        logtext = f"[[[마우스 클릭]]] ({x}, {y})"
+        logtext = f"🖱️ 마우스 클릭: ({x}, {y})"
         if "" != caller: logtext += f" {caller}"
         self.logframe_addlog_notmatching.emit(logtext)
     
