@@ -130,7 +130,7 @@ class Tasker(QObject):
         task_key, task = TaskMan.Get_RunningTask()
         # print(f"Tasker.Loop(): [{task_key}] {task}")
         self.running_task = task
-        self.running_task_steps = [task.start_key]
+        self.running_task_steps = [ TaskMan.GetKey_StartStep() ]
         
         try:
             while self.is_running:

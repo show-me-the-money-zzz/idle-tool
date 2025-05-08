@@ -316,6 +316,7 @@ def Create_Empty_Step(step_type: str, seq: int = 0) -> BaseStep:
 
 class RunningTask:
     key = ""
+    start_step = ""
     def __init__(self, key: str): self.key = key
     def set_key(self, key):
         findTask = Get_Task(key, None)
@@ -328,11 +329,19 @@ class RunningTask:
     def reset_key(self): self.key = ""
     def get(self):
         return (self.key, Get_Task(self.key, None))
+    
+    # start step
+    def set_startstep(self, stepkey: str): self.start_step = stepkey
+    def get_startstep(self): return self.start_step
 
 _runnging_task = RunningTask("")
 SetKey_RunningTask = _runnging_task.set_key
 ResetKey_RunningTask = _runnging_task.reset_key
 Get_RunningTask = _runnging_task.get
+
+# start step
+SetKey_StartStep = _runnging_task.set_startstep
+GetKey_StartStep = _runnging_task.get_startstep
 
 def initialize():
     Tasks.save()

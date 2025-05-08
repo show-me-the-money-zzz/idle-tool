@@ -87,11 +87,10 @@ class ControlFrame(QFrame):
         # 두 번째 행 - "자동화" 레이블과 작업 콤보박스
         task_row = QHBoxLayout()
         
-        # "자동화" 레이블 추가
-        task_row.addWidget(QLabel("자동화:"))
-        
-        # 콤보박스의 최대 너비 설정
-        combo_max_width = 508  # 적절한 너비로 조정
+        # "자동화" 레이블 추가 (고정 너비로 설정)
+        task_label = QLabel("자동화:")
+        task_label.setFixedWidth(60)  # 레이블 너비 고정
+        task_row.addWidget(task_label)
         
         # 작업 콤보박스 추가
         try:
@@ -107,17 +106,15 @@ class ControlFrame(QFrame):
             self.task_combo = QComboBox(self)
             self.task_combo.addItem("작업 선택...")
         
-        # 콤보박스 크기 설정
+        # 콤보박스 설정 - 확장하도록 설정
         try:
-            self.task_combo.setFixedWidth(combo_max_width)
+            # 확장 정책 설정 - 수평으로는 확장, 수직으로는 고정
+            self.task_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             self.task_combo.currentTextChanged.connect(lambda task: self.Change_Task(task))
         except Exception as e:
             print(f"콤보박스 크기 설정 오류: {e}")
         
         task_row.addWidget(self.task_combo)
-        
-        # 여백 추가
-        task_row.addStretch(1)
         
         # 두 번째 행을 메인 레이아웃에 추가
         main_layout.addLayout(task_row)
@@ -125,17 +122,17 @@ class ControlFrame(QFrame):
         # 세 번째 행 - "단계" 레이블과 단계 콤보박스
         step_row = QHBoxLayout()
         
-        # "단계" 레이블 추가
-        step_row.addWidget(QLabel("단계:"))
+        # "단계" 레이블 추가 (고정 너비로 설정 - 자동화 레이블과 동일하게)
+        step_label = QLabel("단계:")
+        step_label.setFixedWidth(60)  # 레이블 너비 고정
+        step_row.addWidget(step_label)
         
         # 단계 콤보박스 추가
         self.step_combo = SearchableComboBox()
-        self.step_combo.setFixedWidth(combo_max_width)
-        # self.step_combo.currentTextChanged.connect(lambda step: self.Change_Step(step))
+        # 확장 정책 설정 - 수평으로는 확장, 수직으로는 고정
+        self.step_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.step_combo.currentTextChanged.connect(lambda step: self.Change_Step(step))
         step_row.addWidget(self.step_combo)
-        
-        # 여백 추가
-        step_row.addStretch(1)
         
         # 세 번째 행을 메인 레이아웃에 추가
         main_layout.addLayout(step_row)
@@ -198,6 +195,10 @@ class ControlFrame(QFrame):
             # 시작 단계가 없거나 유효하지 않으면 첫 번째 단계 선택
             first_step = self.step_combo.itemText(0)
             self.step_combo.setCurrentText(first_step)
+
+    def Change_Step(self, step):
+        # print(f"Change_Step({step})")
+        TaskMan.SetKey_StartStep(step)
 
     def reload_tasks(self):
         """작업 목록 새로고침"""
