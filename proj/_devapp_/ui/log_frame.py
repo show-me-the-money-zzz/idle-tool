@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton,
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QTextCursor
 
+import os
 from datetime import datetime
 
 from stores.task_base_step import TaskStep_Matching
@@ -32,6 +33,10 @@ class LogFrame(QGroupBox):
         button_layout = QHBoxLayout(button_frame)
         button_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.addWidget(button_frame)
+
+        self.svae_log_btn = QPushButton("로그 저장")
+        self.svae_log_btn.clicked.connect(self.save_log)
+        button_layout.addWidget(self.svae_log_btn)
         
         # 버튼 레이아웃에 빈 공간 추가 (왼쪽)
         button_layout.addStretch(1)
@@ -49,6 +54,37 @@ class LogFrame(QGroupBox):
         main_layout.addWidget(self.log_text)
         
         # PySide6에서는 QTextEdit이 이미 스크롤바를 내장하고 있음
+    
+    def save_log(self):
+        """현재 로그를 파일로 저장합니다."""
+        try:
+            # 현재 시간을 파일명으로 사용
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            filename = f"gamelog-{timestamp}.log"
+            
+            # 로그 폴더 생성 (없는 경우)
+            log_dir = os.path.join(os.getcwd(), "logs")
+            if not os.path.exists(log_dir):
+                os.makedirs(log_dir)
+                
+            # 전체 파일 경로
+            file_path = os.path.join(log_dir, filename)
+            
+            # 로그 내용 가져오기 (HTML 태그 제거)
+            log_content = self.log_text.toPlainText()
+            
+            # 파일에 저장
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(log_content)
+                
+            # 성공 메시지
+            self.status_signal.emit(f"로그가 저장되었습니다: {file_path}")
+            self.add_notice(f"로그가 저장되었습니다: {filename}")
+            
+            return True
+        except Exception as e:
+            self.add_error(f"로그 저장 오류: {str(e)}")
+            return False
     
     @Slot()
     def clear_log(self):
