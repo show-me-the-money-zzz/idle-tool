@@ -692,6 +692,7 @@ class TaskEditorPopup(QDialog):
         # 다음 단계 목록 - QListWidget
         next_steps_list_layout = QVBoxLayout()
         self.next_steps_list = QListWidget()
+        self.next_steps_list.setStyleSheet("background-color: #c2ffc0; color: #000000;")
         self.next_steps_list.setMinimumHeight(100)  # 최소 높이 설정
         
         # 리스트 항목 선택 시 삭제 버튼 활성화를 위한 연결
@@ -711,6 +712,7 @@ class TaskEditorPopup(QDialog):
         # fail_step_items = [ "" ]
         # fail_step_items += [ f"단계{i}" for i in range(1, 31)]
         self.fail_step_combo = SearchableComboBox(items=[ "" ])
+        self.fail_step_combo.setStyleSheet("background-color: #ffc0c0; color: #000000;")
         self.fail_step_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         fail_step_layout.addWidget(self.fail_step_combo)
         
