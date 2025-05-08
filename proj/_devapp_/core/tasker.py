@@ -313,10 +313,17 @@ class Tasker(QObject):
         
         # 템플릿 이미지 로드
         template = cv2.imread(imageitem.file, cv2.IMREAD_COLOR)
-        # cv2.imwrite("debug_template_saved.png", template)   # 템플릿 이미지 저장 (디버깅용)
         
         # zone 영역 잘라내기
-        zone_crop = full_img[zoneitem.y:zoneitem.y+zoneitem.height, zoneitem.x:zoneitem.x+zoneitem.width]
+        zone_crop = full_img[
+            zoneitem.y : zoneitem.y + zoneitem.height,
+            zoneitem.x : zoneitem.x + zoneitem.width
+        ]
+
+        # # 템플릿 이미지 저장 (디버깅용)
+        # cv2.imwrite("match_full.png", full_img)
+        # cv2.imwrite("match_zone.png", zone_crop)
+        # cv2.imwrite("match_image.png", template)
         
         # 템플릿 매칭
         result = cv2.matchTemplate(zone_crop, template, cv2.TM_CCOEFF_NORMED)
@@ -342,6 +349,7 @@ class Tasker(QObject):
         
         target_x = zoneitem.x + max_loc[0]
         target_y = zoneitem.y + max_loc[1]
+        # print(f"target position: {target_x}, {target_y}")
         
         score = float(max_val)
         score_2 = math.floor(score * 100) / 100
@@ -359,7 +367,7 @@ class Tasker(QObject):
             "position": (target_x, target_y),
             
             "click_zone": zoneitem.ClickPoint,
-            "click_image": imageitem.ClickPoint,
+            "click_image": imageitem.GetClickPoint_byApp(target_x, target_y),
         }
         
     def match_image_in_zone_with_screenshot(self, zone_key: str, image_key: str, screenshot_path: str) -> Dict[str, Any]:

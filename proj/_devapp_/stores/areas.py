@@ -11,6 +11,9 @@ Zones = AreaStore("범위 영역", "zone.json")
 class ImageItem(BaseAreaItem):
     _name: str = field(default="", init=False)
     file: str
+
+    def GetClickPoint_byApp(self, x, y):
+        return (x + self.clickx, y + self.clicky)
 @dataclass
 class ZoneItem(BaseAreaItem):
     _name: str = field(default="", init=False)
