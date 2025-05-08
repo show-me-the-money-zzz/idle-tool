@@ -8,7 +8,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
     sys.path.append(current_dir)
 
-from zzz.app_ui import AppUI
+from ui.app_ui import AppUI
 from core.settings_manager import AppSetting
 import zzz.app_config as APP_CONFIG
 
