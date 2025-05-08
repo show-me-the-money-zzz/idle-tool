@@ -244,7 +244,7 @@ class Tasker(QObject):
 
     async def Execute_MouseWheel(self, step: TaskStep_MouseWheel, task_key, step_key):
         """마우스휠 타입 단계 실행"""
-        logtext = "[[[마우스 휠]]] "
+        logtext = "🖱️ 마우스 휠: "
         
         if 0 < step.waiting:
             await self.Execute_Waiting(step.waiting)
