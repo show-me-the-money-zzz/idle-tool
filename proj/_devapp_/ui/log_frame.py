@@ -58,8 +58,8 @@ class LogFrame(QGroupBox):
     def save_log(self):
         """현재 로그를 파일로 저장합니다."""
         try:
-            # 현재 시간을 파일명으로 사용
-            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            # 현재 시간을 요청한 형식으로 변환 (년도 두자리, 날짜_시간)
+            timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
             filename = f"gamelog-{timestamp}.log"
             
             # 로그 폴더 생성 (없는 경우)
@@ -79,7 +79,7 @@ class LogFrame(QGroupBox):
                 
             # 성공 메시지
             self.status_signal.emit(f"로그가 저장되었습니다: {file_path}")
-            self.add_notice(f"로그가 저장되었습니다: {filename}")
+            # self.add_notice(f"로그가 저장되었습니다: {filename}")
             
             return True
         except Exception as e:
