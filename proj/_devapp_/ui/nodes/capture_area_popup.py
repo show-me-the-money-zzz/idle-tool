@@ -605,7 +605,8 @@ class CaptureAreaPopup(QDialog):
                 items = []
                 
             # 리스트에 항목 추가
-            for key in sorted(items):
+            # for key in sorted(items):
+            for key in items:
                 list_widget.addItem(key)
                 
         except Exception as e:
