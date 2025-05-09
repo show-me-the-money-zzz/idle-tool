@@ -37,6 +37,7 @@ class FlowchartGenerator:
             else:
                 mermaid_code.append(f'    {node_id}["{node_text}"]')
         
+        lineindex = -1
         # 일반 연결 추가 (녹색)
         for key, step in steps.items():
             if key not in step_ids:
@@ -61,7 +62,9 @@ class FlowchartGenerator:
                 if next_step in step_ids:
                     to_id = step_ids[next_step]
                     mermaid_code.append(f"    {from_id} --> {to_id}:::successLink")
+                    lineindex += 1
         
+        fail_line_indexs = []
         # 실패 경로 추가 (빨간색)
         for key, step in steps.items():
             if key not in step_ids:
@@ -79,11 +82,19 @@ class FlowchartGenerator:
             if fail_step and fail_step in step_ids:
                 to_id = step_ids[fail_step]
                 mermaid_code.append(f"    {from_id} -- 실패 --> {to_id}:::failLink")
+                lineindex += 1
+                fail_line_indexs.append(lineindex)
         
         # 스타일 정의 추가
         mermaid_code.append("    classDef startNode fill:#d4f1f9,stroke:#45b3e0,stroke-width:2px;")
-        # mermaid_code.append("    classDef successLink stroke:#4CAF50,stroke-width:1.5px;")  # 녹색 연결선
-        # mermaid_code.append("    classDef failLink stroke:#f44336,stroke-width:1.5px;")     # 빨간색 연결선
+
+        style_linkline_fail = "stroke:#f44336,stroke-width:1.5px"
+        style_linkline_success = "stroke:#3d5b3f,stroke-width:0.5px"
+        for index in range(lineindex + 1):
+            style = style_linkline_success
+            if index in fail_line_indexs:
+                style = style_linkline_fail
+            mermaid_code.append(f"    linkStyle {index} {style};")
         
         return "\n".join(mermaid_code)
     
