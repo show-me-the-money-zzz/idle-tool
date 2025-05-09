@@ -73,7 +73,8 @@ class TaskEditorPopup(QDialog):
         # 두 번째 탭 - 프리뷰
         self.tab_preview = QWidget()
         self._setup_preview_tab()
-        self.tabs.addTab(self.tab_preview, "프리뷰")
+        # self.tabs.addTab(self.tab_preview, "프리뷰")
+        # self.tab_preview.setEnabled(False)
         
         # 메인 레이아웃에 탭 추가
         main_layout.addWidget(self.tabs)
@@ -381,6 +382,13 @@ class TaskEditorPopup(QDialog):
         
         # 여백 추가
         buttons_layout.addStretch(1)
+
+        flowchart_btn = QPushButton("순서도")
+        flowchart_btn.setToolTip("단계를 순서도로 웹브라우저 열기")
+        flowchart_btn.setFixedWidth(64)
+        # flowchart_btn.setEnabled(False)  # 초기에는 비활성화
+        flowchart_btn.clicked.connect(self.update_preview_flowchart)
+        buttons_layout.addWidget(flowchart_btn)
         
         step_layout.addLayout(buttons_layout)
         
