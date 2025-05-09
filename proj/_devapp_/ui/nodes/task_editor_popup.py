@@ -54,6 +54,8 @@ class TaskEditorPopup(QDialog):
         self.Connect_ChangedUI()
         
         self.Reload_Tasks()
+
+        self.tabs.currentChanged.connect(self.on_tab_changed)
     
     def _setup_ui(self):
         """UI 구성 설정"""
@@ -386,7 +388,7 @@ class TaskEditorPopup(QDialog):
         layout.addWidget(step_group, 2)  # 비율 2로 증가
 
     def _setup_preview_tab(self):
-        """프리뷰 탭 구성 - 브라우저 열기 버튼이 있는 간단한 UI"""
+        """프리뷰 탭 구성 - 자동화 목록과 흐름도 버튼"""
         layout = QVBoxLayout(self.tab_preview)
         
         # 자동화 목록 그룹
@@ -406,13 +408,31 @@ class TaskEditorPopup(QDialog):
         layout.addWidget(automation_group)
         
         # 간단한 설명 추가
-        info_label = QLabel("흐름도는 선택한 태스크를 웹 브라우저에서 시각화하여 보여줍니다.")
+        info_label = QLabel("선택한 태스크의 흐름도를 웹 브라우저에서 확인할 수 있습니다.")
         info_label.setWordWrap(True)
         info_label.setStyleSheet("color: #666; margin-top: 10px;")
         layout.addWidget(info_label)
         
         # 여백 추가
         layout.addStretch(1)
+
+    def sync_automation_lists(self):
+        """기본 탭과 프리뷰 탭의 자동화 목록 동기화"""
+        selected_text = None
+        if self.automation_list.currentItem():
+            selected_text = self.automation_list.currentItem().text()
+        
+        # 프리뷰 탭의 목록 초기화
+        self.preview_automation_list.clear()
+        
+        # 기본 탭의 항목들을 프리뷰 탭에 복사
+        for i in range(self.automation_list.count()):
+            item_text = self.automation_list.item(i).text()
+            self.preview_automation_list.addItem(item_text)
+            
+            # 같은 항목이 선택되도록 설정
+            if item_text == selected_text:
+                self.preview_automation_list.setCurrentRow(i)
 
     def update_preview_flowchart(self):
         """선택된 태스크의 흐름도를 웹 브라우저에서 열기"""
@@ -429,23 +449,37 @@ class TaskEditorPopup(QDialog):
             QMessageBox.warning(self, "경고", f"태스크 '{task_name}'를 찾을 수 없습니다.")
             return
         
-        # 흐름도 HTML 생성
-        from grinder_utils.flowchart_generator import FlowchartGenerator
-        mermaid_code = FlowchartGenerator.generate_mermaid_code(task_name, task_data)
-        html_content = FlowchartGenerator.get_html_template(mermaid_code, task_name)
+        try:
+            # Mermaid 코드 생성
+            from grinder_utils.flowchart_generator import FlowchartGenerator
+            mermaid_code = FlowchartGenerator.generate_mermaid_code(task_name, task_data)
+            html_content = FlowchartGenerator.get_html_template(mermaid_code, task_name)
+            
+            # 임시 HTML 파일 생성
+            import os
+            import tempfile
+            temp_dir = tempfile.gettempdir()
+            temp_file_path = os.path.join(temp_dir, f"flowchart_{task_name.replace(' ', '_')}.html")
+            
+            with open(temp_file_path, 'w', encoding='utf-8') as f:
+                f.write(html_content)
+            
+            # 기본 웹 브라우저로 파일 열기
+            import webbrowser
+            webbrowser.open(f'file://{temp_file_path}')
+            
+            # 상태 메시지 표시
+            if hasattr(self, 'status_signal'):
+                self.status_signal.emit(f"흐름도를 브라우저에서 열었습니다: {task_name}")
         
-        # 임시 HTML 파일 생성
-        temp_dir = tempfile.gettempdir()
-        temp_file_path = os.path.join(temp_dir, f"flowchart_{task_name.replace(' ', '_')}.html")
-        
-        with open(temp_file_path, 'w', encoding='utf-8') as f:
-            f.write(html_content)
-        
-        # 기본 웹 브라우저로 파일 열기
-        webbrowser.open(f'file://{temp_file_path}')
-        
-        # 성공 메시지 표시
-        self.status_signal.emit(f"흐름도를 브라우저에서 열었습니다: {task_name}")
+        except Exception as e:
+            import traceback
+            QMessageBox.critical(self, "오류", f"흐름도 생성 중 오류가 발생했습니다:\n{str(e)}\n\n{traceback.format_exc()}")
+            
+    def on_tab_changed(self, index):
+        """탭이 변경될 때 호출되는 메서드"""
+        if index == 1:  # 프리뷰 탭 인덱스
+            self.sync_automation_lists()
 
     def _create_center_panel(self):
         """중앙 패널 - 단계 기본정보 영역"""
