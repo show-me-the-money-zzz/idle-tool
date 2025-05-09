@@ -19,41 +19,25 @@ class FlowchartGenerator:
         # 노드 ID 매핑 생성
         step_ids = {}
         for i, key in enumerate(steps.keys()):
-            # 과정 ID 추출 (예: "01_1-마을에서..." -> "01_1")
-            parts = key.split('-')
-            if len(parts) > 0 and parts[0].strip():
-                step_ids[key] = parts[0].strip()
-            else:
-                step_ids[key] = f"node{i}"
+            # 안전한 노드 ID 생성
+            safe_id = f"step{i+1}"
+            step_ids[key] = safe_id
         
         # 노드 생성
         for key, node_id in step_ids.items():
-            # 노드 텍스트 생성 (ID + 설명)
-            parts = key.split('-')
-            node_text = node_id
+            # 노드 텍스트에 ID만 표시 (원래 텍스트는 너무 길어서 표시하지 않음)
+            # 대신 원래 텍스트를 툴팁이나 상세 보기에서 확인할 수 있게 설정 가능
             
-            # "복귀" 노드의 경우 전체 텍스트 표시
-            if "복귀" in key:
-                # 04_2-복귀-미니맵 찾아 클릭 -> "04_2\n복귀-미니맵 찾아 클릭"
-                if len(parts) > 1:
-                    description = "-".join(parts[1:])  # 모든 하이픈 이후 부분 결합
-                    node_text += f"\n{description}"
-            else:
-                # 일반 노드는 첫 번째 하이픈 이후 부분만 표시
-                if len(parts) > 1:
-                    description = parts[1].strip()
-                    short_desc = description[:15] + "..." if len(description) > 15 else description
-                    node_text += f"\n{short_desc}"
+            # 노드 텍스트에서 이스케이프 처리
+            node_text = key.replace('"', '\\"')
             
-            # 따옴표 이스케이프 처리
-            node_text = node_text.replace('"', '\\"')
-            
+            # 노드 스타일 설정
             if key == start_key:
                 mermaid_code.append(f'    {node_id}["{node_text}"]:::startNode')
             else:
                 mermaid_code.append(f'    {node_id}["{node_text}"]')
         
-        # 일반 연결 추가
+        # 일반 연결 추가 (녹색)
         for key, step in steps.items():
             if key not in step_ids:
                 continue
@@ -72,13 +56,13 @@ class FlowchartGenerator:
                 if not isinstance(next_steps, list):
                     next_steps = [next_steps] if next_steps else []
             
-            # 다음 단계 연결
+            # 다음 단계 연결 (녹색)
             for next_step in next_steps:
                 if next_step in step_ids:
                     to_id = step_ids[next_step]
-                    mermaid_code.append(f"    {from_id} --> {to_id}")
+                    mermaid_code.append(f"    {from_id} --> {to_id}:::successLink")
         
-        # 실패 경로 추가
+        # 실패 경로 추가 (빨간색)
         for key, step in steps.items():
             if key not in step_ids:
                 continue
@@ -94,10 +78,12 @@ class FlowchartGenerator:
             
             if fail_step and fail_step in step_ids:
                 to_id = step_ids[fail_step]
-                mermaid_code.append(f"    {from_id} -- 실패 --> {to_id}")
+                mermaid_code.append(f"    {from_id} -- 실패 --> {to_id}:::failLink")
         
         # 스타일 정의 추가
         mermaid_code.append("    classDef startNode fill:#d4f1f9,stroke:#45b3e0,stroke-width:2px;")
+        # mermaid_code.append("    classDef successLink stroke:#4CAF50,stroke-width:1.5px;")  # 녹색 연결선
+        # mermaid_code.append("    classDef failLink stroke:#f44336,stroke-width:1.5px;")     # 빨간색 연결선
         
         return "\n".join(mermaid_code)
     
@@ -126,7 +112,7 @@ class FlowchartGenerator:
             margin-bottom: 30px;
         }}
         .container {{
-            max-width: 1200px;
+            max-width: 90%;
             margin: 0 auto;
             padding: 20px;
             background-color: white;
@@ -135,6 +121,22 @@ class FlowchartGenerator:
         }}
         .mermaid {{
             overflow: auto;
+            font-size: 14px;
+        }}
+        .controls {{
+            text-align: center;
+            margin: 10px 0 20px 0;
+        }}
+        .controls button {{
+            margin: 0 5px;
+            padding: 5px 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }}
+        .controls button:hover {{
+            background-color: #e0e0e0;
         }}
         .info {{
             margin-top: 20px;
@@ -148,7 +150,8 @@ class FlowchartGenerator:
             margin-top: 15px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            justify-content: center;
+            gap: 20px;
             flex-wrap: wrap;
         }}
         .legend-item {{
@@ -169,21 +172,35 @@ class FlowchartGenerator:
             background-color: white;
             border: 1px solid #333;
         }}
+        .legend-success {{
+            width: 50px;
+            height: 2px;
+            background-color: #4CAF50;
+        }}
         .legend-fail {{
             width: 50px;
             height: 2px;
-            background-color: #f66;
+            background-color: #f44336;
         }}
     </style>
 </head>
 <body>
     <div class="container">
         <h2>{escaped_task_name} 흐름도</h2>
+        
+        <!-- 확대/축소 버튼 -->
+        <div class="controls">
+            <button onclick="zoomIn()">확대 (+)</button>
+            <button onclick="resetZoom()">원래 크기</button>
+            <button onclick="zoomOut()">축소 (-)</button>
+        </div>
+        
         <div class="mermaid">
 {mermaid_code}
         </div>
+        
         <div class="info">
-            <p>노드 ID는 태스크 단계 ID를 나타냅니다. 실패 경로는 "실패" 레이블이 있는 화살표로 표시됩니다.</p>
+            <p>단계 ID와 설명을 모두 노드에 표시합니다. 녹색 선은 일반 진행 경로, 빨간색 선은 실패 경로를 나타냅니다.</p>
             <div class="legend">
                 <div class="legend-item">
                     <div class="legend-color legend-start"></div>
@@ -194,12 +211,17 @@ class FlowchartGenerator:
                     <span>일반 노드</span>
                 </div>
                 <div class="legend-item">
+                    <div class="legend-success"></div>
+                    <span>다음 단계</span>
+                </div>
+                <div class="legend-item">
                     <div class="legend-fail"></div>
-                    <span>실패 경로</span>
+                    <span>실패 단계</span>
                 </div>
             </div>
         </div>
     </div>
+    
     <script>
         // Mermaid 초기화 설정
         mermaid.initialize({{
@@ -210,14 +232,60 @@ class FlowchartGenerator:
                 useMaxWidth: true,
                 htmlLabels: true,
                 curve: 'basis',
-                diagramPadding: 8
+                diagramPadding: 20,
+                nodeSpacing: 50,
+                rankSpacing: 70
             }}
         }});
         
+        // 확대/축소 기능
+        var currentZoom = 1.0;
+        
+        function zoomIn() {{
+            currentZoom += 0.1;
+            applyZoom();
+        }}
+        
+        function zoomOut() {{
+            if (currentZoom > 0.3) {{
+                currentZoom -= 0.1;
+                applyZoom();
+            }}
+        }}
+        
+        function resetZoom() {{
+            currentZoom = 1.0;
+            applyZoom();
+        }}
+        
+        function applyZoom() {{
+            const svgElements = document.querySelectorAll('.mermaid svg');
+            if (svgElements.length > 0) {{
+                svgElements.forEach(svg => {{
+                    svg.style.transform = `scale(${{currentZoom}})`;
+                    svg.style.transformOrigin = 'top center';
+                }});
+            }}
+        }}
+        
         // Mermaid 다이어그램 렌더링 재시도 (안정성 향상)
         document.addEventListener('DOMContentLoaded', function() {{
+            // 첫 번째 렌더링 시도
             setTimeout(function() {{
-                mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                try {{
+                    mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                }} catch (e) {{
+                    console.error("Mermaid 초기화 실패:", e);
+                    
+                    // 오류 발생 시 다시 시도
+                    setTimeout(function() {{
+                        try {{
+                            mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                        }} catch (e) {{
+                            console.error("재시도 실패:", e);
+                        }}
+                    }}, 1000);
+                }}
             }}, 500);
         }});
     </script>
@@ -226,12 +294,13 @@ class FlowchartGenerator:
     
     @staticmethod
     def generate_simple_test_code():
-        """영어로만 구성된 간단한 테스트 코드"""
+        """간단한 테스트 코드"""
         return """flowchart TD
-    A[시작] --> B[처리]
-    B --> C[판단]
-    C -->|Yes| D[종료]
-    C -->|No| B"""
+    A[시작] --> B[처리]:::successLink
+    B --> C[판단]:::successLink
+    C -->|Yes| D[종료]:::successLink
+    C -->|No| B:::successLink
+    classDef successLink stroke:#4CAF50,stroke-width:1.5px;"""
     
     @staticmethod
     def clean_flowchart_data(task_data):
