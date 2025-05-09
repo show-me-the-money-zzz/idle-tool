@@ -88,7 +88,7 @@ class FlowchartGenerator:
         # 스타일 정의 추가
         mermaid_code.append("    classDef startNode fill:#d4f1f9,stroke:#45b3e0,stroke-width:2px;")
 
-        style_linkline_fail = "stroke:#f44336,stroke-width:1.5px"
+        style_linkline_fail = "stroke:#f44336,stroke-width:2px"
         style_linkline_success = "stroke:#3d5b3f,stroke-width:0.5px"
         for index in range(lineindex + 1):
             style = style_linkline_success
