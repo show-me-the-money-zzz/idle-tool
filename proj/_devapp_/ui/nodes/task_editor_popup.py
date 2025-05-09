@@ -12,8 +12,8 @@ import copy
 import datetime
 
 import os
-import tempfile
-import webbrowser
+# import tempfile
+# import webbrowser
 
 from ui.component.searchable_comboBox import SearchableComboBox
 from ui.component.draggable_label import DraggableLabel
@@ -25,6 +25,8 @@ from grinder_types.selected_task import SelectedTask
 import ui.css as CSS
 from grinder_utils.pysider import ChangeText_ListWidget
 import zzz.app_config as APP_CONFIG
+# import core.config as CONFIG
+import grinder_utils.finder as FINDER
 
 
 class TaskEditorPopup(QDialog):
@@ -463,11 +465,12 @@ class TaskEditorPopup(QDialog):
             mermaid_code = FlowchartGenerator.generate_mermaid_code(task_name, task_data)
             html_content = FlowchartGenerator.get_html_template(mermaid_code, task_name)
             
-            # 임시 HTML 파일 생성
-            import os
-            import tempfile
-            temp_dir = tempfile.gettempdir()
-            temp_file_path = os.path.join(temp_dir, f"flowchart_{task_name.replace(' ', '_')}.html")
+            path = FINDER.GetPath_Flowchart()
+            os.makedirs(path, exist_ok=True)
+
+            current_time = datetime.datetime.now().strftime("%H%M%S")
+            temp_file_name = f"{task_name.replace(' ', '_')}_{current_time}.html"
+            temp_file_path = os.path.join(path, temp_file_name)
             
             with open(temp_file_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)

@@ -2,7 +2,7 @@ import sys
 # from grinder_utils import system
 from pathlib import Path
 
-from core.config import PATH_Data
+from core.config import PATH_Data, PATH_FLOWCHART
 
 def Get_LocalPth():
     # 애플리케이션 실행 파일 기준 경로 설정
@@ -17,3 +17,5 @@ def Get_LocalPth():
     
 def Get_DataPath():
     return Get_LocalPth() / PATH_Data
+
+def GetPath_Flowchart(): return Get_LocalPth() / PATH_FLOWCHART
