@@ -28,14 +28,22 @@ class FlowchartGenerator:
         
         # 노드 생성
         for key, node_id in step_ids.items():
-            # 노드 텍스트 생성 (ID + 간략한 설명)
+            # 노드 텍스트 생성 (ID + 설명)
             parts = key.split('-')
-            description = parts[1].strip() if len(parts) > 1 else ""
-            short_desc = description[:20] + "..." if len(description) > 20 else description
+            node_text = node_id
             
-            node_text = f"{node_id}"
-            if short_desc:
-                node_text += f"\n{short_desc}"
+            # "복귀" 노드의 경우 전체 텍스트 표시
+            if "복귀" in key:
+                # 04_2-복귀-미니맵 찾아 클릭 -> "04_2\n복귀-미니맵 찾아 클릭"
+                if len(parts) > 1:
+                    description = "-".join(parts[1:])  # 모든 하이픈 이후 부분 결합
+                    node_text += f"\n{description}"
+            else:
+                # 일반 노드는 첫 번째 하이픈 이후 부분만 표시
+                if len(parts) > 1:
+                    description = parts[1].strip()
+                    short_desc = description[:15] + "..." if len(description) > 15 else description
+                    node_text += f"\n{short_desc}"
             
             # 따옴표 이스케이프 처리
             node_text = node_text.replace('"', '\\"')
