@@ -11,6 +11,10 @@ import sys
 import copy
 import datetime
 
+import os
+import tempfile
+import webbrowser
+
 from ui.component.searchable_comboBox import SearchableComboBox
 from ui.component.draggable_label import DraggableLabel
 
@@ -382,35 +386,66 @@ class TaskEditorPopup(QDialog):
         layout.addWidget(step_group, 2)  # 비율 2로 증가
 
     def _setup_preview_tab(self):
-        """프리뷰 탭 구성"""
+        """프리뷰 탭 구성 - 브라우저 열기 버튼이 있는 간단한 UI"""
         layout = QVBoxLayout(self.tab_preview)
         
-        # 프리뷰 설정 그룹
-        preview_settings_group = QGroupBox("프리뷰 설정")
-        preview_settings_layout = QGridLayout(preview_settings_group)
+        # 자동화 목록 그룹
+        automation_group = QGroupBox("자동화 목록")
+        automation_layout = QVBoxLayout(automation_group)
         
-        # 프리뷰 옵션들
-        preview_settings_layout.addWidget(QLabel("표시 옵션:"), 0, 0)
-        self.preview_option_combo = QComboBox()
-        self.preview_option_combo.addItems(["옵션1", "옵션2", "옵션3"])
-        preview_settings_layout.addWidget(self.preview_option_combo, 0, 1)
+        # 자동화 목록 위젯
+        self.preview_automation_list = QListWidget()
+        automation_layout.addWidget(self.preview_automation_list)
         
-        preview_settings_layout.addWidget(QLabel("갱신 주기:"), 1, 0)
-        self.refresh_rate_combo = QComboBox()
-        self.refresh_rate_combo.addItems(["빠름", "보통", "느림"])
-        preview_settings_layout.addWidget(self.refresh_rate_combo, 1, 1)
+        # 브라우저에서 보기 버튼
+        view_button = QPushButton("브라우저에서 흐름도 보기")
+        view_button.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold; padding: 8px;")
+        view_button.clicked.connect(self.update_preview_flowchart)
+        automation_layout.addWidget(view_button)
         
-        layout.addWidget(preview_settings_group)
+        layout.addWidget(automation_group)
         
-        # 프리뷰 화면
-        preview_display_group = QGroupBox("프리뷰 화면")
-        preview_display_layout = QVBoxLayout(preview_display_group)
-        self.preview_display = QTextEdit()
-        self.preview_display.setReadOnly(True)
-        self.preview_display.setPlaceholderText("여기에 프리뷰가 표시됩니다.")
-        preview_display_layout.addWidget(self.preview_display)
+        # 간단한 설명 추가
+        info_label = QLabel("흐름도는 선택한 태스크를 웹 브라우저에서 시각화하여 보여줍니다.")
+        info_label.setWordWrap(True)
+        info_label.setStyleSheet("color: #666; margin-top: 10px;")
+        layout.addWidget(info_label)
         
-        layout.addWidget(preview_display_group, 1)  # 비율 1로 늘어남
+        # 여백 추가
+        layout.addStretch(1)
+
+    def update_preview_flowchart(self):
+        """선택된 태스크의 흐름도를 웹 브라우저에서 열기"""
+        # items = self.preview_automation_list.selectedItems()
+        items = self.automation_list.selectedItems()
+        if not items:
+            QMessageBox.information(self, "정보", "왼쪽 목록에서 태스크를 선택하세요.")
+            return
+        
+        task_name = items[0].text()
+        task_data = self.tasks.get(task_name)
+        
+        if not task_data:
+            QMessageBox.warning(self, "경고", f"태스크 '{task_name}'를 찾을 수 없습니다.")
+            return
+        
+        # 흐름도 HTML 생성
+        from grinder_utils.flowchart_generator import FlowchartGenerator
+        mermaid_code = FlowchartGenerator.generate_mermaid_code(task_name, task_data)
+        html_content = FlowchartGenerator.get_html_template(mermaid_code, task_name)
+        
+        # 임시 HTML 파일 생성
+        temp_dir = tempfile.gettempdir()
+        temp_file_path = os.path.join(temp_dir, f"flowchart_{task_name.replace(' ', '_')}.html")
+        
+        with open(temp_file_path, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        
+        # 기본 웹 브라우저로 파일 열기
+        webbrowser.open(f'file://{temp_file_path}')
+        
+        # 성공 메시지 표시
+        self.status_signal.emit(f"흐름도를 브라우저에서 열었습니다: {task_name}")
 
     def _create_center_panel(self):
         """중앙 패널 - 단계 기본정보 영역"""
