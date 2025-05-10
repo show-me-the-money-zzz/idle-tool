@@ -108,7 +108,7 @@ class FlowchartGenerator:
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>{escaped_task_name} 흐름도</title>
+    <title>{escaped_task_name}</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js"></script>
     <style>
         body {{
@@ -197,7 +197,7 @@ class FlowchartGenerator:
 </head>
 <body>
     <div class="container">
-        <h2>{escaped_task_name} 흐름도</h2>
+        <h2>{escaped_task_name}</h2>
         
         <!-- 확대/축소 버튼 -->
         <div class="controls">
