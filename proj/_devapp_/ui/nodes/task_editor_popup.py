@@ -463,7 +463,7 @@ class TaskEditorPopup(QDialog):
             # Mermaid 코드 생성
             from grinder_utils.flowchart_generator import FlowchartGenerator
             mermaid_code = FlowchartGenerator.generate_mermaid_code(task_name, task_data)
-            html_content = FlowchartGenerator.get_html_template(mermaid_code, task_name)
+            html_content = FlowchartGenerator.get_html_template(mermaid_code, task_name, task_data.comment)
             
             path = FINDER.GetPath_Flowchart()
             os.makedirs(path, exist_ok=True)

@@ -99,209 +99,245 @@ class FlowchartGenerator:
         return "\n".join(mermaid_code)
     
     @staticmethod
-    def get_html_template(mermaid_code, task_name):
+    def get_html_template(mermaid_code, task_name, comment = ""):
         """Mermaid 코드를 포함한 HTML 템플릿 생성"""
         # HTML 특수 문자 이스케이프
         escaped_task_name = task_name.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
         
+        # 설명이 있는지 확인하고 스타일 조건부 적용
+        description_style = ""
+        description_html = ""
+        
+        if comment.strip():  # 설명이 비어있지 않은 경우
+            # 줄바꿈 여부 확인 (여러 줄이면 pre-line 사용, 한 줄이면 normal 사용)
+            white_space_style = "white-space: pre-line;" if "\n" in comment else "white-space: normal;"
+            
+            description_style = f"""
+            .task-description {{
+                margin: 0 auto 20px auto;
+                padding: {10 if len(comment) < 100 else 15}px;
+                background-color: #f5f9ff;
+                border-left: 4px solid #3498db;
+                color: #333;
+                line-height: 1.6;
+                font-size: 1em;
+                {white_space_style}
+                max-width: 90%;
+                border-radius: 4px;
+            }}
+            .task-description p {{
+                margin: 0;
+            }}
+            """
+            
+            description_html = f"""
+            <!-- 태스크 설명 영역 -->
+            <div class="task-description">
+                {comment}
+            </div>
+            """
+        
         return f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>{escaped_task_name}</title>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js"></script>
-    <style>
-        body {{
-            font-family: 'Malgun Gothic', 'Segoe UI', Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }}
-        h2 {{
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
-        }}
-        .container {{
-            max-width: 90%;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }}
-        .mermaid {{
-            overflow: auto;
-            font-size: 14px;
-        }}
-        .controls {{
-            text-align: center;
-            margin: 10px 0 20px 0;
-        }}
-        .controls button {{
-            margin: 0 5px;
-            padding: 5px 10px;
-            background-color: #f0f0f0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            cursor: pointer;
-        }}
-        .controls button:hover {{
-            background-color: #e0e0e0;
-        }}
-        .info {{
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #f0f7ff;
-            border-left: 4px solid #45b3e0;
-            color: #333;
-            font-size: 0.9em;
-        }}
-        .legend {{
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }}
-        .legend-item {{
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }}
-        .legend-color {{
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-        }}
-        .legend-start {{
-            background-color: #d4f1f9;
-            border: 2px solid #45b3e0;
-        }}
-        .legend-normal {{
-            background-color: white;
-            border: 1px solid #333;
-        }}
-        .legend-success {{
-            width: 50px;
-            height: 2px;
-            background-color: #4CAF50;
-        }}
-        .legend-fail {{
-            width: 50px;
-            height: 2px;
-            background-color: #f44336;
-        }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>{escaped_task_name}</h2>
-        
-        <!-- 확대/축소 버튼 -->
-        <div class="controls">
-            <button onclick="zoomIn()">확대 (+)</button>
-            <button onclick="resetZoom()">원래 크기</button>
-            <button onclick="zoomOut()">축소 (-)</button>
-        </div>
-        
-        <div class="mermaid">
-{mermaid_code}
-        </div>
-        
-        <div class="info">
-            <p>단계 ID와 설명을 모두 노드에 표시합니다. 녹색 선은 일반 진행 경로, 빨간색 선은 실패 경로를 나타냅니다.</p>
-            <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-color legend-start"></div>
-                    <span>시작 노드</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color legend-normal"></div>
-                    <span>일반 노드</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-success"></div>
-                    <span>다음 단계</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-fail"></div>
-                    <span>실패 단계</span>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{escaped_task_name}</title>
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js"></script>
+        <style>
+            body {{
+                font-family: 'Malgun Gothic', 'Segoe UI', Arial, sans-serif;
+                margin: 20px;
+                padding: 20px;
+                background-color: #f9f9f9;
+            }}
+            h2 {{
+                color: #333;
+                text-align: center;
+                margin-bottom: {10 if comment.strip() else 30}px;
+            }}
+            {description_style}
+            .container {{
+                max-width: 90%;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }}
+            .mermaid {{
+                overflow: auto;
+                font-size: 14px;
+            }}
+            .controls {{
+                text-align: center;
+                margin: 10px 0 20px 0;
+            }}
+            .controls button {{
+                margin: 0 5px;
+                padding: 5px 10px;
+                background-color: #f0f0f0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                cursor: pointer;
+            }}
+            .controls button:hover {{
+                background-color: #e0e0e0;
+            }}
+            .info {{
+                margin-top: 20px;
+                padding: 10px;
+                background-color: #f0f7ff;
+                border-left: 4px solid #45b3e0;
+                color: #333;
+                font-size: 0.9em;
+            }}
+            .legend {{
+                margin-top: 15px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+                flex-wrap: wrap;
+            }}
+            .legend-item {{
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }}
+            .legend-color {{
+                width: 20px;
+                height: 20px;
+                border-radius: 4px;
+            }}
+            .legend-start {{
+                background-color: #d4f1f9;
+                border: 2px solid #45b3e0;
+            }}
+            .legend-normal {{
+                background-color: white;
+                border: 1px solid #333;
+            }}
+            .legend-success {{
+                width: 50px;
+                height: 2px;
+                background-color: #4CAF50;
+            }}
+            .legend-fail {{
+                width: 50px;
+                height: 2px;
+                background-color: #f44336;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>{escaped_task_name}</h2>
+            
+            {description_html}
+            
+            <!-- 확대/축소 버튼 -->
+            <div class="controls">
+                <button onclick="zoomIn()">확대 (+)</button>
+                <button onclick="resetZoom()">원래 크기</button>
+                <button onclick="zoomOut()">축소 (-)</button>
+            </div>
+            
+            <div class="mermaid">
+    {mermaid_code}
+            </div>
+            
+            <div class="info">
+                <p>단계 ID와 설명을 모두 노드에 표시합니다. 녹색 선은 일반 진행 경로, 빨간색 선은 실패 경로를 나타냅니다.</p>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color legend-start"></div>
+                        <span>시작 노드</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color legend-normal"></div>
+                        <span>일반 노드</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-success"></div>
+                        <span>다음 단계</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-fail"></div>
+                        <span>실패 단계</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <script>
-        // Mermaid 초기화 설정
-        mermaid.initialize({{
-            startOnLoad: true,
-            securityLevel: 'loose',
-            theme: 'default',
-            flowchart: {{
-                useMaxWidth: true,
-                htmlLabels: true,
-                curve: 'basis',
-                diagramPadding: 20,
-                nodeSpacing: 50,
-                rankSpacing: 70
-            }}
-        }});
         
-        // 확대/축소 기능
-        var currentZoom = 1.0;
-        
-        function zoomIn() {{
-            currentZoom += 0.1;
-            applyZoom();
-        }}
-        
-        function zoomOut() {{
-            if (currentZoom > 0.3) {{
-                currentZoom -= 0.1;
+        <script>
+            // Mermaid 초기화 설정
+            mermaid.initialize({{
+                startOnLoad: true,
+                securityLevel: 'loose',
+                theme: 'default',
+                flowchart: {{
+                    useMaxWidth: true,
+                    htmlLabels: true,
+                    curve: 'basis',
+                    diagramPadding: 20,
+                    nodeSpacing: 50,
+                    rankSpacing: 70
+                }}
+            }});
+            
+            // 확대/축소 기능
+            var currentZoom = 1.0;
+            
+            function zoomIn() {{
+                currentZoom += 0.1;
                 applyZoom();
             }}
-        }}
-        
-        function resetZoom() {{
-            currentZoom = 1.0;
-            applyZoom();
-        }}
-        
-        function applyZoom() {{
-            const svgElements = document.querySelectorAll('.mermaid svg');
-            if (svgElements.length > 0) {{
-                svgElements.forEach(svg => {{
-                    svg.style.transform = `scale(${{currentZoom}})`;
-                    svg.style.transformOrigin = 'top center';
-                }});
-            }}
-        }}
-        
-        // Mermaid 다이어그램 렌더링 재시도 (안정성 향상)
-        document.addEventListener('DOMContentLoaded', function() {{
-            // 첫 번째 렌더링 시도
-            setTimeout(function() {{
-                try {{
-                    mermaid.init(undefined, document.querySelectorAll('.mermaid'));
-                }} catch (e) {{
-                    console.error("Mermaid 초기화 실패:", e);
-                    
-                    // 오류 발생 시 다시 시도
-                    setTimeout(function() {{
-                        try {{
-                            mermaid.init(undefined, document.querySelectorAll('.mermaid'));
-                        }} catch (e) {{
-                            console.error("재시도 실패:", e);
-                        }}
-                    }}, 1000);
+            
+            function zoomOut() {{
+                if (currentZoom > 0.3) {{
+                    currentZoom -= 0.1;
+                    applyZoom();
                 }}
-            }}, 500);
-        }});
-    </script>
-</body>
-</html>"""
+            }}
+            
+            function resetZoom() {{
+                currentZoom = 1.0;
+                applyZoom();
+            }}
+            
+            function applyZoom() {{
+                const svgElements = document.querySelectorAll('.mermaid svg');
+                if (svgElements.length > 0) {{
+                    svgElements.forEach(svg => {{
+                        svg.style.transform = `scale(${{currentZoom}})`;
+                        svg.style.transformOrigin = 'top center';
+                    }});
+                }}
+            }}
+            
+            // Mermaid 다이어그램 렌더링 재시도 (안정성 향상)
+            document.addEventListener('DOMContentLoaded', function() {{
+                // 첫 번째 렌더링 시도
+                setTimeout(function() {{
+                    try {{
+                        mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                    }} catch (e) {{
+                        console.error("Mermaid 초기화 실패:", e);
+                        
+                        // 오류 발생 시 다시 시도
+                        setTimeout(function() {{
+                            try {{
+                                mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                            }} catch (e) {{
+                                console.error("재시도 실패:", e);
+                            }}
+                        }}, 1000);
+                    }}
+                }}, 500);
+            }});
+        </script>
+    </body>
+    </html>"""
     
     @staticmethod
     def generate_simple_test_code():
