@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (QWidget, QTabWidget, QLabel, QLineEdit, QPushButton, 
                            QComboBox, QGridLayout, QHBoxLayout, QVBoxLayout, 
-                           QMessageBox, QFileDialog, QFrame, QGroupBox)
+                           QMessageBox, QFileDialog, QFrame, QGroupBox, QCheckBox)
 from PySide6.QtCore import Qt, Signal, Slot
 import win32gui
 from datetime import datetime
@@ -84,6 +84,11 @@ class ConnectionFrame(QGroupBox):
         top_action_layout.addStretch(1)
         
         # 우측 영역 - 게임 연결 버튼
+        # if not APP_CONFIG.RELEASE_APP:
+        self.check_force_resolution_ignore = QCheckBox("해상도 강제변경 무시")
+        self.check_force_resolution_ignore.stateChanged.connect(self.update_force_resolution_ignore)
+        top_action_layout.addWidget(self.check_force_resolution_ignore)
+        
         connect_app_btn = QPushButton("게임 연결")
         connect_app_btn.setStyleSheet(CSS.BUTTON_APPLY_GREEN)
         connect_app_btn.clicked.connect(self.connect_to_selected_app)
@@ -167,6 +172,9 @@ class ConnectionFrame(QGroupBox):
         # 여백 조정
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
+        
+    def update_force_resolution_ignore(self):
+        WindowUtil.force_resolution = not self.check_force_resolution_ignore.isChecked()
 
     @Slot()
     def connect_to_pid(self):

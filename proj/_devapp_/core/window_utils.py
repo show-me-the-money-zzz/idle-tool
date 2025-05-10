@@ -18,6 +18,8 @@ class WindowManager:
     def __init__(self):
         self.target_hwnd = None
         self.window_rect = (0, 0, 0, 0)  # (left, top, right, bottom)
+        
+        self.force_resolution = True
 
     def find_window_by_pid(self, pid):
         process = psutil.Process(pid)
@@ -92,7 +94,7 @@ class WindowManager:
             win32gui.SetForegroundWindow(self.target_hwnd)
             time.sleep(0.3)
             
-            if checkresolution:
+            if checkresolution and self.force_resolution:
                 self.Check_Reoslution()
 
             return True
