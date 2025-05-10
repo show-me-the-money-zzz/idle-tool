@@ -21,4 +21,6 @@ APP_THEME = 'Windows'
 # "Fusion", "Windows", "WindowsVista", "Macintosh", "macos"
 # 스타일 설정 (PySide6에서는 QApplication 스타일 시트 또는 Fusion 스타일 사용)
 
+USE_OCR = True
+
 def Is_DarkTheme(): return APP_THEME == 'Windows'

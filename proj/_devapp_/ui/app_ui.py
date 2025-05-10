@@ -97,6 +97,9 @@ class AppUI(QMainWindow):
         self.mouse_timer.start(100)  # 100ms 간격
 
     def initialize_ocr(self):
+        if not APP_CONFIG.USE_OCR:
+            return True
+    
         """OCR 엔진 초기화"""
         # Tesseract 경로 확인 및 설정
         tesseract_path = AppSetting.check_tesseract_path(self)
@@ -179,9 +182,10 @@ class AppUI(QMainWindow):
         self.main_layout.addWidget(self.log_frame, 1)  # stretch factor 1 추가
 
         # 5. 정보바를 하단에 추가 (상태바 위쪽)
-        self.info_bar = InfoBar(self)
+        # self.info_bar = InfoBar(self)
         self.info_bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.main_layout.addWidget(self.info_bar)
+        if APP_CONFIG.USE_OCR:
+            self.main_layout.addWidget(self.info_bar)
         
         # 캡처 설정 저장 변수
         self.capture_settings = None

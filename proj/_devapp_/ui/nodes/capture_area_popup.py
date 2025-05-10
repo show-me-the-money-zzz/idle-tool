@@ -103,9 +103,12 @@ class CaptureAreaPopup(QDialog):
         # 캡처 타입 및 키 입력 영역
         key_layout = QHBoxLayout()
         
+        typeitems = [ "이미지", "빈영역", ]
+        if APP_CONFIG.USE_OCR:
+            typeitems.append("텍스트")
         # 캡처 방식 선택 콤보박스
         self.capture_type_combo = QComboBox()
-        self.capture_type_combo.addItems(["이미지", "빈영역", "텍스트"])
+        self.capture_type_combo.addItems(typeitems)
         # self.capture_type_combo.currentIndexChanged.connect(self.on_capture_type_changed)
         self.capture_type_combo.setEnabled(False)
         key_layout.addWidget(self.capture_type_combo)
@@ -416,8 +419,9 @@ class CaptureAreaPopup(QDialog):
         self.left_tabs.addTab(zone_tab, "빈영역")
         
         # 텍스트 탭
-        text_tab = self._create_list_tab("텍스트", CaptureMode.TEXT)
-        self.left_tabs.addTab(text_tab, "텍스트")
+        if APP_CONFIG.USE_OCR:
+            text_tab = self._create_list_tab("텍스트", CaptureMode.TEXT)
+            self.left_tabs.addTab(text_tab, "텍스트")
         
         # 탭 변경 이벤트 연결
         self.left_tabs.currentChanged.connect(self._on_tab_changed)
