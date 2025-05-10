@@ -132,9 +132,7 @@ class FlowchartGenerator:
             
             description_html = f"""
             <!-- 태스크 설명 영역 -->
-            <div class="task-description">
-                {comment}
-            </div>
+            <div class="task-description">{comment}</div>
             """
         
         return f"""<!DOCTYPE html>
