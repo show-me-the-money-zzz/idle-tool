@@ -385,6 +385,10 @@ class TaskEditorPopup(QDialog):
         # 여백 추가
         buttons_layout.addStretch(1)
 
+        flowchart_folder_btn = QPushButton("폴더 열기")
+        flowchart_folder_btn.clicked.connect(self.open_flowchart_folder)
+        buttons_layout.addWidget(flowchart_folder_btn)
+        
         flowchart_btn = QPushButton("순서도")
         flowchart_btn.setToolTip("단계를 순서도로 웹브라우저 열기")
         flowchart_btn.setFixedWidth(64)
@@ -486,6 +490,15 @@ class TaskEditorPopup(QDialog):
         except Exception as e:
             import traceback
             QMessageBox.critical(self, "오류", f"흐름도 생성 중 오류가 발생했습니다:\n{str(e)}\n\n{traceback.format_exc()}")
+            
+    def open_flowchart_folder(self):
+        try:
+            path = FINDER.GetPath_Flowchart()
+            if not os.path.exists(path):
+                os.makedirs(path)
+            os.startfile(path)  # Windows 전용
+        except Exception as e:
+            QMessageBox.critical(self, "폴더 열기 실패", f"폴더를 열 수 없습니다: {str(e)}")
             
     def on_tab_changed(self, index):
         """탭이 변경될 때 호출되는 메서드"""
