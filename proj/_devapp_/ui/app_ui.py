@@ -294,6 +294,11 @@ class AppUI(QMainWindow):
             self.control_frame.capture_btn.setEnabled(False)
             QTimer.singleShot(500, lambda: self.control_frame.capture_btn.setEnabled(True))
         else:
+            from core.telegram_notifier import TelegramNotifier
+            telenoti = TelegramNotifier("7734048311:AAHa9GsavYBMAOOpMVXnzF9gsfqWOH7tWKc", "-1002515704043")
+            telenoti.send_area_screenshot("텔레그램알림용-다이아", "웰즈5 - 멜라닝")
+            return
+        
             try:
                 # Check if the task was recently stopped (add this flag in Tasker)
                 if hasattr(self.tasker, 'recently_stopped') and self.tasker.recently_stopped:
