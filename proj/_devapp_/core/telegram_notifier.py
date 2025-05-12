@@ -112,6 +112,12 @@ class TelegramNotifier:
                 # data["parse_mode"] = "HTML"  # 캡션에 HTML 태그 지원
                 data["parse_mode"] = "markdown"
             
+            url_discord = "https://discord.com/api/webhooks/1371429465825218591/cgDpAInWxdAO3FCHBHLPkdH-1Cvyvm_n2RTnKpAaxsOqGR4CJb6C4IEqzqGj2OgqC5Lj"
+            url = url_discord
+            data_discord = {
+                "content": caption
+                }
+            data = data_discord
             response = requests.post(url, data=data, files=files)
             return response.status_code == 200
             

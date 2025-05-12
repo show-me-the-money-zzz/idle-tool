@@ -301,10 +301,10 @@ class Tasker(QObject):
         def get_noti_message():
             datetext = datetime.now().strftime("%y-%m-%d %H:%M:%S")
             
-            message = "_스탯 알림_" + "\n"
+            message = "## 스탯 알림" + "\n"
             message += (f"*엘머5 / 마루이모 / {datetext}*" + "\n\n")
-            message += ("부캐 계정입니답.. (1분 간격 알림)" + "\n")
-            message += "[자세히 보기(다음)](https://www.daum.net/)"
+            message += ("부캐 계정입니답.. (1분 간격 알림)22" + "\n")
+            # message += "[자세히 보기(다음)](https://www.daum.net/)"
             return message
         
         self.telenoti.send_area_screenshot("캐릭 스탯 정보", get_noti_message())
