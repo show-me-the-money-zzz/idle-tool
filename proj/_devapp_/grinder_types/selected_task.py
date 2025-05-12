@@ -160,6 +160,7 @@ class SelectedTask:
             
         # 현재 단계의 공통 속성 추출
         base_params = {
+            "name": current_step.name,
             "seq": current_step.seq,
             "waiting": current_step.waiting,
             "type": type_str,

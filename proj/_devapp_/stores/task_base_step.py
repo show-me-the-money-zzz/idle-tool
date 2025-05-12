@@ -3,6 +3,7 @@ import re
 
 @dataclass
 class BaseStep:
+    name: str
     type: str
     seq: int
     waiting: float

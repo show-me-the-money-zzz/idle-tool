@@ -19,6 +19,7 @@ STEP_TYPE_MAP = {
 
 @dataclass
 class Task:
+    name: str
     steps: dict[str, BaseStep]  # Now using BaseStep instead of TaskStep
     start_key: str
     comment: str
@@ -208,6 +209,7 @@ def _create_step_instance(step_type: str, step_data: dict) -> BaseStep:
     """주어진 타입에 맞는 BaseStep 파생 객체 생성"""
     # 기본 공통 필드
     base_params = {
+        "name": step_data.get("name", ""),
         "seq": step_data.get("seq", 0),
         "waiting": step_data.get("waiting", 0.0),
         "type": step_type,
@@ -241,6 +243,7 @@ def _create_step_instance(step_type: str, step_data: dict) -> BaseStep:
 
 def Get_Task(key, default=None):
     data = Tasks.get(key, default)
+
     if not data:
         return default
 
@@ -254,6 +257,7 @@ def Get_Task(key, default=None):
             print(f"[Step Load Error] '{key}' 변환 실패: {e}")
 
     ret = Task(
+        name=data.get("name", ""),
         steps=step_dict,
         start_key=data["start_key"],
         comment=data.get("comment", "")
@@ -284,6 +288,7 @@ def Create_Empty_Step(step_type: str, seq: int = 0) -> BaseStep:
     """새로운 빈 단계를 생성하는 함수"""
     # 공통 파라미터
     base_params = {
+        "name": "",
         "seq": seq,
         "waiting": 0.0,
         "type": step_type,
