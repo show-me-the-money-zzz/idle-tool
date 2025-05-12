@@ -29,7 +29,8 @@ class FlowchartGenerator:
             # 대신 원래 텍스트를 툴팁이나 상세 보기에서 확인할 수 있게 설정 가능
             
             # 노드 텍스트에서 이스케이프 처리
-            node_text = key.replace('"', '\\"')
+            # node_text = key.replace('"', '\\"')
+            node_text = steps[key].name.replace('"', '\\"')
             
             # 노드 스타일 설정
             if key == start_key:
