@@ -7,6 +7,7 @@ import os
 import math
 import numpy as np
 from typing import Dict, Any
+from datetime import datetime
 
 import asyncio
 from asyncio import Future
@@ -46,6 +47,7 @@ class Tasker(QObject):
         # 작업 상태 변수
         self.is_running = False
         self.current_task = None
+        self.noti_task = None
         
         # 공유 MSS 인스턴스
         self.sct = mss.mss()
@@ -58,6 +60,7 @@ class Tasker(QObject):
         self.is_running = True
         
         self.current_task = self.async_helper.run_task(self.Loop())
+        self.noti_task = self.async_helper.run_task(self.Run_Notice())
         
         self.logframe_addnotice.emit("Tasker: 작업이 시작되었습니다.")
         return True
@@ -83,47 +86,14 @@ class Tasker(QObject):
             self.current_task = None
         else:
             self._complete_stop_tasks()
+            
+        self.Cancel_Noti()
         
         return True
     
     def _complete_stop_tasks(self):
         """작업 중지 완료 후 처리"""
         self.logframe_addnotice.emit("⛔ 작업이 중지되었습니다.")
-    
-    async def Task_GS23_RF(self):
-        limit_score = 50
-        
-        try:
-            matched = self.match_image_in_zone("메뉴_좌상", "메뉴_좌상-맵")
-            # matching = self.match_image_in_zone("우상단메뉴", "우상단메뉴-인벤")
-            # print(matched)
-            # score = matched["score_percent"]
-            # if limit_score <= score:
-            #     self.logframe_addlog.emit(f"ZONE:{matched['zone']}에서 IMG:{matched['image']} 찾음 ({score:.1f}%)")
-            
-            # # if matching["matched"] and limit_score <= score:
-            # if limit_score <= score:
-            #     x, y = matched["click"]
-            #     # 클릭 요청 시그널 발생 (UI 스레드에서 처리)
-            #     WindowUtil.click_at_position(x, y)
-            #     self.logframe_addlog.emit(f"마우스 클릭 ({x}, {y})")
-                
-            # matched = self.match_image_in_zone("메뉴_마을", "메뉴_마을-잡화")
-            # # matched = self.match_image_in_zone(self.sct, "우상단메뉴", "우상단메뉴-인벤")
-            # self.logframe_addlog.emit(f"{matched}")
-            # # score = matched["score_percent"]
-            # # self.logframe_addnotice.emit("ㅋㅋㅋ")
-            
-            # if 50 <= score:
-
-            # matched = self.match_image_in_zone("마을상인메뉴", "마을상인-잡화")
-            # # print(matched)
-            # self.logframe_addlog.emit(f"{matched}")
-            # matched = self.match_image_in_zone("마을상인메뉴", "마을상인-창고")
-            # self.logframe_addlog.emit(f"{matched}")
-        
-        except Exception as e:
-            self.logframe_adderror.emit(f"이미지 매칭 오류: {str(e)}")
             
     def Make_Task_GS23_RF(self): return {}
     
@@ -269,28 +239,74 @@ class Tasker(QObject):
             self.running_task_steps += step.next_step
             self.Print_RunningSteps()
 
-    async def Execute_TelegramNoti(self, step: TaskStep_TeltegramNoti, task_key, step_key):
-        """텔레그램 알림 타입 단계 실행"""
+    # async def Execute_TelegramNoti(self, step: TaskStep_TeltegramNoti, task_key, step_key):
+    #     """텔레그램 알림 타입 단계 실행"""
         
-        await self.Execute_Waiting(step.waiting)
+    #     await self.Execute_Waiting(step.waiting)
         
-        if step.dummy:
-            self.logframe_addlog_notmatching.emit(f"[[[텔레그램 알림]]] 더미 모드 - 실제 전송 안함")
-        else:
-            self.logframe_addlog_notmatching.emit(f"[[[텔레그램 알림]]] 메시지 전송")
-            # 실제 텔레그램 메시지 전송 코드 (구현 필요)
-            # TODO: 텔레그램 API 연동 코드 추가
+    #     if step.dummy:
+    #         self.logframe_addlog_notmatching.emit(f"[[[텔레그램 알림]]] 더미 모드 - 실제 전송 안함")
+    #     else:
+    #         self.logframe_addlog_notmatching.emit(f"[[[텔레그램 알림]]] 메시지 전송")
+    #         # 실제 텔레그램 메시지 전송 코드 (구현 필요)
+    #         # TODO: 텔레그램 API 연동 코드 추가
 
-        self.running_task_steps.remove(step_key)
-        self.Print_RunningSteps()
+    #     self.running_task_steps.remove(step_key)
+    #     self.Print_RunningSteps()
         
-        # 다음 단계 설정
-        if step.next_step and len(step.next_step) > 0:
-            self.running_task_steps += step.next_step
-            self.Print_RunningSteps()
-        else:
-            self.logframe_addwarning.emit(f"🛑 다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
-            self.toggle_capture_callback()
+    #     # 다음 단계 설정
+    #     if step.next_step and len(step.next_step) > 0:
+    #         self.running_task_steps += step.next_step
+    #         self.Print_RunningSteps()
+    #     else:
+    #         self.logframe_addwarning.emit(f"🛑 다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
+    #         self.toggle_capture_callback()
+        
+    async def Run_Notice(self):
+        # print(datetime.now())
+        from grinder_utils.repeat_timer import RepeatTimer
+        noti = RepeatTimer(10 * 60)
+        # noti = RepeatTimer(3)
+        # noti = RepeatTimer(1 * 60)
+        
+        from core.telegram_notifier import TelegramNotifier
+        telenoti = TelegramNotifier("7734048311:AAHa9GsavYBMAOOpMVXnzF9gsfqWOH7tWKc", "-1002515704043")
+        
+        def get_noti_message():
+            datetext = datetime.now().strftime("%y-%m-%d %H:%M:%S")
+            
+            message = "_다이아 알림_" + "\n"
+            message += (f"*웰즈5 / 멜라닝 / {datetext}*" + "\n\n")
+            message += ("블라블라~~" + "\n")
+            message += "[자세히 보기(네이버)](https://www.naver.com)"
+            return message
+        
+        telenoti.send_area_screenshot("텔레그램알림용-다이아", get_noti_message())
+        noti.update_next_time()
+        
+        try: #pass
+            while self.is_running:
+                # 알림 항목마다 제각각의 대기시간으로 알리기
+                
+                if noti.is_due():
+                    # print("tick")
+                    telenoti.send_area_screenshot("텔레그램알림용-다이아", get_noti_message())
+                    noti.update_next_time()
+                    # break
+                
+                await self.async_helper.sleep(0.1)
+            
+        except asyncio.CancelledError:
+            # 작업 취소 처리
+            self.logframe_addwarning.emit("🚫 작업이 취소되었습니다.")
+        except Exception as e:
+            # 예외 처리
+            self.Cancel_Noti()
+    
+    def Cancel_Noti(self):
+        if self.noti_task:
+            self.async_helper.cancel_task(self.noti_task)
+            self.noti_task = None
     
     def match_image_in_zone(self, zone_key, image_key):
         """

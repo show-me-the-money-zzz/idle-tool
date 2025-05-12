@@ -109,7 +109,8 @@ class TelegramNotifier:
             
             if caption:
                 data["caption"] = caption
-                data["parse_mode"] = "HTML"  # 캡션에 HTML 태그 지원
+                # data["parse_mode"] = "HTML"  # 캡션에 HTML 태그 지원
+                data["parse_mode"] = "markdown"
             
             response = requests.post(url, data=data, files=files)
             return response.status_code == 200
