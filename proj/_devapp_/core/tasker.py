@@ -18,6 +18,7 @@ import stores.sanner as Scanner
 from core.config import LOOP_TEXT_KEYWORD
 import stores.task_manager as TaskMan
 from stores.task_base_step import BaseStep, TaskStep_Matching, TaskStep_MouseWheel, TaskStep_TeltegramNoti
+from grinder_utils.system import GetText_NoticeLog
 
 class Tasker(QObject):
     """
@@ -264,6 +265,7 @@ class Tasker(QObject):
         
     repeat_timer = None
     telenoti = None
+    discordnoti = None
     async def Run_Notice(self):
         # print(datetime.now())
         if not self.repeat_timer:
@@ -298,16 +300,23 @@ class Tasker(QObject):
             self.telenoti = TelegramNotifier("7734048311:AAHa9GsavYBMAOOpMVXnzF9gsfqWOH7tWKc", "-1002515704043")
             # print(f"send_noti()2: {self.telenoti}")
             
-        def get_noti_message():
-            datetext = datetime.now().strftime("%y-%m-%d %H:%M:%S")
-            
-            message = "## 스탯 알림" + "\n"
-            message += (f"*엘머5 / 마루이모 / {datetext}*" + "\n\n")
-            message += ("부캐 계정입니답.. (1분 간격 알림)22" + "\n")
-            # message += "[자세히 보기(다음)](https://www.daum.net/)"
-            return message
+        if not self.discordnoti:
+            from core.discord_notifier import DiscordNotifier
+            self.discordnoti = DiscordNotifier("https://discord.com/api/webhooks/1371429465825218591/cgDpAInWxdAO3FCHBHLPkdH-1Cvyvm_n2RTnKpAaxsOqGR4CJb6C4IEqzqGj2OgqC5Lj")
+      
+        title = "스탯 알림"
+        server = "엘머5"
+        nickname = "마루이모"
+        comment = "부계정 (1분 간격 알림)"
         
-        self.telenoti.send_area_screenshot("캐릭 스탯 정보", get_noti_message())
+        message_teltgram = TelegramNotifier.Make_Message(title, server, nickname, comment)
+        self.telenoti.send_area_screenshot("캐릭 스탯 정보", message_teltgram)
+        self.logframe_addnotice.emit(GetText_NoticeLog("텔레그램", title))
+        
+        message_discord = DiscordNotifier.Make_Message(title, server, nickname, comment)
+        self.discordnoti.send_area_screenshot("캐릭 스탯 정보", message_discord)
+        self.logframe_addnotice.emit(GetText_NoticeLog("디스코드", title))
+        
         self.repeat_timer.update_next_time()
     
     def Cancel_Noti(self):

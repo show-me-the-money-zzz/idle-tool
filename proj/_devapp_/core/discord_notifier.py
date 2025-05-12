@@ -10,46 +10,11 @@ from core.capture_utils import CaptureManager
 import stores.areas as Areas
 from grinder_utils.system import GetText_NotiDate
 
-class TelegramNotifier:
-    """텔레그램 챗봇을 통한 알림 전송 클래스"""
-    
-    def __init__(self, token: str, chat_id: str):
-        """
-        텔레그램 봇 초기화
-        
-        Args:
-            token (str): 텔레그램 봇 토큰
-            chat_id (str): 메시지를 보낼 채팅 ID
-        """
-        self.token = token
-        self.chat_id = chat_id
-        self.base_url = f"https://api.telegram.org/bot{token}"
+class DiscordNotifier:
+    def __init__(self, webhooks: str):
+        self.webhooks = webhooks
         self.capture_manager = CaptureManager()
-    
-    def send_message(self, message: str) -> bool:
-        """
-        텍스트 메시지 전송
         
-        Args:
-            message (str): 전송할 메시지 내용
-            
-        Returns:
-            bool: 전송 성공 여부
-        """
-        url = f"{self.base_url}/sendMessage"
-        payload = {
-            "chat_id": self.chat_id,
-            "text": message,
-            "parse_mode": "HTML"  # HTML 형식 지원 (굵게, 기울임, 링크 등)
-        }
-        
-        try:
-            response = requests.post(url, data=payload)
-            return response.status_code == 200
-        except Exception as e:
-            print(f"메시지 전송 실패: {e}")
-            return False
-    
     def send_photo(self, 
                   image: Union[np.ndarray, Image.Image, str], 
                   caption: Optional[str] = None) -> bool:
@@ -63,7 +28,6 @@ class TelegramNotifier:
         Returns:
             bool: 전송 성공 여부
         """
-        url = f"{self.base_url}/sendPhoto"
         
         # 이미지 데이터 준비
         files = None
@@ -106,14 +70,10 @@ class TelegramNotifier:
             
             # 이미지 데이터와 함께 요청 보내기
             files = {'photo': ('image.png', image_data, 'image/png')}
-            data = {"chat_id": self.chat_id}
+            data = {}
             
-            if caption:
-                data["caption"] = caption
-                # data["parse_mode"] = "HTML"  # 캡션에 HTML 태그 지원
-                data["parse_mode"] = "markdown"
-                
-            response = requests.post(url, data=data, files=files)
+            if caption: data = { "content": caption }
+            response = requests.post(self.webhooks, data=data, files=files)
             return response.status_code == 200
             
         except Exception as e:
@@ -123,32 +83,7 @@ class TelegramNotifier:
             # 리소스 정리
             if image_data and hasattr(image_data, 'close'):
                 image_data.close()
-    
-    def send_screenshot(self, caption: Optional[str] = None) -> bool:
-        """
-        현재 게임 창의 스크린샷 전송
         
-        Args:
-            caption (str, optional): 이미지와 함께 전송할 설명 텍스트
-            
-        Returns:
-            bool: 전송 성공 여부
-        """
-        try:
-            # 전체 창 스크린샷 캡처
-            screenshot = self.capture_manager.capture_full_window()
-            
-            if screenshot is None:
-                print("스크린샷 캡처 실패")
-                return False
-            
-            # 캡처된 이미지 전송
-            return self.send_photo(screenshot, caption)
-            
-        except Exception as e:
-            print(f"스크린샷 전송 실패: {e}")
-            return False
-    
     def send_area_screenshot(self, area_name: str, caption: Optional[str] = None) -> bool:
         """
         지정된 영역의 스크린샷 전송
@@ -188,29 +123,9 @@ class TelegramNotifier:
             return False
         
     def Make_Message(title, server, nickname, comment = ""):
-        message = f"_{title}_" + "\n"
-        message += (f"*{server} / {nickname} / {GetText_NotiDate()}*" + "\n\n")
+        message = f"# {title}" + "\n"
+        message += (f"**{server} / {nickname} / {GetText_NotiDate()}**" + "\n\n")
         if comment:
             message += (f"{comment}" + "\n")
         # message += "[자세히 보기(다음)](https://www.daum.net/)"
         return message
-
-
-# # 사용 예시
-# if __name__ == "__main__":
-#     # 설정값 (실제 사용 시 환경 변수나 설정 파일에서 불러오는 것을 권장)
-#     BOT_TOKEN = "YOUR_BOT_TOKEN"
-#     CHAT_ID = "YOUR_CHAT_ID"
-    
-#     # 텔레그램 알림 객체 생성
-#     notifier = TelegramNotifier(BOT_TOKEN, CHAT_ID)
-    
-#     # 예시 1: 텍스트 메시지 전송
-#     notifier.send_message("게임 자동화 <b>알림</b>: 물약이 <i>소진</i>되었습니다.")
-    
-#     # 예시 2: 전체 화면 스크린샷 전송
-#     notifier.send_screenshot("현재 게임 상태: 물약 소진")
-    
-#     # 예시 3: 특정 영역 스크린샷 전송
-#     # 'HP_BAR' 영역이 stores.areas에 정의되어 있다고 가정
-#     notifier.send_area_screenshot("HP_BAR", "현재 HP 상태")
