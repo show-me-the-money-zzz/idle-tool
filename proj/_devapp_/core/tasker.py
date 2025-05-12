@@ -262,37 +262,25 @@ class Tasker(QObject):
     #         self.logframe_addwarning.emit(f"🛑 다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
     #         self.toggle_capture_callback()
         
+    repeat_timer = None
+    telenoti = None
     async def Run_Notice(self):
         # print(datetime.now())
-        from grinder_utils.repeat_timer import RepeatTimer
-        noti = RepeatTimer(10 * 60)
-        # noti = RepeatTimer(3)
-        # noti = RepeatTimer(1 * 60)
-        
-        from core.telegram_notifier import TelegramNotifier
-        telenoti = TelegramNotifier("7734048311:AAHa9GsavYBMAOOpMVXnzF9gsfqWOH7tWKc", "-1002515704043")
-        
-        def get_noti_message():
-            datetext = datetime.now().strftime("%y-%m-%d %H:%M:%S")
-            
-            message = "_다이아 알림_" + "\n"
-            message += (f"*웰즈5 / 멜라닝 / {datetext}*" + "\n\n")
-            message += ("블라블라~~" + "\n")
-            message += "[자세히 보기(네이버)](https://www.naver.com)"
-            return message
-        
-        telenoti.send_area_screenshot("텔레그램알림용-다이아", get_noti_message())
-        noti.update_next_time()
+        if not self.repeat_timer:
+            from grinder_utils.repeat_timer import RepeatTimer
+            # self.noti = RepeatTimer(10 * 60)
+            # self.noti = RepeatTimer(3)
+            self.repeat_timer = RepeatTimer(1 * 60)
+        self.send_noti()
         
         try: #pass
             while self.is_running:
                 # 알림 항목마다 제각각의 대기시간으로 알리기
                 
-                if noti.is_due():
-                    # print("tick")
-                    telenoti.send_area_screenshot("텔레그램알림용-다이아", get_noti_message())
-                    noti.update_next_time()
-                    # break
+                if self.repeat_timer.is_due():
+                    # # print("tick")
+                    # # break
+                    self.send_noti()
                 
                 await self.async_helper.sleep(0.1)
             
@@ -302,6 +290,25 @@ class Tasker(QObject):
         except Exception as e:
             # 예외 처리
             self.Cancel_Noti()
+            
+    def send_noti(self):
+        # print(f"send_noti()1: {self.telenoti}")
+        if not self.telenoti:
+            from core.telegram_notifier import TelegramNotifier
+            self.telenoti = TelegramNotifier("7734048311:AAHa9GsavYBMAOOpMVXnzF9gsfqWOH7tWKc", "-1002515704043")
+            # print(f"send_noti()2: {self.telenoti}")
+            
+        def get_noti_message():
+            datetext = datetime.now().strftime("%y-%m-%d %H:%M:%S")
+            
+            message = "_스탯 알림_" + "\n"
+            message += (f"*엘머5 / 마루이모 / {datetext}*" + "\n\n")
+            message += ("부캐 계정입니답.. (1분 간격 알림)" + "\n")
+            message += "[자세히 보기(다음)](https://www.daum.net/)"
+            return message
+        
+        self.telenoti.send_area_screenshot("캐릭 스탯 정보", get_noti_message())
+        self.repeat_timer.update_next_time()
     
     def Cancel_Noti(self):
         if self.noti_task:
