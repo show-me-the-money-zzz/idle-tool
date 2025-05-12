@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 @dataclass
 class BaseAreaItem:
+    name: str
     x: int
     y: int
     width: int

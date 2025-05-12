@@ -9,17 +9,19 @@ Zones = AreaStore("범위 영역", "zone.json")
 
 @dataclass
 class ImageItem(BaseAreaItem):
-    _name: str = field(default="", init=False)
+    # _name: str = field(default="", init=False)
     file: str
 
     def GetClickPoint_byApp(self, x, y):
         return (x + self.clickx, y + self.clicky)
 @dataclass
 class ZoneItem(BaseAreaItem):
-    _name: str = field(default="", init=False)
+    # _name: str = field(default="", init=False)
+    pass
 @dataclass
 class TextItem(BaseAreaItem):
-    _name: Optional[str] = None  # 기본값을 설정하면 필수 인자 아님
+    # _name: Optional[str] = None  # 기본값을 설정하면 필수 인자 아님
+    pass
 
 # 텍스트 영역 함수 인터페이스
 Add_TextArea = Texts.add

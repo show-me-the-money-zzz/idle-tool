@@ -831,6 +831,7 @@ class CaptureAreaPopup(QDialog):
             
             # 기본 데이터 준비
             default_data = {
+                "name": "",
                 "x": 10,
                 "y": 10,
                 "width": 100,
@@ -1459,7 +1460,8 @@ class CaptureAreaPopup(QDialog):
                 QMessageBox.critical(self, "오류", "KEY를 입력하세요.")
                 return
  
-            Areas.Add_TextArea(key, {"x": x, "y": y, "width": width, "height": height,
+            Areas.Add_TextArea(key, {"name": key,
+                                     "x": x, "y": y, "width": width, "height": height,
                                      "clickx": clickx, "clicky": clicky,
                                      })
                 
@@ -1552,7 +1554,7 @@ class CaptureAreaPopup(QDialog):
                 stored_path = file_path
             
             # 이미지 정보를 JSON에 저장
-            Areas.Add_ImageArea(key, {
+            Areas.Add_ImageArea(key, {"name": key,
                 "x": x, "y": y, 
                 "width": width, "height": height,
                 "file": stored_path,
@@ -1590,7 +1592,8 @@ class CaptureAreaPopup(QDialog):
                 QMessageBox.critical(self, "오류", "KEY를 입력하세요.")
                 return
  
-            Areas.Add_ZoneArea(key, {"x": x, "y": y, "width": width, "height": height,
+            Areas.Add_ZoneArea(key, {"name": key,
+                                     "x": x, "y": y, "width": width, "height": height,
                                      "clickx": clickx, "clicky": clicky,
                                      })
                 
@@ -1630,15 +1633,15 @@ class CaptureAreaPopup(QDialog):
             QMessageBox.critical(self, "입력 오류", f"올바른 값을 입력해주세요: {str(e)}")
             return None
 
-    def set_capture_info(self, x, y, width, height, interval):
-        """캡처 정보 설정"""
-        self.x_spin.setValue(x)
-        self.y_spin.setValue(y)
-        self.width_spin.setValue(width)
-        self.height_spin.setValue(height)
+    # def set_capture_info(self, x, y, width, height, interval):
+    #     """캡처 정보 설정"""
+    #     self.x_spin.setValue(x)
+    #     self.y_spin.setValue(y)
+    #     self.width_spin.setValue(width)
+    #     self.height_spin.setValue(height)
         
-        # 미리보기 업데이트
-        self.update_area_preview()
+    #     # 미리보기 업데이트
+    #     self.update_area_preview()
         
     def apply_keyword_to_key_input(self):
         keyword = self.keywords_combo.currentText()        
