@@ -19,6 +19,8 @@ from core.config import LOOP_TEXT_KEYWORD
 import stores.task_manager as TaskMan
 from stores.task_base_step import BaseStep, TaskStep_Matching, TaskStep_MouseWheel, TaskStep_TeltegramNoti
 from grinder_utils.system import GetText_NoticeLog
+from core.telegram_notifier import TelegramNotifier
+from core.discord_notifier import DiscordNotifier
 
 class Tasker(QObject):
     """
@@ -270,8 +272,8 @@ class Tasker(QObject):
         # print(datetime.now())
         if not self.repeat_timer:
             from grinder_utils.repeat_timer import RepeatTimer
-            # self.noti = RepeatTimer(10 * 60)
-            # self.noti = RepeatTimer(3)
+            # self.repeat_timer = RepeatTimer(10 * 60)
+            # self.repeat_timer = RepeatTimer(5)
             self.repeat_timer = RepeatTimer(1 * 60)
         self.send_noti()
         
@@ -280,9 +282,10 @@ class Tasker(QObject):
                 # 알림 항목마다 제각각의 대기시간으로 알리기
                 
                 if self.repeat_timer.is_due():
-                    # # print("tick")
+                    # print("tick")
                     # # break
                     self.send_noti()
+                # else: print(self.repeat_timer.get_remaining_time())
                 
                 await self.async_helper.sleep(0.1)
             
@@ -291,30 +294,30 @@ class Tasker(QObject):
             self.logframe_addwarning.emit("🚫 작업이 취소되었습니다.")
         except Exception as e:
             # 예외 처리
+            # print(f"fail: error= {e}")
             self.Cancel_Noti()
             
     def send_noti(self):
-        # print(f"send_noti()1: {self.telenoti}")
-        if not self.telenoti:
-            from core.telegram_notifier import TelegramNotifier
+        # print(f"send_noti()1: {self.telenoti} / {self.discordnoti}")
+        if not self.telenoti:            
             self.telenoti = TelegramNotifier("7734048311:AAHa9GsavYBMAOOpMVXnzF9gsfqWOH7tWKc", "-1002515704043")
-            # print(f"send_noti()2: {self.telenoti}")
             
-        if not self.discordnoti:
-            from core.discord_notifier import DiscordNotifier
+        if not self.discordnoti:            
             self.discordnoti = DiscordNotifier("https://discord.com/api/webhooks/1371429465825218591/cgDpAInWxdAO3FCHBHLPkdH-1Cvyvm_n2RTnKpAaxsOqGR4CJb6C4IEqzqGj2OgqC5Lj")
+        # print(f"send_noti()2: {self.telenoti} / {self.discordnoti}")
       
-        title = "스탯 알림"
-        server = "엘머5"
-        nickname = "마루이모"
-        comment = "부계정 (1분 간격 알림)"
+        title = "스탯 알림" # 다이아 알림 / 스탯 알림
+        zone = "캐릭 스탯 정보" # 텔레그램알림용-다이아 / 캐릭 스탯 정보
+        server = "엘머5"    # 웰즈5 / 엘머5
+        nickname = "마루이모"   # 멜라닝 / 마루이모
+        comment = "부캐입니다요"  # 본계정입니다 / 부캐입니다요
         
         message_teltgram = TelegramNotifier.Make_Message(title, server, nickname, comment)
-        self.telenoti.send_area_screenshot("캐릭 스탯 정보", message_teltgram)
+        self.telenoti.send_area_screenshot(zone, message_teltgram)
         self.logframe_addnotice.emit(GetText_NoticeLog("텔레그램", title))
         
         message_discord = DiscordNotifier.Make_Message(title, server, nickname, comment)
-        self.discordnoti.send_area_screenshot("캐릭 스탯 정보", message_discord)
+        self.discordnoti.send_area_screenshot(zone, message_discord)
         self.logframe_addnotice.emit(GetText_NoticeLog("디스코드", title))
         
         self.repeat_timer.update_next_time()
