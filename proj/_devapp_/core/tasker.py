@@ -115,10 +115,10 @@ class Tasker(QObject):
         self.logframe_addchnagetaskstep.emit(log)
     
     async def Loop(self):
-        task_key, task = TaskMan.Get_RunningTask()
+        task_key, task = Scanner.Get_RunningTask()
         # print(f"Tasker.Loop(): [{task_key}] {task}")
         self.running_task = task
-        self.running_task_steps = [ TaskMan.GetKey_StartStep() ]
+        self.running_task_steps = [ Scanner.GetKey_StartStep() ]
         self.Print_RunningSteps()
         
         try:

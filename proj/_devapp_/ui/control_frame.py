@@ -165,7 +165,7 @@ class ControlFrame(QFrame):
     
     def Change_Task(self, task):
         # TaskMan.SetKey_RunningTask 호출
-        TaskMan.SetKey_RunningTask(task)
+        Scanner.SetKey_RunningTask(task)
         
         # 단계 콤보박스 업데이트
         self.update_step_combo(task)
@@ -206,7 +206,7 @@ class ControlFrame(QFrame):
         # 표시 텍스트에서 실제 키 추출 (⭐ 제거)    #TaskMan.ICON_START_STEP
         step_key = display_text.replace(f"{TaskMan.ICON_START_STEP} ", "") if display_text.startswith(f"{TaskMan.ICON_START_STEP} ") else display_text
         # print(f"Change_Step({step_key})")
-        TaskMan.SetKey_StartStep(step_key)
+        Scanner.SetKey_StartStep(step_key)
 
     def reload_tasks(self):
         """작업 목록 새로고침"""
