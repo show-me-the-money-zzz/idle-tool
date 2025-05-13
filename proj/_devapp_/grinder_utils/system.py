@@ -20,3 +20,7 @@ def GetText_NotiDate():
 
 def GetText_NoticeLog(bot, title):
     return f"📢 알림 ({bot}): [{title}] 알림을 전송했습니다."
+
+def GetKey(kind):
+    timestamp = datetime.now().strftime("%y%m%d%H%M%S-%f")[:-3]
+    return f"{kind}-{timestamp}"
