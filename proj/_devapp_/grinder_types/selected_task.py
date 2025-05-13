@@ -129,7 +129,7 @@ class SelectedTask:
     
     def NewStep(self, key, step_type="matching", seq=0):
         """새 단계 생성"""
-        self.task.steps[key] = TaskMan.Create_Empty_Step(step_type, seq)
+        self.task.steps[key] = TaskMan.Create_Empty_Step(key, step_type, seq)
         return seq
     
     def RemoveStep(self, key):

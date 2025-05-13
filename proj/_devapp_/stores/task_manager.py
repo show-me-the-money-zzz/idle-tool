@@ -151,6 +151,7 @@ class TaskManager:
                     keyname = new_key
                     
                 task_dict = {
+                    "name": task.name,
                     "steps": {},
                     "start_key": task.start_key,
                     "comment": task.comment
@@ -205,11 +206,11 @@ Add_Task = Tasks.add
 Delete_Task = Tasks.delete
 _Get_Task = Tasks.get
 
-def _create_step_instance(step_type: str, step_data: dict) -> BaseStep:
+def _create_step_instance(step_name: str, step_type: str, step_data: dict) -> BaseStep:
     """주어진 타입에 맞는 BaseStep 파생 객체 생성"""
     # 기본 공통 필드
     base_params = {
-        "name": step_data.get("name", ""),
+        "name": step_data.get("name", step_name),
         "seq": step_data.get("seq", 0),
         "waiting": step_data.get("waiting", 0.0),
         "type": step_type,
@@ -252,7 +253,7 @@ def Get_Task(key, default=None):
     for key, val in data["steps"].items():
         try:
             step_type = val.get("type", "matching")  # 기본값은 matching
-            step_dict[key] = _create_step_instance(step_type, val)
+            step_dict[key] = _create_step_instance(key, step_type, val)
         except Exception as e:
             print(f"[Step Load Error] '{key}' 변환 실패: {e}")
 
@@ -284,11 +285,11 @@ def Update_Task(old_key: str, task: Task, new_key: str = None, save: bool = True
         return GetAll_Tasks()
     return None
 
-def Create_Empty_Step(step_type: str, seq: int = 0) -> BaseStep:
+def Create_Empty_Step(step_name: str, step_type: str, seq: int = 0) -> BaseStep:
     """새로운 빈 단계를 생성하는 함수"""
     # 공통 파라미터
     base_params = {
-        "name": "",
+        "name": step_name,
         "seq": seq,
         "waiting": 0.0,
         "type": step_type,

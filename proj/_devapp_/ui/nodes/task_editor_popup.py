@@ -1216,6 +1216,7 @@ class TaskEditorPopup(QDialog):
                 return
 
             self.tasks[new_text] = TaskMan.Task(
+                name=new_text,
                 steps={},
                 start_key="",
                 comment="",
