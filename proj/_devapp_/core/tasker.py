@@ -272,6 +272,8 @@ class Tasker(QObject):
     telenoti = None
     discordnoti = None
     async def Run_Notice(self):
+        return
+    
         # print(datetime.now())
         if not self.repeat_timer:
             from grinder_utils.repeat_timer import RepeatTimer
