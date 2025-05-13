@@ -13,11 +13,12 @@ from enum import Enum
 from core.config import *
 import zzz.app_config as APP_CONFIG
 import stores.areas as Areas
-from grinder_utils.system import Calc_MS
+import grinder_utils.system as SYS_UTIL
 from core.window_utils import WindowUtil
 from ui.nodes.log_dock_widget import LogDockWidget
 from ui.nodes.image_dock_widget import ImageDockWidget
 import ui.css as CSS
+
 
 class CaptureMode(Enum):
     IMAGE = 0
@@ -29,6 +30,7 @@ class CaptureAreaPopup(QDialog):
     
     READTEXT_BUTTON_START_TEXT = "▶️"
     READTEXT_BUTTON_STOP_TEXT = "🟥"
+    KindTextList = [ "image", "zone", "text", ] #CaptureMode 순서로
 
     def __init__(self, parent, region_selector, capture_manager, status_signal, on_close_callback=None):
         super().__init__(parent)
@@ -40,6 +42,8 @@ class CaptureAreaPopup(QDialog):
         self.capture_manager = capture_manager
         self.status_signal = status_signal
         self.on_close_callback = on_close_callback
+        
+        self.selectedkey = ""
 
         self.preview_image = None
         self.preview_pixmap = None
@@ -504,7 +508,7 @@ class CaptureAreaPopup(QDialog):
         remove_btn.setEnabled(has_selection)
         
         # 컨트롤 활성화/비활성화 상태 업데이트
-        self.key_input.setEnabled(False)
+        self.key_input.setEnabled(has_selection)
         self.x_spin.setEnabled(has_selection)
         self.y_spin.setEnabled(has_selection)
         self.width_spin.setEnabled(has_selection)
@@ -517,11 +521,13 @@ class CaptureAreaPopup(QDialog):
         
         if has_selection:
             # 현재 선택된 아이템 정보 로드
-            selected_key = current_item.text()
-            self._load_item_data(selected_key, mode)
+            selected_name = current_item.text()
+            self._load_item_data(selected_name, mode)
         else:
+            self.selectedkey = ""
+            
             # 선택된 항목이 없을 때 필드 초기화
-            self.Set_Key("")
+            self.Set_Name("")
             self.x_spin.setValue(0)
             self.y_spin.setValue(0)
             self.width_spin.setValue(0)
@@ -550,9 +556,9 @@ class CaptureAreaPopup(QDialog):
         self.edit_check.stateChanged.connect(self.update_area_preview)
         self.show_check.stateChanged.connect(self.update_area_preview)
 
-    def Set_Key(self, key):
-        if "" == key: self.key_input.clear()
-        else: self.key_input.setText(key)
+    def Set_Name(self, name):
+        if "" == name: self.key_input.clear()
+        else: self.key_input.setText(name)
 
         if self.image_dock.isVisible(): self.update_image_viewer()
 
@@ -566,12 +572,14 @@ class CaptureAreaPopup(QDialog):
             
             # # 필드 초기화 - clearSelection()으로 인해 _update_selection이 호출되고
             # # 거기서 필드 초기화하므로 여기서 중복 코드 제거
-            # self.Set_Key("")
+            # self.Set_Name("")
             # ...
             
             # # 미리보기 초기화
             # self.preview_label.clear()
             # self.preview_label.setText("영역을 선택하면\n미리보기가 표시됩니다")
+            
+            # self._update_selection_current
         
         # 새 탭 처리
         mode = CaptureMode(index)
@@ -596,17 +604,20 @@ class CaptureAreaPopup(QDialog):
         list_widget.clear()
         
         try:
+            items = []
             if mode == CaptureMode.IMAGE:
                 # 이미지 데이터 로드
-                items = Areas.GetAll_ImageAreas().keys()                
+                for item in Areas.GetAll_ImageAreas().values():
+                    items.append(item.name)
             elif mode == CaptureMode.ZONE:
                 # 빈영역 데이터 로드
-                items = Areas.GetAll_ZoneAreas().keys()
+                for item in Areas.GetAll_ZoneAreas().values():
+                    items.append(item.name)
             elif mode == CaptureMode.TEXT:
                 # 텍스트 데이터 로드
-                items = Areas.GetAll_TextAreas().keys()
-            else:
-                items = []
+                for item in Areas.GetAll_TextAreas().values():
+                    items.append(item.name)
+            # else: items = []
                 
             # 리스트에 항목 추가
             # for key in sorted(items):
@@ -647,11 +658,11 @@ class CaptureAreaPopup(QDialog):
                 break
         
         if has_selection:
-            selected_key = list_widget.selectedItems()[0].text()
-            self._load_item_data(selected_key, mode)
+            selected_name = list_widget.selectedItems()[0].text()
+            self._load_item_data(selected_name, mode)
         else:
             # 선택된 항목이 없을 때 필드 초기화
-            self.Set_Key("")
+            self.Set_Name("")
             self.x_spin.setValue(0)
             self.y_spin.setValue(0)
             self.width_spin.setValue(0)
@@ -714,9 +725,8 @@ class CaptureAreaPopup(QDialog):
         # if self.capturemode == CaptureMode.IMAGE:
         ## 창 표시 중일 때만 호출할거
 
-        key = self.key_input.text()
-        if key:
-            image_data = Areas.Get_ImageArea(key)
+        if self.selectedkey:
+            image_data = Areas.Get_ImageArea(self.selectedkey)
             if image_data and hasattr(image_data, 'file') and image_data.file:
                 # 로컬 경로로 변환
                 from grinder_utils import finder
@@ -751,19 +761,19 @@ class CaptureAreaPopup(QDialog):
             # 체크 해제됐을 때 숨김
             self.image_dock.setVisible(False)
 
-    def _load_item_data(self, key, mode):
+    def _load_item_data(self, name, mode):
         """선택된 항목 데이터 로드"""
         try:
+            key = ""
             data = None
             
             if mode == CaptureMode.IMAGE:
-                data = Areas.GetAll_ImageAreas().get(key)
+                key, data = Areas.Get_ImageArea_byName(name)
                 
                 # 이미지 체크박스 상태 업데이트
-                self.update_image_checkbox_state()            
+                self.update_image_checkbox_state()
             else:
                 # 이미지 모드가 아니면 체크박스 숨김
-                # self.show_image_check.setVisible(False)
                 self.image_dock.setVisible(False)
                 
             if CaptureMode.TEXT != mode:
@@ -771,13 +781,15 @@ class CaptureAreaPopup(QDialog):
                 self.log_dock.setVisible(False)
                 
             if mode == CaptureMode.ZONE:
-                data = Areas.GetAll_ZoneAreas().get(key)
+                key, data = Areas.Get_ZoneArea_byName(name)
             elif mode == CaptureMode.TEXT:
-                data = Areas.GetAll_TextAreas().get(key)
+                key, data = Areas.Get_TextArea_byName(name)
             
             if data:
+                self.selectedkey = key
+                
                 # 키 입력 필드 업데이트
-                self.Set_Key(key)
+                self.Set_Name(data.name)
                 
                 # 좌표 및 크기 업데이트
                 self.x_spin.setValue(data.x)
@@ -800,8 +812,8 @@ class CaptureAreaPopup(QDialog):
 
     def _on_item_double_clicked(self, item, mode):
         """항목 더블 클릭 처리"""
-        key = item.text()
-        self._load_item_data(key, mode)
+        name = item.text()
+        self._load_item_data(name, mode)
 
     def _add_new_item(self, mode):
         """새 항목 추가"""
@@ -814,24 +826,30 @@ class CaptureAreaPopup(QDialog):
         default_name = f"새 {type_name} {count + 1}"
 
         new_text, ok = QInputDialog.getText(self, f"{type_name} 추가",
-                                            "KEY를 입력하세요:",
+                                            "이름을 입력하세요:",
                                             QLineEdit.Normal, default_name)
+        
+        # print(SYS_UTIL.GetKey(CaptureAreaPopup.KindTextList[mode.value]))
         
         if ok and new_text.strip():
             # 키 중복 체크
             for i in range(list_widget.count()):
                 item = list_widget.item(i)
                 if new_text == item.text():
-                    QMessageBox.critical(self, "중복 KEY",
-                                        "키가 중복됩니다. 다른 이름을 사용하세요.")
+                    QMessageBox.critical(self, "중복 이름",
+                                        "이름이 중복됩니다. 다른 이름을 사용하세요.")
                     return
+                
+            
+            key = SYS_UTIL.GetKey(CaptureAreaPopup.KindTextList[mode.value])
+            name = new_text
 
             # 캡처 타입 콤보박스 업데이트
             self.capture_type_combo.setCurrentIndex(mode.value)
             
             # 기본 데이터 준비
             default_data = {
-                "name": "",
+                "name": name,
                 "x": 10,
                 "y": 10,
                 "width": 100,
@@ -843,29 +861,31 @@ class CaptureAreaPopup(QDialog):
             # 모드에 따라 Areas에 데이터 추가
             if mode == CaptureMode.IMAGE:
                 default_data["file"] = ""  # 파일 경로는 비어 있음
-                Areas.Add_ImageArea(new_text, default_data, False)
+                Areas.Add_ImageArea(key, default_data, False)
             elif mode == CaptureMode.ZONE:
-                Areas.Add_ZoneArea(new_text, default_data, False)
+                Areas.Add_ZoneArea(key, default_data, False)
             elif mode == CaptureMode.TEXT:
-                Areas.Add_TextArea(new_text, default_data, False)
+                Areas.Add_TextArea(key, default_data, False)
             
             # 새 항목 추가
-            list_widget.addItem(new_text)
+            list_widget.addItem(name)
             
             # 새 항목을 선택
             for i in range(list_widget.count()):
-                if list_widget.item(i).text() == new_text:
+                if list_widget.item(i).text() == name:
                     list_widget.setCurrentRow(i)
                     break
+                
+            self.selectedkey = key
             
             # 컨트롤 활성화 및 기본값 설정
-            self.key_input.setEnabled(False)
+            self.key_input.setEnabled(True)
             self.x_spin.setEnabled(True)
             self.y_spin.setEnabled(True)
             self.width_spin.setEnabled(True)
             self.height_spin.setEnabled(True)
             
-            self.Set_Key(new_text)
+            self.Set_Name(name)
             self.x_spin.setValue(default_data["x"])
             self.y_spin.setValue(default_data["y"])
             self.width_spin.setValue(default_data["width"])
@@ -887,13 +907,13 @@ class CaptureAreaPopup(QDialog):
         if not selected_items:
             return
             
-        key = selected_items[0].text()
+        name = selected_items[0].text()
         
         # 삭제 전 확인 대화상자
         reply = QMessageBox.question(
             self, 
             '항목 삭제', 
-            f"'{key}' 항목을 삭제하시겠습니까?",
+            f"'{name}' 항목을 삭제하시겠습니까?",
             QMessageBox.Yes | QMessageBox.No, 
             QMessageBox.No
         )
@@ -902,11 +922,11 @@ class CaptureAreaPopup(QDialog):
             try:
                 # 데이터 저장소에서 삭제
                 if mode == CaptureMode.IMAGE:
-                    Areas.Delete_ImageArea(key)
+                    Areas.Delete_ImageArea(name)
                 elif mode == CaptureMode.ZONE:
-                    Areas.Delete_ZoneArea(key)
+                    Areas.Delete_ZoneArea(name)
                 elif mode == CaptureMode.TEXT:
-                    Areas.Delete_TextArea(key)
+                    Areas.Delete_TextArea(name)
                     
                 # UI에서 삭제
                 row = list_widget.row(selected_items[0])
@@ -916,7 +936,7 @@ class CaptureAreaPopup(QDialog):
                 self.Set_Key("")
                 
                 # 상태 메시지 업데이트
-                self.status_signal.emit(f"'{key}' 항목이 삭제되었습니다.")
+                self.status_signal.emit(f"'{name}' 항목이 삭제되었습니다.")
                 
             except Exception as e:
                 QMessageBox.critical(self, "삭제 오류", f"항목 삭제 중 오류가 발생했습니다: {str(e)}")
@@ -1454,13 +1474,17 @@ class CaptureAreaPopup(QDialog):
                 return
             
             x, y, width, height, clickx, clicky, interval = capture_info
-            key = self.key_input.text()
             
-            if not key:
-                QMessageBox.critical(self, "오류", "KEY를 입력하세요.")
+            if not self.selectedkey:
+                QMessageBox.critical(self, "에러", "선택된 키가 없어요")
+                return
+            
+            name = self.key_input.text()
+            if not name:
+                QMessageBox.critical(self, "오류", "이름을 입력하세요.")
                 return
  
-            Areas.Add_TextArea(key, {"name": key,
+            Areas.Add_TextArea(self.selectedkey, {"name": name,
                                      "x": x, "y": y, "width": width, "height": height,
                                      "clickx": clickx, "clicky": clicky,
                                      })
@@ -1471,7 +1495,7 @@ class CaptureAreaPopup(QDialog):
             # 성공 메시지 표시
             self.status_signal.emit("텍스트가 저장되었습니다.")
             
-            QMessageBox.information(self, "알림", f"[{key}] 텍스트 데이터를 추가하였습니다.")
+            QMessageBox.information(self, "알림", f"[{name}] 텍스트 데이터가 저장되었습니다.")
             
             # # 창 닫기
             # self.on_close()
@@ -1511,14 +1535,18 @@ class CaptureAreaPopup(QDialog):
             
             cropped_img = full_window_img.crop(crop_region)
             
+            if not self.selectedkey:
+                QMessageBox.critical(self, "에러", "선택된 키가 없어요")
+                return
+            
             # 저장할 기본 파일명 생성
-            key = self.key_input.text().strip()
-            if not key:
-                QMessageBox.critical(self, "오류", "KEY를 입력하세요.")
+            name = self.key_input.text().strip()
+            if not name:
+                QMessageBox.critical(self, "오류", "이름을 입력하세요.")
                 return
             
             # 기본 파일명
-            default_filename = key
+            default_filename = name
             
             # 기본 저장 경로 가져오기
             from grinder_utils import finder
@@ -1554,7 +1582,7 @@ class CaptureAreaPopup(QDialog):
                 stored_path = file_path
             
             # 이미지 정보를 JSON에 저장
-            Areas.Add_ImageArea(key, {"name": key,
+            Areas.Add_ImageArea(self.selectedkey, {"name": name,
                 "x": x, "y": y, 
                 "width": width, "height": height,
                 "file": stored_path,
@@ -1569,7 +1597,7 @@ class CaptureAreaPopup(QDialog):
             
             self.status_signal.emit(f"이미지가 저장되었습니다: {file_path}")
             
-            QMessageBox.information(self, "알림", f"[{key}] 이미지 데이터를 추가하였습니다.")
+            QMessageBox.information(self, "알림", f"[{name}] 이미지 데이터가 저장되었습니다.")
             
             # # 창 닫기
             # self.on_close()
@@ -1586,13 +1614,17 @@ class CaptureAreaPopup(QDialog):
                 return
             
             x, y, width, height, clickx, clicky, _ = capture_info
-            key = self.key_input.text()
             
-            if not key:
+            if not self.selectedkey:
+                QMessageBox.critical(self, "에러", "선택된 키가 없어요")
+                return
+            
+            name = self.key_input.text()
+            if not name:
                 QMessageBox.critical(self, "오류", "KEY를 입력하세요.")
                 return
  
-            Areas.Add_ZoneArea(key, {"name": key,
+            Areas.Add_ZoneArea(self.selectedkey, {"name": name,
                                      "x": x, "y": y, "width": width, "height": height,
                                      "clickx": clickx, "clicky": clicky,
                                      })
@@ -1603,7 +1635,7 @@ class CaptureAreaPopup(QDialog):
             # 성공 메시지 표시
             self.status_signal.emit("빈영역이 저장되었습니다.")
             
-            QMessageBox.information(self, "알림", f"[{key}] 빈영역 데이터를 추가하였습니다.")
+            QMessageBox.information(self, "알림", f"[{name}] 빈영역 데이터가 저장되었습니다.")
             
             # # 창 닫기
             # self.on_close()
@@ -1645,7 +1677,7 @@ class CaptureAreaPopup(QDialog):
         
     def apply_keyword_to_key_input(self):
         keyword = self.keywords_combo.currentText()        
-        self.Set_Key(keyword)
+        self.Set_Name(keyword)
         
     def closeEvent(self, event):
         # print("[DEBUG] closeEvent triggered from X 버튼")
