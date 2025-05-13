@@ -922,18 +922,18 @@ class CaptureAreaPopup(QDialog):
             try:
                 # 데이터 저장소에서 삭제
                 if mode == CaptureMode.IMAGE:
-                    Areas.Delete_ImageArea(name)
+                    Areas.Delete_ImageArea_byName(name)
                 elif mode == CaptureMode.ZONE:
-                    Areas.Delete_ZoneArea(name)
+                    Areas.Delete_ZoneArea_byName(name)
                 elif mode == CaptureMode.TEXT:
-                    Areas.Delete_TextArea(name)
+                    Areas.Delete_TextArea_byName(name)
                     
                 # UI에서 삭제
                 row = list_widget.row(selected_items[0])
                 list_widget.takeItem(row)
                 
                 # 필드 초기화
-                self.Set_Key("")
+                self.Set_Name("")
                 
                 # 상태 메시지 업데이트
                 self.status_signal.emit(f"'{name}' 항목이 삭제되었습니다.")
