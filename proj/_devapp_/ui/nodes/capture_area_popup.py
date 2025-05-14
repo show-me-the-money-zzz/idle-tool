@@ -930,21 +930,28 @@ class CaptureAreaPopup(QDialog):
             try:
                 # 데이터 저장소에서 삭제
                 if mode == CaptureMode.IMAGE:
+                    saved_filepath = Areas.Get_ImageArea(self.selectedkey).file
+                    # print(saved_filepath)
+                    
                     Areas.Delete_ImageArea(self.selectedkey)
+                    
+                    if saved_filepath and os.path.exists(saved_filepath):
+                        os.remove(saved_filepath)
+        
                 elif mode == CaptureMode.ZONE:
                     Areas.Delete_ZoneArea(self.selectedkey)
                 elif mode == CaptureMode.TEXT:
                     Areas.Delete_TextArea(self.selectedkey)
+                
+                # 상태 메시지 업데이트
+                self.status_signal.emit(f"'{name}' 항목이 삭제되었습니다.")
                     
                 # UI에서 삭제
                 row = list_widget.row(selected_items[0])
                 list_widget.takeItem(row)
                 
                 # 필드 초기화
-                self.Set_Name("")
-                
-                # 상태 메시지 업데이트
-                self.status_signal.emit(f"'{name}' 항목이 삭제되었습니다.")
+                # self.Set_Name("")
                 
             except Exception as e:
                 QMessageBox.critical(self, "삭제 오류", f"항목 삭제 중 오류가 발생했습니다: {str(e)}")
