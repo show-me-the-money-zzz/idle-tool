@@ -369,19 +369,25 @@ class CaptureAreaPopup(QDialog):
         work_group = QGroupBox("작업")
         work_layout = QHBoxLayout(work_group)
 
-        # 저장 버튼 - 녹색 스타일
-        self.save_btn = QPushButton("저장")        
-        self.save_btn.clicked.connect(self.apply_settings)
-        work_layout.addWidget(self.save_btn)
-
         # 취소 버튼 - 빨간색 스타일
         cancel_btn = QPushButton("취소하고 닫기")
         cancel_btn.setStyleSheet(CSS.BUTTON_CANCEL)
         cancel_btn.clicked.connect(self.on_close)
         work_layout.addWidget(cancel_btn)
+        
+        work_layout.addStretch(1)
+        
+        self.save_value_btn = QPushButton("값만 저장")        
+        # self.save_value_btn.clicked.connect(self.apply_settings)
+        work_layout.addWidget(self.save_value_btn)
+
+        # 저장 버튼 - 녹색 스타일
+        self.save_btn = QPushButton("저장")        
+        self.save_btn.clicked.connect(self.apply_settings)
+        work_layout.addWidget(self.save_btn)
 
         # 오른쪽으로 공간 추가
-        work_layout.addStretch(1)
+        # work_layout.addStretch(1)
 
         right_layout.addWidget(work_group)
         
@@ -598,6 +604,7 @@ class CaptureAreaPopup(QDialog):
         else:
             # 이미지 모드가 아닐 때
             self.image_dock.setVisible(False)
+        self.save_value_btn.setVisible(mode == CaptureMode.IMAGE)
             
         if CaptureMode.TEXT != mode:
             self.reading_text = False
@@ -1737,6 +1744,10 @@ class CaptureAreaPopup(QDialog):
         css = CSS.BUTTON_APPLY_GREEN if ennable else CSS.BUTTON_DISABLE
         self.save_btn.setStyleSheet(css)
         self.save_btn.setEnabled(ennable)
+        
+        css2 = CSS.BUTTON_APPLY_BLUESKY if ennable else CSS.BUTTON_DISABLE
+        self.save_value_btn.setStyleSheet(css2)
+        self.save_value_btn.setEnabled(ennable)
             
     def DEV_Update_KeyLabel(self):
         if APP_CONFIG.RELEASE_APP: return
