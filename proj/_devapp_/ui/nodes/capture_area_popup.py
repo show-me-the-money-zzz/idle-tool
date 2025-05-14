@@ -377,8 +377,10 @@ class CaptureAreaPopup(QDialog):
         
         work_layout.addStretch(1)
         
+        self.save_value_label = QLabel("너비/높이 수정 시에 사용하지말것(이름, 클릭좌표 용)")
+        work_layout.addWidget(self.save_value_label)
         self.save_value_btn = QPushButton("값만 저장")
-        # self.save_value_btn.clicked.connect(self.apply_settings)
+        self.save_value_btn.clicked.connect(lambda: self.save_as_image(False))
         work_layout.addWidget(self.save_value_btn)
         self.save_value_btn.setEnabled(False)
 
@@ -606,6 +608,7 @@ class CaptureAreaPopup(QDialog):
             # 이미지 모드가 아닐 때
             self.image_dock.setVisible(False)
         self.save_value_btn.setVisible(mode == CaptureMode.IMAGE)
+        self.save_value_label.setVisible(mode == CaptureMode.IMAGE)
             
         if CaptureMode.TEXT != mode:
             self.reading_text = False
@@ -1528,7 +1531,7 @@ class CaptureAreaPopup(QDialog):
         except Exception as e:
             QMessageBox.critical(self, "설정 오류", f"설정을 적용하는 중 오류가 발생했습니다: {str(e)}")
 
-    def save_as_image(self):
+    def save_as_image(self, isSaveFile = True):
         """이미지로 저장"""
         try:
             # 캡처 영역 좌표 가져오기
@@ -1543,68 +1546,74 @@ class CaptureAreaPopup(QDialog):
                 QMessageBox.critical(self, "오류", "창이 연결되지 않았습니다.")
                 return
             
-            # 전체 창 캡처
-            full_window_img = self.capture_manager.capture_full_window()
-            if not full_window_img:
-                QMessageBox.critical(self, "오류", "창 캡처에 실패했습니다.")
-                return
-            
-            # 지정된 영역 추출
-            img_width, img_height = full_window_img.size
-            crop_region = (
-                max(0, x),
-                max(0, y),
-                min(img_width, x + width),
-                min(img_height, y + height)
-            )
-            
-            cropped_img = full_window_img.crop(crop_region)
-            
-            if not self.selectedkey:
-                QMessageBox.critical(self, "에러", "선택된 키가 없어요")
-                return
-            
+            stored_path = ""
+            file_path = ""
+                
             # 저장할 기본 파일명 생성
             name = self.key_input.text().strip()
             if not name:
                 QMessageBox.critical(self, "오류", "이름을 입력하세요.")
                 return
             
-            # 기본 파일명
-            default_filename = name
+            if isSaveFile:
+                # 전체 창 캡처
+                full_window_img = self.capture_manager.capture_full_window()
+                if not full_window_img:
+                    QMessageBox.critical(self, "오류", "창 캡처에 실패했습니다.")
+                    return
             
-            # 기본 저장 경로 가져오기
-            from grinder_utils import finder
-            default_dir = finder.Get_DataPath()
-            
-            # 파일 저장 다이얼로그 표시
-            file_path, _ = QFileDialog.getSaveFileName(
-                self,
-                "이미지 저장",
-                os.path.join(default_dir, default_filename),
-                "PNG 이미지 (*.png);;JPEG 이미지 (*.jpg);;모든 파일 (*.*)"
-            )
-            
-            # 사용자가 취소를 눌렀으면 종료
-            if not file_path:
-                return
-            
-            # 이미지 저장
-            cropped_img.save(file_path)
-            
-            # 상대 경로로 변환
-            from pathlib import Path
-            local_path = Path(finder.Get_LocalPth())
-            file_path_obj = Path(file_path)
-            
-            try:
-                # 상대 경로 생성 시도
+                # 지정된 영역 추출
+                img_width, img_height = full_window_img.size
+                crop_region = (
+                    max(0, x),
+                    max(0, y),
+                    min(img_width, x + width),
+                    min(img_height, y + height)
+                )
+                
+                cropped_img = full_window_img.crop(crop_region)
+                
+                if not self.selectedkey:
+                    QMessageBox.critical(self, "에러", "선택된 키가 없어요")
+                    return
+                
+                # 기본 파일명
+                default_filename = name
+                
+                # 기본 저장 경로 가져오기
+                from grinder_utils import finder
+                default_dir = finder.Get_DataPath()
+                
+                # 파일 저장 다이얼로그 표시
+                file_path, _ = QFileDialog.getSaveFileName(
+                    self,
+                    "이미지 저장",
+                    os.path.join(default_dir, default_filename),
+                    "PNG 이미지 (*.png);;JPEG 이미지 (*.jpg);;모든 파일 (*.*)"
+                )
+                
+                # 사용자가 취소를 눌렀으면 종료
+                if not file_path:
+                    return
+                
+                # 이미지 저장
+                cropped_img.save(file_path)
+                
+                # 상대 경로로 변환
+                from pathlib import Path
                 local_path = Path(finder.Get_LocalPth())
-                relative_path = file_path_obj.relative_to(local_path)
-                stored_path = str(relative_path)
-            except ValueError:
-                # 상대 경로 생성 실패 시 전체 경로 사용
-                stored_path = file_path
+                file_path_obj = Path(file_path)
+                
+                try:
+                    # 상대 경로 생성 시도
+                    local_path = Path(finder.Get_LocalPth())
+                    relative_path = file_path_obj.relative_to(local_path)
+                    stored_path = str(relative_path)
+                except ValueError:
+                    # 상대 경로 생성 실패 시 전체 경로 사용
+                    stored_path = file_path
+            else:
+                stored_path = Areas.Get_ImageArea(self.selectedkey).file
             
             # 이미지 정보를 JSON에 저장
             Areas.Add_ImageArea(self.selectedkey, {"name": name,
