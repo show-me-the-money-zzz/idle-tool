@@ -252,8 +252,8 @@ class TaskEditorPopup(QDialog):
         layout = QVBoxLayout(self.tab_basic)
         
         # 상단 - 자동화 목록 그룹 (가로로 배치)
-        automation_group = QGroupBox("자동화 목록")
-        automation_layout = QHBoxLayout(automation_group)
+        self.automation_group = QGroupBox("자동화 목록")
+        automation_layout = QHBoxLayout(self.automation_group)
         
         # 왼쪽 영역 - 자동화 목록과 버튼들을 수직으로 배치
         left_content = QWidget()
@@ -339,11 +339,11 @@ class TaskEditorPopup(QDialog):
         automation_layout.addWidget(right_content)
         
         # 상단 그룹을 레이아웃에 추가
-        layout.addWidget(automation_group, 1)  # 비율 1
+        layout.addWidget(self.automation_group, 1)  # 비율 1
         
         # 하단 - 단계 목록 그룹 (왼쪽 패널의 내용을 기본 탭에 포함)
-        step_group = QGroupBox("단계 목록")
-        step_layout = QVBoxLayout(step_group)
+        self.step_group = QGroupBox("단계 목록")
+        step_layout = QVBoxLayout(self.step_group)
         
         # 검색 영역 (레이블과 입력 필드를 수평으로 배치)
         search_layout = QHBoxLayout()
@@ -399,7 +399,7 @@ class TaskEditorPopup(QDialog):
         step_layout.addLayout(buttons_layout)
         
         # 하단 그룹을 레이아웃에 추가 - 비율 증가
-        layout.addWidget(step_group, 2)  # 비율 2로 증가
+        layout.addWidget(self.step_group, 2)  # 비율 2로 증가
 
     def _setup_preview_tab(self):
         """프리뷰 탭 구성 - 자동화 목록과 흐름도 버튼"""
@@ -867,6 +867,7 @@ class TaskEditorPopup(QDialog):
         
         # 선택된 항목이 있으면 이름 편집 필드에 표시
         if has_selection:
+            
             if DEVDEV: print("update_automation step= 4")
             selectedItem = items[0]
             self.automation_name_edit.setText(selectedItem.text())
@@ -878,6 +879,7 @@ class TaskEditorPopup(QDialog):
                 return
             if DEVDEV: print("update_automation step= 5")
             self.selectedTask.Set_Task(key, task)
+            if not APP_CONFIG.RELEASE_APP: self.automation_group.setTitle(f"자동화: {key}")
             
             self.start_key_input.setText(task.start_key)
             self.task_description.setText(task.comment)
@@ -970,6 +972,7 @@ class TaskEditorPopup(QDialog):
             return
         
         step = self.selectedTask.Set_StepKey(key)
+        if not APP_CONFIG.RELEASE_APP: self.step_group.setTitle(f"단계: {key}")
         
         # 공통 속성 설정
         isStartStep = (key == self.selectedTask.Get_StartKey())
