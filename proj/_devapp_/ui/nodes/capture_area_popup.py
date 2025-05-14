@@ -377,9 +377,10 @@ class CaptureAreaPopup(QDialog):
         
         work_layout.addStretch(1)
         
-        self.save_value_btn = QPushButton("값만 저장")        
+        self.save_value_btn = QPushButton("값만 저장")
         # self.save_value_btn.clicked.connect(self.apply_settings)
         work_layout.addWidget(self.save_value_btn)
+        self.save_value_btn.setEnabled(False)
 
         # 저장 버튼 - 녹색 스타일
         self.save_btn = QPushButton("저장")        
@@ -782,6 +783,8 @@ class CaptureAreaPopup(QDialog):
             
             if mode == CaptureMode.IMAGE:
                 key, data = Areas.Get_ImageArea_byName(name)
+                
+                self.EnableButton_SaveValue("" != data.file)
                 
                 # 이미지 체크박스 상태 업데이트
                 self.update_image_checkbox_state()
@@ -1744,9 +1747,9 @@ class CaptureAreaPopup(QDialog):
         css = CSS.BUTTON_APPLY_GREEN if ennable else CSS.BUTTON_DISABLE
         self.save_btn.setStyleSheet(css)
         self.save_btn.setEnabled(ennable)
-        
-        css2 = CSS.BUTTON_APPLY_BLUESKY if ennable else CSS.BUTTON_DISABLE
-        self.save_value_btn.setStyleSheet(css2)
+    def EnableButton_SaveValue(self, ennable):
+        css = CSS.BUTTON_APPLY_BLUESKY if ennable else CSS.BUTTON_DISABLE
+        self.save_value_btn.setStyleSheet(css)
         self.save_value_btn.setEnabled(ennable)
             
     def DEV_Update_KeyLabel(self):
