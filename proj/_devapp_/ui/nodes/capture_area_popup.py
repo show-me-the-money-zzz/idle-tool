@@ -118,7 +118,7 @@ class CaptureAreaPopup(QDialog):
         key_layout.addWidget(self.capture_type_combo)
         
         # KEY 레이블과 입력
-        key_layout.addWidget(QLabel("KEY"))
+        key_layout.addWidget(QLabel("이름"))
         self.key_input = QLineEdit()
         self.key_input.textChanged.connect(self.update_image_checkbox_state)  # 텍스트 변경 시 체크박스 상태 업데이트
         key_layout.addWidget(self.key_input)
@@ -138,6 +138,11 @@ class CaptureAreaPopup(QDialog):
         self.apply_key_btn.clicked.connect(self.apply_keyword_to_key_input)
         self.apply_key_btn.setFixedWidth(90)
         keywords_layout.addWidget(self.apply_key_btn)
+        
+        if not APP_CONFIG.RELEASE_APP:
+            self.DEV_label_key = QLabel("[]")
+            self.DEV_label_key.setStyleSheet("color: #ffff00;")
+            keywords_layout.addWidget(self.DEV_label_key)
 
         # 오른쪽 여백 추가 (왼쪽으로 몰기 위해)
         keywords_layout.addStretch(1)
@@ -524,7 +529,8 @@ class CaptureAreaPopup(QDialog):
             selected_name = current_item.text()
             self._load_item_data(selected_name, mode)
         else:
-            self.selectedkey = ""
+            self.selectedkey = ""            
+            self.DEV_Update_KeyLabel()
             
             # 선택된 항목이 없을 때 필드 초기화
             self.Set_Name("")
@@ -787,6 +793,7 @@ class CaptureAreaPopup(QDialog):
             
             if data:
                 self.selectedkey = key
+                self.DEV_Update_KeyLabel()
                 
                 # 키 입력 필드 업데이트
                 self.Set_Name(data.name)
@@ -877,6 +884,7 @@ class CaptureAreaPopup(QDialog):
                     break
                 
             self.selectedkey = key
+            self.DEV_Update_KeyLabel()
             
             # 컨트롤 활성화 및 기본값 설정
             self.key_input.setEnabled(True)
@@ -904,7 +912,7 @@ class CaptureAreaPopup(QDialog):
     def _remove_selected_item(self, list_widget, mode):
         """선택한 항목 삭제"""
         selected_items = list_widget.selectedItems()
-        if not selected_items:
+        if not selected_items or not self.selectedkey:
             return
             
         name = selected_items[0].text()
@@ -922,11 +930,11 @@ class CaptureAreaPopup(QDialog):
             try:
                 # 데이터 저장소에서 삭제
                 if mode == CaptureMode.IMAGE:
-                    Areas.Delete_ImageArea_byName(name)
+                    Areas.Delete_ImageArea(self.selectedkey)
                 elif mode == CaptureMode.ZONE:
-                    Areas.Delete_ZoneArea_byName(name)
+                    Areas.Delete_ZoneArea(self.selectedkey)
                 elif mode == CaptureMode.TEXT:
-                    Areas.Delete_TextArea_byName(name)
+                    Areas.Delete_TextArea(self.selectedkey)
                     
                 # UI에서 삭제
                 row = list_widget.row(selected_items[0])
@@ -1722,3 +1730,7 @@ class CaptureAreaPopup(QDialog):
         css = CSS.BUTTON_APPLY_GREEN if ennable else CSS.BUTTON_DISABLE
         self.save_btn.setStyleSheet(css)
         self.save_btn.setEnabled(ennable)
+            
+    def DEV_Update_KeyLabel(self):
+        if APP_CONFIG.RELEASE_APP: return
+        self.DEV_label_key.setText(f"[{self.selectedkey}]")
