@@ -116,10 +116,14 @@ class Tasker(QObject):
     
     async def Loop(self):
         task_key, task = Scanner.Get_RunningTask()
-        # print(f"Tasker.Loop(): [{task_key}] {task}")
+        # print(f"Tasker.Loop(): [{task_key} / {task.name}] {task}")
         self.running_task = task
         self.running_task_steps = [ Scanner.GetKey_StartStep() ]
         self.Print_RunningSteps()
+        
+        # #DEV TEST
+        # self.is_running = False
+        # self.toggle_capture_callback()
         
         try:
             while self.is_running:

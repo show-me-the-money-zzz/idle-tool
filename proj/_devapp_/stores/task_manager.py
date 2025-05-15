@@ -258,6 +258,11 @@ def Get_Task(key, default=None):
         comment=data.get("comment", "")
     )
     return ret
+def Get_Task_byName(name, default=("", None)):
+    for k, v in GetAll_Tasks().items():
+        if name == v.name:
+            return (k, Get_Task(k))
+    return default
 
 def GetAll_Tasks() -> dict[str, Task]:
     raw = Tasks.all()
