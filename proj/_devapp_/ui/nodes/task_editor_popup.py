@@ -996,7 +996,9 @@ class TaskEditorPopup(QDialog):
             self.telegram_dummy_checkbox.setChecked(step.dummy)
         
         # 공통 속성 설정 - 실패 단계
-        self.fail_step_combo.setCurrentText(step.fail_step)
+        fail_step = self.selectedTask.task.Get_Step(step.fail_step)
+        fail_step_text = "" if not fail_step else fail_step.name
+        self.fail_step_combo.setCurrentText(fail_step_text)
         
         # 다음 단계 설정
         for nextstep in step.next_step:

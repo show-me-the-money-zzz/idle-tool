@@ -248,10 +248,12 @@ class SelectedTask:
             step.dummy = dummy
     
     # --------- 공통 메서드 ---------
-    def UpdateStep_FailStep(self, step):
+    def UpdateStep_FailStep(self, steptext):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
-        self.Get_Step().fail_step = step
+        
+        key, step = self.FindStep_byName(steptext)
+        self.Get_Step().fail_step = key
         
     def UpdateStep_NextSteps(self, widget: QListWidget):
         if "" == self.origin_key or "" == self.origin_step_key:
