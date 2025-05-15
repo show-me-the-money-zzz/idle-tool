@@ -25,6 +25,29 @@ class AreaStore:
         base = finder.Get_DataPath()
         os.makedirs(base, exist_ok=True)
         return base / self.filename
+    
+    def NewKey(self):
+        if "범위 영역" == self.name:
+            newlist = {}
+            for k, v in self.items.items():
+                # print(f"[{k}] {v}")
+                if k == v["name"]:
+                    newkey = system.GetKey("zone")
+                    newlist[newkey] = v
+                    
+                    import time
+                    time.sleep(1)
+                else:
+                    newlist[k] = v
+                
+            # print(f"{newlist}")
+            # self.items = newlist
+            self.items = {}
+            for k, v in newlist.items():
+                # print(f"[{k}] {v}")
+                self.add(k, v, False)
+            # print(f"{self.items}")
+            self.save()
 
     def _load(self):
         if self.store_path.exists():
