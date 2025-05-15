@@ -213,7 +213,8 @@ class TaskEditorPopup(QDialog):
     def ProcessCheck_StartSetp(self, state):
         startkey, step = self.selectedTask.UpdateTask_StartStepKey(state)
         self.start_step_checkbox.setEnabled(False)
-        if "" != startkey: self.start_key_input.setText(step.name)
+        if "" != startkey:
+            self.start_key_input.setText(step.name)
         
     def Reload_Tasks(self):
         # 작업 데이터 초기화
