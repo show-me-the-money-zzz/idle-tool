@@ -186,13 +186,13 @@ class ControlFrame(QFrame):
         start_key = task.start_key if hasattr(task, 'start_key') else ""
                 
         # 단계 키를 콤보박스에 추가 (시작 단계는 특별한 접두사 추가)
-        for step_key in task.steps.keys():
-            display_text = f"{TaskMan.ICON_START_STEP} {step_key}" if step_key == start_key else step_key
-            self.step_combo.addItem(display_text, step_key)  # 실제 키를 userData로 저장
+        for key, step in task.steps.items():
+            display_text = f"{TaskMan.ICON_START_STEP} {step.name}" if key == start_key else step.name
+            self.step_combo.addItem(display_text, key)  # 실제 키를 userData로 저장
         
         # 시작 단계가 설정되어 있으면 해당 단계 선택
         if start_key and start_key in task.steps:
-            display_text = f"{TaskMan.ICON_START_STEP} {start_key}"
+            display_text = f"{TaskMan.ICON_START_STEP} {task.steps.get(start_key).name}"
             index = self.step_combo.findText(display_text)
             if index >= 0:
                 self.step_combo.setCurrentIndex(index)
@@ -201,6 +201,7 @@ class ControlFrame(QFrame):
         elif self.step_combo.count() > 0:
             # 시작 단계가 없거나 유효하지 않으면 첫 번째 단계 선택
             self.step_combo.setCurrentIndex(0)
+        # print(f"{self.step_combo.currentData()}")
 
     def Change_Step(self, display_text):
         # 표시 텍스트에서 실제 키 추출 (⭐ 제거)    #TaskMan.ICON_START_STEP
@@ -216,15 +217,17 @@ class ControlFrame(QFrame):
         TaskMan.Load_Task()
         self.task_combo.clear()
 
-        task_keys = TaskMan.GetAll_Tasks().keys()
-        for key in task_keys:
-            self.task_combo.addItem(key)
+        tasks = TaskMan.GetAll_Tasks()
+        for key, task in tasks.items():
+            self.task_combo.addItem(task.name)
             
         # 첫 번째 작업 선택 및 단계 업데이트
-        if task_keys:
-            first_task = next(iter(task_keys))
-            self.task_combo.setCurrentText(first_task)
-            self.update_step_combo(first_task)
+        if tasks:
+            first_key = next(iter(tasks))
+            first_task = tasks.get(first_key)
+            # print(f"[{first_key}] {first_task}")
+            self.task_combo.setCurrentText(first_task.name)
+            self.update_step_combo(first_key)
         else:
             self.step_combo.clear()
     
