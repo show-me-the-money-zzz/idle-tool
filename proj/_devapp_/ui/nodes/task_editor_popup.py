@@ -893,12 +893,12 @@ class TaskEditorPopup(QDialog):
             self.next_step_combo.addItem("")
             
             # 단계 목록에 추가 (시작 단계는 특별한 접두사 추가)
-            for key in task.steps.keys():
-                display_text = f"{TaskMan.ICON_START_STEP} {key}" if key == start_key else key
+            for stepkey, step in task.steps.items():
+                display_text = f"{TaskMan.ICON_START_STEP} {step.name}" if stepkey == start_key else step.name
                 self.step_list.addItem(display_text)
                 # 검색 가능한 콤보박스에는 원래 키를 추가
-                self.fail_step_combo.addItem(key)
-                self.next_step_combo.addItem(key)
+                self.fail_step_combo.addItem(step.name)
+                self.next_step_combo.addItem(step.name)
         else:
             # 선택된 항목이 없으면 이름 편집 필드 비우기
             self.automation_name_edit.clear()
@@ -921,10 +921,10 @@ class TaskEditorPopup(QDialog):
 
                 self.fail_step_combo.addItem("")
                 self.next_step_combo.addItem("")
-                for key in newsteps.keys():
-                    self.step_list.addItem(key)
-                    self.fail_step_combo.addItem(key)
-                    self.next_step_combo.addItem(key)
+                for stepkey, step in newsteps.items():
+                    self.step_list.addItem(step.name)
+                    self.fail_step_combo.addItem(step.name)
+                    self.next_step_combo.addItem(step.name)
         # 선택된 항목이 있는지 확인
         self.selectedTask.Reset_Step()
         
@@ -964,17 +964,18 @@ class TaskEditorPopup(QDialog):
             return
         
         selectedItem = items[0]
-        key = selectedItem.text()
+        name = selectedItem.text()
 
         # 아이콘 제거하여 실제 키 가져오기
-        if key.startswith(f"{TaskMan.ICON_START_STEP} "):
-            key = key.replace(f"{TaskMan.ICON_START_STEP} ", "")
+        if name.startswith(f"{TaskMan.ICON_START_STEP} "):
+            name = name.replace(f"{TaskMan.ICON_START_STEP} ", "")
         
-        if not self.selectedTask.IsExistStep(key):
+        key = self.selectedTask.IsExistStep_byName(name)
+        if not key:
             return
         
         step = self.selectedTask.Set_StepKey(key)
-        if not APP_CONFIG.RELEASE_APP: self.step_group.setTitle(f"단계: {key}")
+        if not APP_CONFIG.RELEASE_APP: self.step_group.setTitle(f"단계: {name}")
         
         # 공통 속성 설정
         isStartStep = (key == self.selectedTask.Get_StartKey())
@@ -982,7 +983,7 @@ class TaskEditorPopup(QDialog):
         self.start_step_checkbox.setEnabled(not isStartStep)
         
         self.waiting_spin.setValue(step.waiting)
-        self.step_name_edit.setText(key)
+        self.step_name_edit.setText(name)
         
         # 타입 설정
         type_ui_mapping = {

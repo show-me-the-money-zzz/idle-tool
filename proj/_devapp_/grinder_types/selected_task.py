@@ -58,6 +58,13 @@ class SelectedTask:
     def IsSelectStep(self): return "" != self.origin_step_key
     def IsExistStep(self, stepkey):
         return (None != self.task.steps.get(stepkey))
+    def IsExistStep_byName(self, name):
+        ret = ""
+        for stepkey, step in self.task.steps.items():
+            if step.name == name:
+                ret = stepkey
+                break
+        return ret
     def IsSame_StepKey(self):
         return (self.origin_step_key == self.current_step_key)
     def Swap_StepKey(self):
