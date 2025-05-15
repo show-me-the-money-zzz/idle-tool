@@ -80,13 +80,24 @@ class SelectedTask:
         self.task.start_key = self.origin_step_key
         return (self.task.start_key, self.GetStep_Start())
     def GetStep_Start(self):
-        ret = None
-        if self.origin_step_key:
-            for stepkey, step in self.task.steps.items():
-                if self.origin_step_key == stepkey:
-                    ret = step
-                    break
-        return ret
+        # ret = None
+        # if self.origin_step_key:
+        #     for stepkey, step in self.task.steps.items():
+        #         if self.origin_step_key == stepkey:
+        #             ret = step
+        #             break
+        # return ret
+        return self.task.steps.get(self.task.start_key)
+    
+    def FindStep_byName(self, name):
+        ret_key = ""
+        ret_step = None
+        for stepkey, step in self.task.steps.items():
+            if step.name == name:
+                ret_key = stepkey
+                ret_step = step
+                break
+        return (ret_key, ret_step)
     
     def NewStep(self, key, name, step_type="matching"):
         """새 단계 생성"""
@@ -247,8 +258,10 @@ class SelectedTask:
             return
         steps = []
         for i in range(widget.count()):
-            step = widget.item(i).text()
-            steps.append(step)
+            stepname = widget.item(i).text()
+            key, step = self.FindStep_byName(stepname)
+            if key:
+                steps.append(key)
         # print(f"{steps}")
         self.Get_Step().next_step = steps
         # print(f"{self.task}")

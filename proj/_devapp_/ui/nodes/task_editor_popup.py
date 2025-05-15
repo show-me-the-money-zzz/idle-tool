@@ -1000,7 +1000,8 @@ class TaskEditorPopup(QDialog):
         
         # 다음 단계 설정
         for nextstep in step.next_step:
-            self.next_steps_list.addItem(nextstep)
+            step = self.selectedTask.task.Get_Step(nextstep)
+            if step: self.next_steps_list.addItem(step.name)
         self.selectedTask.UpdateStep_NextSteps(self.next_steps_list)
         
         # 설명 설정
@@ -1078,7 +1079,7 @@ class TaskEditorPopup(QDialog):
             if not isChanged:   # 새로운 아이템인지
                 findTask = TaskMan.Get_Task(taskkey, None)
                 isChanged = not findTask
-                    
+
             if isChanged:
                 # X 버튼은 QMessageBox.No 또는 QMessageBox.Cancel 값과 같은 결과 반환
                 reply = QMessageBox.question(self, '데이터 수정됨',
