@@ -136,7 +136,7 @@ class Tasker(QObject):
                 # 현재 실행 중인 단계 처리
                 for step_key in self.running_task_steps:
                     step = self.running_task.Get_Step(step_key)
-                    # print(f"step.seq= {step.seq}")
+                    # print(f"step.name= {step.name}")
                     if None == step:
                         self.logframe_adderror.emit(f"{task_key}-{step_key} 단계가 유효하지 않습니다.")
                         self.toggle_capture_callback()

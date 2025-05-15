@@ -27,7 +27,7 @@ from grinder_utils.pysider import ChangeText_ListWidget
 import zzz.app_config as APP_CONFIG
 # import core.config as CONFIG
 import grinder_utils.finder as FINDER
-
+import grinder_utils.system as SYS_UTIL
 
 class TaskEditorPopup(QDialog):
     """작업 편집기 팝업 창"""
@@ -199,9 +199,8 @@ class TaskEditorPopup(QDialog):
         self.step_list.clear()  # 단계 리스트 초기화
         
         # 작업 데이터에서 키 가져와서 추가
-        for key in self.tasks.keys():
-            # addItem 사용 - 문자열 그대로 추가
-            self.automation_list.addItem(key)
+        for key, data in self.tasks.items():
+            self.automation_list.addItem(data.name)
         
         self.waiting_spin.setValue(0.0)
         self.step_name_edit.setText("")
@@ -867,12 +866,15 @@ class TaskEditorPopup(QDialog):
         
         # 선택된 항목이 있으면 이름 편집 필드에 표시
         if has_selection:
-            
             if DEVDEV: print("update_automation step= 4")
             selectedItem = items[0]
             self.automation_name_edit.setText(selectedItem.text())
             
-            key = selectedItem.text()
+            name = selectedItem.text()
+            key = ""
+            for k, data in self.tasks.items():
+                if data.name == name:
+                    key = k
             task = self.tasks.get(key)
             
             if not task:
@@ -1041,7 +1043,7 @@ class TaskEditorPopup(QDialog):
         
         # 디버그 모드일 경우 추가 정보 표시
         if not APP_CONFIG.RELEASE_APP:
-            text += f" (seq: {step.seq}, type: {step.type})"
+            text += f" (type: {step.type})"
             
             # 타입별 추가 정보
             if step.type == "matching" and hasattr(step, "zone"):
@@ -1136,8 +1138,6 @@ class TaskEditorPopup(QDialog):
         """새 단계 추가"""
         # 현재 항목 수 확인
         count = self.step_list.count()
-        lastseq = self.selectedTask.Get_Step_LastSeq()
-        newseq = lastseq + 1
         
         # 현재 선택된 타입 가져오기
         type_ui_mapping = {
@@ -1147,10 +1147,15 @@ class TaskEditorPopup(QDialog):
         }
         current_type = type_ui_mapping.get(self.main_type_combo.currentText(), "matching")
         
+        key = SYS_UTIL.GetKey("step")
+        # print(key)
+        # return
+            
         # 새 항목 추가
-        key = f"새 단계 {newseq + 1}"
-        self.step_list.addItem(key)
-        self.selectedTask.NewStep(key, current_type, newseq)
+        name = f"새 단계 {count + 1}"
+        self.step_list.addItem(name)
+        
+        self.selectedTask.NewStep(key, name, current_type)
         
         # 새 항목 선택
         self.step_list.setCurrentRow(count)
@@ -1218,7 +1223,11 @@ class TaskEditorPopup(QDialog):
                                      "키가 중복됩니다. 다른 이름을 사용하세요.")
                 return
 
-            self.tasks[new_text] = TaskMan.Task(
+            key = SYS_UTIL.GetKey("task")
+            # print(key)
+            # return
+            
+            self.tasks[key] = TaskMan.Task(
                 name=new_text,
                 steps={},
                 start_key="",

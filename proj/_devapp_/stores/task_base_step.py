@@ -5,7 +5,6 @@ import re
 class BaseStep:
     name: str
     type: str
-    seq: int
     waiting: float
     next_step: list[str]
     fail_step: str

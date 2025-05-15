@@ -88,6 +88,7 @@ class TaskManager:
         """Task 객체를 직접 받아 저장하는 함수"""
         # Task 객체를 딕셔너리로 변환
         task_dict = {
+            "name": task.name,
             "steps": {},
             "start_key": task.start_key,
             "comment": task.comment
@@ -96,9 +97,9 @@ class TaskManager:
         # 각 BaseStep을 딕셔너리로 변환
         for step_key, step in task.steps.items():
             step_dict = {
-                "seq": step.seq,
-                "waiting": step.waiting,
+                "name": step.name,
                 "type": step.type,
+                "waiting": step.waiting,
                 "next_step": step.next_step,
                 "fail_step": step.fail_step,
                 "comment": step.comment
@@ -159,9 +160,9 @@ class TaskManager:
                 
                 for stepkey, stepvar in task.steps.items(): #단계 복사
                     step_dict = {
-                        "seq": stepvar.seq,
-                        "waiting": stepvar.waiting,
+                        "name": stepvar.name,
                         "type": stepvar.type,
+                        "waiting": stepvar.waiting,
                         "next_step": stepvar.next_step,
                         "fail_step": stepvar.fail_step,
                         "comment": stepvar.comment
@@ -211,9 +212,8 @@ def _create_step_instance(step_name: str, step_type: str, step_data: dict) -> Ba
     # 기본 공통 필드
     base_params = {
         "name": step_data.get("name", step_name),
-        "seq": step_data.get("seq", 0),
-        "waiting": step_data.get("waiting", 0.0),
         "type": step_type,
+        "waiting": step_data.get("waiting", 0.0),
         "next_step": step_data.get("next_step", []),
         "fail_step": step_data.get("fail_step", ""),
         "comment": step_data.get("comment", ""),
@@ -285,14 +285,13 @@ def Update_Task(old_key: str, task: Task, new_key: str = None, save: bool = True
         return GetAll_Tasks()
     return None
 
-def Create_Empty_Step(step_name: str, step_type: str, seq: int = 0) -> BaseStep:
+def Create_Empty_Step(step_name: str, step_type: str) -> BaseStep:
     """새로운 빈 단계를 생성하는 함수"""
     # 공통 파라미터
     base_params = {
         "name": step_name,
-        "seq": seq,
-        "waiting": 0.0,
         "type": step_type,
+        "waiting": 0.0,
         "next_step": [],
         "fail_step": "",
         "comment": "",

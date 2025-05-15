@@ -370,8 +370,8 @@ class FlowchartGenerator:
                 step_info = {}
                 
                 # 중요 속성 추출
-                if hasattr(step, 'seq'):
-                    step_info['seq'] = step.seq
+                # if hasattr(step, 'seq'):
+                #     step_info['seq'] = step.seq
                 
                 if hasattr(step, 'type'):
                     step_info['type'] = step.type

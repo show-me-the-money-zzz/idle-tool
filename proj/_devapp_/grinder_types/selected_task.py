@@ -120,17 +120,11 @@ class SelectedTask:
         self.task.start_key = self.origin_step_key
         return self.task.start_key
     
-    def Get_Step_LastSeq(self):
-        seq = -1
-        if 0 < len(self.task.steps):
-            for k, step in self.task.steps.items():
-                if seq < step.seq: seq = step.seq
-        return seq
-    
-    def NewStep(self, key, step_type="matching", seq=0):
+    def NewStep(self, key, name, step_type="matching"):
         """새 단계 생성"""
-        self.task.steps[key] = TaskMan.Create_Empty_Step(key, step_type, seq)
-        return seq
+        self.task.steps[key] = TaskMan.Create_Empty_Step(name, step_type)
+        # print(name)
+        # print(self.task)
     
     def RemoveStep(self, key):
         # print(f"RemoveStep({key})")
@@ -161,7 +155,6 @@ class SelectedTask:
         # 현재 단계의 공통 속성 추출
         base_params = {
             "name": current_step.name,
-            "seq": current_step.seq,
             "waiting": current_step.waiting,
             "type": type_str,
             "next_step": current_step.next_step,
