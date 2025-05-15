@@ -1226,18 +1226,20 @@ class TaskEditorPopup(QDialog):
         if current_row < 0:
             return  # 선택된 항목이 없음
             
-        taskkey = self.automation_list.item(current_row).text()
+        name = self.automation_list.item(current_row).text()
 
         # 삭제 전 확인 대화상자
         reply = QMessageBox.question(self, '자동화 삭제', 
-                                    f"선택한 자동화({taskkey})를 삭제하시겠습니까?\n" +
+                                    f"선택한 자동화({name})를 삭제하시겠습니까?\n" +
                                     "파일에 바로 저장합니다.",
                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         
         if reply == QMessageBox.Yes:
-            self.selectedTask.RemoveTask(taskkey)
+            key = self.selectedTask.RemoveTask(name)
             
-            if TaskMan.Delete_Task(taskkey):
+            isDeleted = TaskMan.Delete_Task(key, True)
+            # print(f"[{key}] isDeleted= {isDeleted}")
+            if isDeleted:
                 self.tasks = TaskMan.GetAll_Tasks()
 
             self.automation_list.takeItem(current_row)

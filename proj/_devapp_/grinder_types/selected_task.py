@@ -56,9 +56,11 @@ class SelectedTask:
                 break
         return ret
     
-    def RemoveTask(self, key):
-        # print(f"RemoveTask({key})")
+    def RemoveTask(self, name):
+        # print(f"RemoveTask(name= {name})")
+        ret = self.origin_key
         self.Reset_Task()
+        return ret
     
     def UpdateTask_Name(self, name):
         if "" == self.origin_key:
