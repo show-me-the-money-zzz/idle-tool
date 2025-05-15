@@ -128,29 +128,23 @@ class TaskManager:
         self.add(key, task_dict, save)
         return True
 
-    def update_task(self, old_key: str, task: Task, new_key: str = None, save: bool = True) -> bool:
+    def update_task(self, key: str, task: Task, save: bool = True) -> bool:
         """주어진 키의 Task를 업데이트하는 함수
         
-        old_key: 기존 키
+        key: 키
         task: 새로운 Task 객체
-        new_key: 변경할 새 키 (None이면 키 변경 없음)
         save: 저장 여부
         """
         # 키가 존재하지 않으면 추가
-        if old_key not in self.tasks:
+        if key not in self.tasks:
             # 키가 존재하지 않으면 new_key 사용 (제공된 경우)
-            add_key = new_key if new_key else old_key
-            return self.add_task(add_key, task, save)
+            return self.add_task(key, task, save)
         
         # print(f"<<<<<<<<<<BEFORE>>>>>>>>>\n{self.tasks.items()}")
         tasklist = {}
         for taskkey, taskvar in self.tasks.items():
             # print(f"{[tsakkey]} {taskvar}")
-            if old_key == taskkey:  #덮어쓰기
-                keyname = old_key
-                if new_key and old_key != new_key:  # new_key가 유효하고 old_key와 다르면
-                    keyname = new_key
-                    
+            if key == taskkey:  #덮어쓰기
                 task_dict = {
                     "name": task.name,
                     "steps": {},
@@ -187,7 +181,7 @@ class TaskManager:
                     
                     task_dict["steps"][stepkey] = step_dict
                 
-                tasklist[keyname] = task_dict
+                tasklist[key] = task_dict
             else:   # 기존 정보는 그대로
                 tasklist[taskkey] = taskvar
         
@@ -280,8 +274,8 @@ Save_Tasks = Tasks.save
 Add_Task = Tasks.add_task
 Update_Task = Tasks.update_task
 
-def Update_Task(old_key: str, task: Task, new_key: str = None, save: bool = True):
-    if Tasks.update_task(old_key, task, new_key, save):
+def Update_Task(key: str, task: Task, save: bool = True):
+    if Tasks.update_task(key, task, save):
         return GetAll_Tasks()
     return None
 

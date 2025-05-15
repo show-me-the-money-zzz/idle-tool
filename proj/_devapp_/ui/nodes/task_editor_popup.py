@@ -46,10 +46,8 @@ class TaskEditorPopup(QDialog):
         
         self.selectedTask = SelectedTask(
             origin_key="",
-            current_key="",
             task=None,
-            origin_step_key = "",
-            current_step_key="")
+            origin_step_key = "",)
         
         # UI 설정
         self._setup_ui()
@@ -122,7 +120,7 @@ class TaskEditorPopup(QDialog):
         
     def Connect_ChangedUI(self):
         """UI 컨트롤 변경 이벤트 연결"""
-        self.automation_name_edit.textChanged.connect(lambda task_name: self.selectedTask.UpdateTask_Key(task_name))
+        self.automation_name_edit.textChanged.connect(lambda task_name: self.selectedTask.UpdateTask_Name(task_name))
         self.task_description.textChanged.connect(lambda: self.selectedTask.UpdateTask_Comment(self.task_description.toPlainText()))
         self.start_step_checkbox.stateChanged.connect(self.ProcessCheck_StartSetp)
         
@@ -130,7 +128,7 @@ class TaskEditorPopup(QDialog):
         self.main_type_combo.currentTextChanged.connect(self.OnStepTypeChanged)
         
         self.waiting_spin.valueChanged.connect(lambda waiting: self.selectedTask.UpdateStep_Waiting(waiting))
-        self.step_name_edit.textChanged.connect(lambda step_name: self.selectedTask.UpdateStep_Key(step_name))
+        self.step_name_edit.textChanged.connect(lambda step_name: self.selectedTask.UpdateStep_Name(step_name))
         
         # 매칭 타입 컨트롤 연결
         self.zone_combo.currentTextChanged.connect(lambda zone: self.selectedTask.UpdateStep_Zone(zone))
@@ -183,9 +181,9 @@ class TaskEditorPopup(QDialog):
         self.step_type_stacked_widget.setCurrentIndex(index)
     
     def ProcessCheck_StartSetp(self, state):
-        startkey = self.selectedTask.UpdateTask_StartStepKey(state)
+        startkey, step = self.selectedTask.UpdateTask_StartStepKey(state)
         self.start_step_checkbox.setEnabled(False)
-        if "" != startkey: self.start_key_input.setText(startkey)
+        if "" != startkey: self.start_key_input.setText(step.name)
         
     def Reload_Tasks(self):
         # 작업 데이터 초기화
@@ -883,7 +881,8 @@ class TaskEditorPopup(QDialog):
             self.selectedTask.Set_Task(key, task)
             if not APP_CONFIG.RELEASE_APP: self.automation_group.setTitle(f"자동화: {key}")
             
-            self.start_key_input.setText(task.start_key)
+            startstep = self.selectedTask.GetStep_Start()
+            if startstep: self.start_key_input.setText(startstep.name) #task.start_key
             self.task_description.setText(task.comment)
             
             # 시작 단계 가져오기
@@ -905,26 +904,6 @@ class TaskEditorPopup(QDialog):
 
     def update_step_buttons_state(self):
         """단계 선택 상태에 따라 버튼 활성화 상태 업데이트"""
-        if self.selectedTask.IsSelectStep() and not self.selectedTask.IsSame_StepKey():
-            # 키가 변경되었으면
-            newsteps = self.selectedTask.Swap_StepKey()
-            if newsteps:
-                # print(f"{newsteps}")
-                originkey, currentkey = self.selectedTask.Get_StepKeys()
-                if originkey == self.start_key_input.text():    # 시작 키 input 변경
-                    self.start_key_input.setText(currentkey)
-
-                # 키 리스트 사용하는 combobox 업데이트
-                self.step_list.clear()
-                self.fail_step_combo.clear()
-                self.next_step_combo.clear()
-
-                self.fail_step_combo.addItem("")
-                self.next_step_combo.addItem("")
-                for stepkey, step in newsteps.items():
-                    self.step_list.addItem(step.name)
-                    self.fail_step_combo.addItem(step.name)
-                    self.next_step_combo.addItem(step.name)
         # 선택된 항목이 있는지 확인
         self.selectedTask.Reset_Step()
         
@@ -970,15 +949,15 @@ class TaskEditorPopup(QDialog):
         if name.startswith(f"{TaskMan.ICON_START_STEP} "):
             name = name.replace(f"{TaskMan.ICON_START_STEP} ", "")
         
-        key = self.selectedTask.IsExistStep_byName(name)
-        if not key:
+        stepkey = self.selectedTask.IsExistStep_byName(name)
+        if not stepkey:
             return
         
-        step = self.selectedTask.Set_StepKey(key)
+        step = self.selectedTask.Set_StepKey(stepkey)
         if not APP_CONFIG.RELEASE_APP: self.step_group.setTitle(f"단계: {name}")
         
         # 공통 속성 설정
-        isStartStep = (key == self.selectedTask.Get_StartKey())
+        isStartStep = (stepkey == self.selectedTask.Get_StartKey())
         self.start_step_checkbox.setChecked(isStartStep)
         self.start_step_checkbox.setEnabled(not isStartStep)
         
@@ -1087,17 +1066,17 @@ class TaskEditorPopup(QDialog):
         isSaved = False
         isChanged = False
         if self.selectedTask.IsSelect():            
-            originkey, currentkey = self.selectedTask.Get_Keys()
-            isChanged = (originkey != currentkey)   # 키 변경 체크
+            taskkey = self.selectedTask.GetKey_Task()
+            isChanged = False
             
             if not isChanged:   # 데이터 변경 체크
-                orgintask = self.tasks.get(originkey)
+                orgintask = self.tasks.get(taskkey)
                 if orgintask:
                     deeporgintask = copy.deepcopy(orgintask)
                     isChanged = (deeporgintask != self.selectedTask.task)
 
             if not isChanged:   # 새로운 아이템인지
-                findTask = TaskMan.Get_Task(originkey, None)
+                findTask = TaskMan.Get_Task(taskkey, None)
                 isChanged = not findTask
                     
             if isChanged:
@@ -1109,12 +1088,10 @@ class TaskEditorPopup(QDialog):
                                              QMessageBox.Yes    # 기본 버튼(Enter 키 누를 때 선택되는 버튼)
                                              )
                 if QMessageBox.Yes == reply:
-                    newtask = TaskMan.Update_Task(originkey, self.selectedTask.task, currentkey)
+                    newtask = TaskMan.Update_Task(taskkey, self.selectedTask.task)
                     if newtask:
                         self.tasks = newtask
-
-                        if (originkey != currentkey):
-                            ChangeText_ListWidget(self.automation_list, originkey, currentkey)
+                        print(f"{newtask}")
                         isSaved = True
                 # elif QMessageBox.No == reply:
                 else:

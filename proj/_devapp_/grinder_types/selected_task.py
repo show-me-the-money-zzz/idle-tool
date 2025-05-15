@@ -10,11 +10,9 @@ import stores.task_manager as TaskMan
 @dataclass
 class SelectedTask:
     origin_key: str #task의 이름 변경 대비 (사냥1이 origin_key / 사냥XX current_key)
-    current_key: str    
     task: Optional[TaskMan.Task]    # deepcopy(task) 컨트롤 변경을 일일이 업데이트
     # task: TaskMan.Task | None
     origin_step_key: str    #step의 이름 변경 대비 (잡화상점찾기 origin_step_key / 잡화상점찾기가기 current_step_key)
-    current_step_key: str
     
     # # 변경 전에 저장된 데이터 있는지 확인
     # ## selected_originkey 가 원본에 없는 key이면 추가
@@ -22,7 +20,6 @@ class SelectedTask:
     def Set_Task(self, key, task: TaskMan.Task | None):
         # print(f"Set_Task({key})")
         self.origin_key = key
-        self.current_key = key
         if task:
             self.task = copy.deepcopy(task)
             # print(f"{task}")
@@ -30,27 +27,20 @@ class SelectedTask:
     def Reset_Task(self):
         self.Set_Task("", None)
         self.Reset_Step()
-    def ChangeKey_CurrentTask(self, key):
-        self.current_key = key
-    def Get_Keys(self):
-        return ( self.origin_key, self.current_key )
+    def GetKey_Task(self): return self.origin_key
         
     def Get_StartKey(self): return self.task.start_key
     def Get_Commnet(self): return self.task.comment
 
     def IsSelect(self): return "" != self.origin_key
-    def IsSame_Key(self): return (self.origin_key == self.current_key)
 
     def Set_StepKey(self, key):
         # print(f"SelectedTask.Set_StepKey({key})")
         self.origin_step_key = key
-        self.current_step_key = key
         return self.Get_Step()
-    def Get_StepKeys(self):
-        return ( self.origin_step_key, self.current_step_key )
+    def Get_StepKey(self): return self.origin_step_key
     def Reset_Step(self): self.Set_StepKey("")
-    def ChangeKey_CurrentStep(self, key):
-        self.current_step_key = key
+    
     def Get_Step(self): #origin_step_key로 가져오기
         if "" == self.origin_step_key:
             return None
@@ -65,54 +55,15 @@ class SelectedTask:
                 ret = stepkey
                 break
         return ret
-    def IsSame_StepKey(self):
-        return (self.origin_step_key == self.current_step_key)
-    def Swap_StepKey(self):
-        # 키가 존재하는지 확인
-        if self.origin_step_key in self.task.steps:
-            # 시작 키 업데이트
-            if self.origin_step_key == self.task.start_key:
-                self.task.start_key = self.current_step_key
-                
-            # 순서 유지를 위해 순서대로 복사할 새 딕셔너리 생성
-            newdata = {}
-            
-            # 먼저 원본 딕셔너리의 키 목록을 가져옴
-            original_keys = list(self.task.steps.keys())
-            # print(f"{original_keys}")
-            
-            # 다른 단계의 참조(fail_step, next_step) 업데이트
-            for key, value in self.task.steps.items():
-                if self.origin_step_key == value.fail_step:
-                    value.fail_step = self.current_step_key
-                    
-                for nextIdx, nextVal in enumerate(value.next_step):
-                    if self.origin_step_key == nextVal:
-                        value.next_step[nextIdx] = self.current_step_key
-            
-            # 원래 순서대로 새 딕셔너리 생성
-            for key in original_keys:
-                if key == self.origin_step_key:
-                    # 변경할 키는 새 키로 대체
-                    newdata[self.current_step_key] = self.task.steps[key]
-                else:
-                    # 다른 키는 그대로 복사
-                    newdata[key] = self.task.steps[key]
-            
-            # 새 딕셔너리로 교체
-            self.task.steps = newdata
-            # print(f"{list(newdata.keys())}")
-            return self.task.steps
-        return None
     
     def RemoveTask(self, key):
         # print(f"RemoveTask({key})")
         self.Reset_Task()
     
-    def UpdateTask_Key(self, key):
+    def UpdateTask_Name(self, name):
         if "" == self.origin_key:
             return
-        self.ChangeKey_CurrentTask(key)
+        self.task.name = name
         # print(f"task key: {self.origin_key} vs {self.current_key}")
     def UpdateTask_Comment(self, text):
         if "" == self.origin_key:
@@ -122,10 +73,18 @@ class SelectedTask:
     def UpdateTask_StartStepKey(self, checked):
         # print(f"StartStepKey({checked})")
         if "" == self.origin_key or "" == self.origin_step_key:
-            return ""
+            return ("", None)
         # print(f"StartStepKey({checked}): {self.origin_step_key}")
         self.task.start_key = self.origin_step_key
-        return self.task.start_key
+        return (self.task.start_key, self.GetStep_Start())
+    def GetStep_Start(self):
+        ret = None
+        if self.origin_step_key:
+            for stepkey, step in self.task.steps.items():
+                if self.origin_step_key == stepkey:
+                    ret = step
+                    break
+        return ret
     
     def NewStep(self, key, name, step_type="matching"):
         """새 단계 생성"""
@@ -200,10 +159,10 @@ class SelectedTask:
             return
         self.Get_Step().waiting = sec
         
-    def UpdateStep_Key(self, key):
+    def UpdateStep_Name(self, name):
         if "" == self.origin_key or "" == self.origin_step_key:
             return
-        self.ChangeKey_CurrentStep(key)
+        self.Get_Step().name = name
         # print(f"step key: {self.origin_step_key} vs {self.current_step_key}")
     
     # --------- TaskStep_Matching 전용 메서드 ---------
