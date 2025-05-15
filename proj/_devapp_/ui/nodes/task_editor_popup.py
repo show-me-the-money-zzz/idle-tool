@@ -485,7 +485,8 @@ class TaskEditorPopup(QDialog):
             return
         
         task_name = items[0].text()
-        task_data = self.tasks.get(task_name)
+        key, _ = TaskMan.Get_Task_byName(task_name)
+        task_data = self.tasks.get(key)
         
         if not task_data:
             QMessageBox.warning(self, "경고", f"태스크 '{task_name}'를 찾을 수 없습니다.")
