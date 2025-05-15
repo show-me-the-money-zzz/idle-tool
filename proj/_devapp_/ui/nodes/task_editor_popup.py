@@ -128,7 +128,7 @@ class TaskEditorPopup(QDialog):
         self.main_type_combo.currentTextChanged.connect(self.OnStepTypeChanged)
         
         self.waiting_spin.valueChanged.connect(lambda waiting: self.selectedTask.UpdateStep_Waiting(waiting))
-        self.step_name_edit.textChanged.connect(lambda step_name: self.selectedTask.UpdateStep_Name(step_name))
+        self.step_name_edit.textChanged.connect(lambda step_name: self.ChangeText_StepName(step_name))
         
         # 매칭 타입 컨트롤 연결
         self.zone_combo.currentTextChanged.connect(lambda zone: self.selectedTask.UpdateStep_Zone(zone))
@@ -147,6 +147,20 @@ class TaskEditorPopup(QDialog):
         self.fail_step_combo.currentTextChanged.connect(lambda step: self.selectedTask.UpdateStep_FailStep(step))
 
         self.step_description.textChanged.connect(lambda: self.selectedTask.UpdateStep_Comment(self.step_description.toPlainText()))
+        
+    def ChangeText_StepName(self, name):
+        task = self.selectedTask.Get_Step()
+        if task:
+            items = self.step_list.selectedItems()
+            has_selection = len(items) > 0
+            if has_selection:
+                selectedItem = items[0]
+                select_name = selectedItem.text()
+                list_item_name = name
+                if select_name.startswith(f"{TaskMan.ICON_START_STEP} "):
+                    list_item_name = f"{TaskMan.ICON_START_STEP} {name}"
+                ChangeText_ListWidget(self.step_list, select_name, list_item_name)
+        self.selectedTask.UpdateStep_Name(name)
     
     def OnStepTypeChanged(self, type_str):
         """단계 타입 변경 시 해당하는 위젯 표시"""
