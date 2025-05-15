@@ -108,6 +108,9 @@ class SelectedTask:
                 stepvalue.next_step = next_step
             return True
         return False
+    def RemoveStep_byName(self, name):
+        key = self.IsExistStep_byName(name)
+        return self.RemoveStep(key)
     
     def UpdateStep_Type(self, type_str):
         """단계 타입 변경 - 타입이 변경되면 새 객체를 생성해야 함"""

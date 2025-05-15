@@ -1091,7 +1091,9 @@ class TaskEditorPopup(QDialog):
                     newtask = TaskMan.Update_Task(taskkey, self.selectedTask.task)
                     if newtask:
                         self.tasks = newtask
-                        print(f"{newtask}")
+                        # print(f"{newtask}")
+                        if (orgintask.name != self.selectedTask.task.name):
+                            ChangeText_ListWidget(self.automation_list, orgintask.name, self.selectedTask.task.name)
                         isSaved = True
                 # elif QMessageBox.No == reply:
                 else:
@@ -1146,13 +1148,13 @@ class TaskEditorPopup(QDialog):
         if current_row < 0:
             return  # 선택된 항목이 없음
             
-        stepkey = self.step_list.item(current_row).text()
+        stepname = self.step_list.item(current_row).text()
         
         # 아이콘 제거하여 실제 키 가져오기
-        if stepkey.startswith(f"{TaskMan.ICON_START_STEP} "):
-            stepkey = stepkey.replace(f"{TaskMan.ICON_START_STEP} ", "")
+        if stepname.startswith(f"{TaskMan.ICON_START_STEP} "):
+            stepname = stepname.replace(f"{TaskMan.ICON_START_STEP} ", "")
         
-        self.selectedTask.RemoveStep(stepkey)
+        self.selectedTask.RemoveStep_byName(stepname)
         
         # 항목 삭제
         self.step_list.takeItem(current_row)
