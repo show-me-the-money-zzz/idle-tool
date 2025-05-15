@@ -131,8 +131,8 @@ class TaskEditorPopup(QDialog):
         self.step_name_edit.textChanged.connect(lambda step_name: self.ChangeText_StepName(step_name))
         
         # 매칭 타입 컨트롤 연결
-        self.zone_combo.currentTextChanged.connect(lambda zone: self.selectedTask.UpdateStep_Zone(zone))
-        self.image_select_combo.currentTextChanged.connect(lambda image: self.selectedTask.UpdateStep_Image(image))
+        self.zone_combo.currentTextChanged.connect(lambda zone: self.ChangeText_Step_MatchingZone(zone))
+        self.image_select_combo.currentTextChanged.connect(lambda image: self.ChangeText_Step_MatchingImage(image))
         self.similarity_spin.valueChanged.connect(lambda similarity: self.selectedTask.UpdateStep_ScoreVal(similarity))
         self.comparison_combo.currentTextChanged.connect(lambda comparison: self.selectedTask.UpdateStep_ScoreDesc(comparison))
         self.click_type_combo.currentTextChanged.connect(lambda click: self.selectedTask.UpdateStep_ClickType(click))
@@ -147,6 +147,22 @@ class TaskEditorPopup(QDialog):
         self.fail_step_combo.currentTextChanged.connect(lambda step: self.selectedTask.UpdateStep_FailStep(step))
 
         self.step_description.textChanged.connect(lambda: self.selectedTask.UpdateStep_Comment(self.step_description.toPlainText()))
+        
+    def ChangeText_Step_MatchingZone(self, zone):
+        if zone:
+            task = self.selectedTask.Get_Step()
+            if task:
+                key, _ = Areas.Get_ZoneArea_byName(zone)
+                zone = key
+        self.selectedTask.UpdateStep_Zone(zone)
+            
+    def ChangeText_Step_MatchingImage(self, image):
+        if image:
+            task = self.selectedTask.Get_Step()
+            if task:
+                key, _ = Areas.Get_ImageArea_byName(image)
+                image = key
+        self.selectedTask.UpdateStep_Image(image)
         
     def ChangeText_StepName(self, name):
         task = self.selectedTask.Get_Step()
@@ -222,14 +238,14 @@ class TaskEditorPopup(QDialog):
         # 영역 콤보박스 초기화
         self.zone_combo.clear()
         self.zone_combo.addItem("")
-        for keys in Areas.GetAll_ZoneAreas().keys():
-            self.zone_combo.addItem(keys)
+        for k, v in Areas.GetAll_ZoneAreas().items():
+            self.zone_combo.addItem(v.name)
         
         # 이미지 콤보박스 초기화
         self.image_select_combo.clear()
         self.image_select_combo.addItem("")
-        for keys in Areas.GetAll_ImageAreas().keys():
-            self.image_select_combo.addItem(keys)
+        for k, v in Areas.GetAll_ImageAreas().items():
+            self.image_select_combo.addItem(v.name)
             
         self.similarity_spin.setValue(80.0)
         self.comparison_combo.setCurrentIndex(0)
@@ -991,8 +1007,14 @@ class TaskEditorPopup(QDialog):
         
         # 타입별 속성 설정
         if step.type == "matching" and hasattr(step, "zone"):
-            self.zone_combo.setCurrentText(step.zone)
-            self.image_select_combo.setCurrentText(step.image)
+            if step.zone:
+                # print(step.zone)
+                zoneitem = Areas.Get_ZoneArea(step.zone)
+                if zoneitem: self.zone_combo.setCurrentText(zoneitem.name)
+            if step.image:
+                # print(step.image)
+                imageitem = Areas.Get_ImageArea(step.image)
+                if imageitem: self.image_select_combo.setCurrentText(imageitem.name)
             
             num, op, op_text = step.parse_score()
             self.similarity_spin.setValue(float(num))
