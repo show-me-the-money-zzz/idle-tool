@@ -34,7 +34,9 @@ class TaskManager:
         self.tasks = {}
         self.store_path = self._resolve_path()
         # print(self.store_path)
-
+        
+        # self.check_newKey = False
+        
         success = self._load()
         if not success:
             system.PrintDEV(f"{self.name} 데이터를 로드할 수 없습니다. 새 데이터 저장소를 생성합니다.")
@@ -44,6 +46,101 @@ class TaskManager:
         base = finder.Get_DataPath()
         base.mkdir(parents=True, exist_ok=True)
         return base / self.filename
+    
+    def Get_StepKey_byStepName(self, taskkey, stepname):
+        task = self.tasks[taskkey]
+        if task:
+            steps = task["steps"]
+            for stepkey, step in steps.items():
+                if step["name"] == stepname:
+                    return stepkey
+        return ""
+    
+    def NewKey(self):
+        # if self.check_newKey: return
+        # print(f"{self.tasks}")
+        newtasks = {}
+        for taskkey, task in self.tasks.items():
+            # print(f"[{taskkey}] {task}")
+
+            # if "name" not in task:
+            #     self.tasks[taskkey]["name"] = taskkey
+            #     print(self.tasks[taskkey])
+            
+            # # key = system.GetKey("step")
+            newtasks[taskkey] = task
+            # newsteps = {}
+            # for stepkey, step in task["steps"].items():
+            #     # print(f"[{stepkey}] {step}")
+            #     newstepkey = system.GetKey("step")
+            #     newsteps[newstepkey] = {}
+            #     newsteps[newstepkey]["name"] = stepkey
+            #     newsteps[newstepkey]["type"] = step["type"]
+            #     newsteps[newstepkey]["waiting"] = step["waiting"]
+            #     newsteps[newstepkey]["next_step"] = step["next_step"]
+            #     newsteps[newstepkey]["fail_step"] = step["fail_step"]
+            #     newsteps[newstepkey]["comment"] = step["comment"]
+                
+            #     if "zone" in step: newsteps[newstepkey]["zone"] = step["zone"]
+            #     if "image" in step: newsteps[newstepkey]["image"] = step["image"]
+            #     if "score" in step: newsteps[newstepkey]["score"] = step["score"]
+            #     if "finded_click" in step: newsteps[newstepkey]["finded_click"] = step["finded_click"]
+                
+            #     if "amount" in step: newsteps[newstepkey]["amount"] = step["amount"]
+                
+            #     import time
+            #     time.sleep(1.5)
+            # # print(f"{newsteps}")
+            # newtasks[taskkey]["steps"] = newsteps
+            
+            for stepkey, step in task["steps"].items():
+                pass
+            
+                # fail_step = step["fail_step"]
+                # if fail_step:
+                #     print(fail_step)
+                #     # findkey = self.Get_StepKey_byStepName(taskkey, fail_step)
+                #     # if findkey:
+                #     #     print(f"[{taskkey} - {stepkey}] {fail_step}: {findkey}")
+                #     #     newtasks[taskkey]["steps"][stepkey]["fail_step"] = findkey
+                
+                # next_step = step["next_step"]
+                # if 0 < len(next_step):
+                #     new_next = []
+                #     for index in range(len(next_step)):
+                #         print(f"[{taskkey} - {stepkey}] {next_step[index]}")
+                #         findkey = self.Get_StepKey_byStepName(taskkey, next_step[index])
+                #         if findkey:
+                #             new_next.append(findkey)
+                #     if 0 < len(new_next):
+                #         newtasks[taskkey]["steps"][stepkey]["next_step"] = new_next
+                
+                # import stores.areas as Areas
+                # if "zone" in step:
+                #     zonename = step["zone"]
+                #     # print(zonename)
+                #     if Areas.Get_ZoneArea_byName(zonename):
+                #         zonekey, zonedata = Areas.Get_ZoneArea_byName(zonename)
+                #         print(f"[{taskkey} - {stepkey}] {zonename} => {zonekey}")
+                #         newtasks[taskkey]["steps"][stepkey]["zone"] = zonekey
+                # if "image" in step:
+                #     imagename = step["image"]
+                #     # print(imagename)
+                #     if Areas.Get_ImageArea_byName(imagename):
+                #         imagekey, imagedata = Areas.Get_ImageArea_byName(imagename)
+                #         print(f"[{taskkey} - {stepkey}] {imagename} => {imagekey}")
+                #         newtasks[taskkey]["steps"][stepkey]["image"] = imagekey
+                            
+            # import time
+            # time.sleep(1.5)
+        # print(newtasks)
+        
+        # self.tasks = {}
+        # for k, v in newtasks.items():
+        #     self.add(k, v, False)
+        # # print(f"{self.tasks}")
+        # self.save()
+        # self.check_newKey = True
 
     def _load(self) -> bool:
         if self.store_path.exists():
@@ -51,6 +148,9 @@ class TaskManager:
                 with open(self.store_path, "r", encoding="utf-8") as f:
                     self.tasks = json.load(f)
                 system.PrintDEV(f"[{self.name}] 로드됨: {len(self.tasks)}개 태스크")
+                
+                # self.NewKey()
+                
                 return True
             except Exception as e:
                 system.PrintDEV(f"[{self.name}] 로딩 오류: {e}")
@@ -346,6 +446,7 @@ def initialize():
     # Print_Data()
     # Print_Data2()
     # Print_Score()
+    # pass
 
 def Print_Score():
     val = [ 30, 45, 60, 65, 70 ]
