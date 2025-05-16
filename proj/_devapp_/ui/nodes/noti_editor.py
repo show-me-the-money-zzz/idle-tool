@@ -36,8 +36,7 @@ class NotiEditor(QDialog):
 
       self._setup_ui()
 
-      self.noti_items = NotiStore.GetAll_Notis()
-      print(f"{self.noti_items}")
+      self.Reload_Data()
 
    def _setup_ui(self):
       main_layout = QVBoxLayout(self)
@@ -84,6 +83,23 @@ class NotiEditor(QDialog):
 
       main_layout.addLayout(buttons_layout)
 
+   def Reload_Data(self):
+      self.noti_list.clear()
+      
+      self.noti_items.clear()
+      for k, v in NotiStore.GetAll_Notis().items():
+         notiitem = NotiStore.Get_Noti(k)
+         if notiitem:
+            self.noti_items[k] = notiitem
+            
+            item = QListWidgetItem(notiitem.name)
+            item.setData(Qt.UserRole, k)
+            self.noti_list.addItem(item)
+            
+            # if isinstance(v, TelegramNoti):
+            #    from typing import cast
+            #    tele = cast(TelegramNoti, v)
+   
    def _setup_group_list(self, parent):
       """알림 목록 그룹 설정"""
       list_group = QGroupBox("알림 목록")
@@ -498,7 +514,7 @@ class NotiEditor(QDialog):
          self.name_edit.setFocus()
          return False
 
-      noti_items = {}
+      noti_item = {}
       # 유형에 따라 알림 객체 생성
       if type_str == "telegram":
          token = self.token_edit.text()
@@ -517,10 +533,12 @@ class NotiEditor(QDialog):
                else:
                   self.chatid_edit.setFocus()
                return False
-         noti_items = Get_DefaultInfo()
-         noti_items["token"] = token
-         noti_items["chatid"] = chatid
-         noti_items["baseurl"] = baseurl
+         noti_item = Get_DefaultInfo()
+         noti_item["token"] = token
+         noti_item["chatid"] = chatid
+         noti_item["baseurl"] = baseurl
+         
+         self.noti_items[self.current_noti_key] = TelegramNoti(**noti_item)
       else:  # Discord
          webhooks = self.webhooks_edit.text()
 
@@ -531,13 +549,12 @@ class NotiEditor(QDialog):
                )
                self.webhooks_edit.setFocus()
                return False
-         noti_items = Get_DefaultInfo()
-         noti_items["webhooks"] = webhooks
+         noti_item = Get_DefaultInfo()
+         noti_item["webhooks"] = webhooks
+         
+         self.noti_items[self.current_noti_key] = DiscordNoti(**noti_item)
       
-      # print(f"item= {noti_items}")
-      self.noti_items[self.current_noti_key] = noti_items
-      # print(f"item= {self.noti_items[self.current_noti_key]}")
-      NotiStore.Add_Noti(self.current_noti_key, noti_items)
+      NotiStore.Add_Noti(self.current_noti_key, noti_item)
 
       self.status_label.setText(f"'{name}' 알림 설정이 저장되었습니다.")
       return True

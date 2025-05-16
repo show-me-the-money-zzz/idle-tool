@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+@dataclass
 class BaseNotiItem:
     name: str
     type: str   #discord / telegram
@@ -22,5 +23,6 @@ class TelegramNoti(BaseNotiItem):
     chatid: str
     baseurl: str    # 상수값?
     
+@dataclass
 class DiscordNoti(BaseNotiItem):
     webhooks: str
