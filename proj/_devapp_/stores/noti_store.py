@@ -68,8 +68,8 @@ class NotiStore:
     
 NOTIs = NotiStore("알림 데이터", "noti.json")
 Add_Noti = NOTIs.add
-Save_Notis = NOTIs.save()
-GetAll_Notis = NOTIs.all()
+Save_Notis = NOTIs.save
+GetAll_Notis = NOTIs.all
 def Get_Noti(key, default=None):
    data = NOTIs.get(key, default)
    if not data: return default
