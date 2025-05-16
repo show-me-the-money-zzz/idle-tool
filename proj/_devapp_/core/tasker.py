@@ -109,10 +109,19 @@ class Tasker(QObject):
         if logging and isupdate: self.Print_RunningSteps()
     
     def Print_RunningSteps(self):
+        if not self.running_task: return
         if 0 >= len(self.running_task_steps): return
         
-        log = f"🎯 단계 변경: {' / '.join(self.running_task_steps)}"
-        self.logframe_addchnagetaskstep.emit(log)
+        names = []
+        for key in self.running_task_steps:
+            step = self.running_task.Get_Step(key)
+            # print(key)
+            # print(step)
+            if step: names.append(step.name)
+        
+        if 0 < len(names):
+            log = f"🎯 단계 변경: {' / '.join(names)}"
+            self.logframe_addchnagetaskstep.emit(log)
     
     async def Loop(self):
         task_key, task = Scanner.Get_RunningTask()
@@ -207,7 +216,14 @@ class Tasker(QObject):
             if step.finded_click:
                 click_key = "click_image" if step.finded_click == "image" else "click_zone"
                 x, y = matched[click_key]
-                self.Click(x, y, f"{task_key}-{step_key}")
+                
+                target_kind = "이미지" if step.finded_click == "image" else "영역"
+                target_name = ""
+                if step.finded_click == "image":
+                    target_name = Get_ImageArea(step.image).name
+                elif step.finded_click == "zone":
+                    target_name = Get_ZoneArea(step.zone).name
+                self.Click(x, y, f"[{target_kind}: {target_name}]")
             
             # 다음 단계 설정
             if 0 >= len(step.next_step):

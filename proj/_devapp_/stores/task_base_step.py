@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 import re
 
+import stores.areas as Areas
+
 @dataclass
 class BaseStep:
     name: str
@@ -95,7 +97,11 @@ class TaskStep_Matching(BaseStep):
         ret = "🙏 매칭: "
         if 0 < self.waiting:
             ret += f"(잠깐만 {self.waiting} 초) "
-        ret += f"[영역: {self.zone}]의 [이미지: {self.image}]의 [유사도] {self.Print_Score()}"
+            
+        zone = Areas.Get_ZoneArea(self.zone)
+        image = Areas.Get_ImageArea(self.image)
+            
+        ret += f"[영역: {zone.name}]의 [이미지: {image.name}]의 [유사도] {self.Print_Score()}"
         return ret
    
 @dataclass
