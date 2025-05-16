@@ -23,6 +23,7 @@ from zzz.status_bar import StatusBar
 from zzz.info_bar import InfoBar
 from ui.connection_frame import ConnectionFrame
 from ui.control_frame import ControlFrame
+from ui.noti_frame import NotiFrame
 from ui.input_handler_frame import InputHandlerFrame
 from ui.log_frame import LogFrame
 # from ui.capture_area_frame import CaptureAreaFrame
@@ -166,6 +167,9 @@ class AppUI(QMainWindow):
                                           self.OpenPopup_TaskEditor
                                           )
         self.main_layout.addWidget(self.control_frame)
+
+        self.noti_frame = NotiFrame(self)
+        self.main_layout.addWidget(self.noti_frame)
         
         # if not APP_CONFIG.RELEASE_APP:
         # 3. 입력 처리 프레임

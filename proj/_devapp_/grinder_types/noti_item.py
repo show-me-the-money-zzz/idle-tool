@@ -1,13 +1,16 @@
 from dataclasses import dataclass
 
 class BaseNotiItem:
+    name: str
     type: str   #discord / telegram
-    title: str
-    zone: str   # zone item key
+
+    message_title: str
     acc_server: str     # 계정의 서버 이름
     acc_nickname: str   # 계정 이름
-    repeat_min: int     # 반복 주기 (분)
     comment: str
+    
+    zone: str   # zone item key
+    repeat_min: int     # 반복 주기 (분)
     enable: bool        # 사용 여부
     
     @property
