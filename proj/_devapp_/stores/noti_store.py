@@ -3,6 +3,7 @@ import sys
 import json
 # from pathlib import Path
 from grinder_utils import finder, system
+from grinder_types.noti_item import BaseNotiItem, DiscordNoti, TelegramNoti
 
 class NotiStore:
     def __init__(self, name, filename):
@@ -66,6 +67,20 @@ class NotiStore:
         return self.items.copy()
     
 NOTIs = NotiStore("알림 데이터", "noti.json")
+Add_Noti = NOTIs.add
+Save_Notis = NOTIs.save()
+GetAll_Notis = NOTIs.all()
+def Get_Noti(key, default=None):
+   data = NOTIs.get(key, default)
+   if not data: return default
+
+   if "type" in data:
+      if "discord" == data["type"]:
+         return DiscordNoti(**data)
+      elif "telegram" == data["type"]:
+         return TelegramNoti(**data)
+   
+   return default
 
 def initialize():
     NOTIs.save()
