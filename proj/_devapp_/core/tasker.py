@@ -21,6 +21,9 @@ from stores.task_base_step import BaseStep, TaskStep_Matching, TaskStep_MouseWhe
 from grinder_utils.system import GetText_NoticeLog
 from core.telegram_notifier import TelegramNotifier
 from core.discord_notifier import DiscordNotifier
+import stores.noti_store as NotiStores
+from grinder_utils.repeat_timer import RepeatTimer
+from grinder_types.noti_item import TelegramNoti, DiscordNoti
 
 class Tasker(QObject):
     """
@@ -290,50 +293,55 @@ class Tasker(QObject):
         
     def Make_Noti(self):
         ret = []
-        import stores.noti_store as NotiStores
-        from grinder_utils.repeat_timer import RepeatTimer
-        from grinder_types.noti_item import TelegramNoti, DiscordNoti
-        
         notikeys = NotiStores.GetAll_Notis().keys()
         for k in notikeys:
             noti = NotiStores.Get_Noti(k)
             if noti and noti.enable:
-                print(f"noti= {noti}")
-                repeater = RepeatTimer(1 * 60)
-                print(f"repeater= {vars(repeater)}")
+                # print(f"noti= {noti}")
+                repeater = RepeatTimer(noti.repeat_min * 60)
+                repeater.update_next_time()
+                # print(f"repeater= {vars(repeater)}")
                 notifier = None
                 if isinstance(noti, DiscordNoti):
                     notifier = DiscordNotifier(noti.webhooks)
                 if notifier:
-                    print(f"notifier= {vars(notifier)}")
-                    ret.append((noti, repeater, notifier))
+                    # print(f"notifier= {vars(notifier)}")
+                    ret.append({ "noti": noti, "repeater": repeater, "notifier": notifier })
         return ret
-        
-    repeat_timer = None
-    telenoti = None
-    discordnoti = None
+
     async def Run_Notice(self):
-        print(f"Make_Noti(): {self.Make_Noti()}")
-        return
-    
-        # print(datetime.now())
-        if not self.repeat_timer:
-            from grinder_utils.repeat_timer import RepeatTimer
-            # self.repeat_timer = RepeatTimer(10 * 60)
-            # self.repeat_timer = RepeatTimer(5)
-            self.repeat_timer = RepeatTimer(1 * 60)
-        self.send_noti()
-        
+        noti_list = self.Make_Noti()
         try: #pass
-            while self.is_running:
+            while self.is_running and 0 < len(noti_list):
                 # 알림 항목마다 제각각의 대기시간으로 알리기
                 
-                if self.repeat_timer.is_due():
-                    # print("tick")
-                    # # break
-                    self.send_noti()
-                # else: print(self.repeat_timer.get_remaining_time())
+                if not self.is_running:
+                    break
                 
+                if not WindowUtil.update_window_info():
+                    self.logframe_addwarning.emit("창이 닫혔습니다.")
+                    self.toggle_capture_callback()
+                    break
+                
+                for index in range(len(noti_list)):
+                    noti = noti_list[index]["noti"]
+                    repeater = noti_list[index]["repeater"]
+                    notifier = noti_list[index]["notifier"]
+                    # print(f"loop) noti= {noti}")
+                    # print(f"loop) repeater= {vars(repeater)}")
+                    # print(f"loop) notifier= {vars(notifier)}")
+                    
+                    if repeater.is_due():
+                        message = ""
+                        if isinstance(noti, DiscordNoti):
+                            message = DiscordNotifier.Make_Message(noti.message_title, noti.acc_server, noti.acc_nickname, noti.comment)
+                        if message:
+                            # print(message)
+                            notifier.send_area_screenshot(noti.zone, message)
+                            self.logframe_addnotice.emit(GetText_NoticeLog(noti.type, noti.name))
+                            
+                            noti_list[index]["repeater"].update_next_time()
+
                 await self.async_helper.sleep(0.1)
             
         except asyncio.CancelledError:
@@ -344,30 +352,30 @@ class Tasker(QObject):
             # print(f"fail: error= {e}")
             self.Cancel_Noti()
             
-    def send_noti(self):
-        # print(f"send_noti()1: {self.telenoti} / {self.discordnoti}")
-        if not self.telenoti:            
-            self.telenoti = TelegramNotifier("7734048311:AAHa9GsavYBMAOOpMVXnzF9gsfqWOH7tWKc", "-1002515704043")
+    # def send_noti(self):
+    #     # print(f"send_noti()1: {self.telenoti} / {self.discordnoti}")
+    #     if not self.telenoti:            
+    #         self.telenoti = TelegramNotifier("7734048311:AAHa9GsavYBMAOOpMVXnzF9gsfqWOH7tWKc", "-1002515704043")
             
-        if not self.discordnoti:            
-            self.discordnoti = DiscordNotifier("https://discord.com/api/webhooks/1371429465825218591/cgDpAInWxdAO3FCHBHLPkdH-1Cvyvm_n2RTnKpAaxsOqGR4CJb6C4IEqzqGj2OgqC5Lj")
-        # print(f"send_noti()2: {self.telenoti} / {self.discordnoti}")
+    #     if not self.discordnoti:            
+    #         self.discordnoti = DiscordNotifier("https://discord.com/api/webhooks/1371429465825218591/cgDpAInWxdAO3FCHBHLPkdH-1Cvyvm_n2RTnKpAaxsOqGR4CJb6C4IEqzqGj2OgqC5Lj")
+    #     # print(f"send_noti()2: {self.telenoti} / {self.discordnoti}")
       
-        title = "스탯 알림" # 다이아 알림 / 스탯 알림
-        zone = "캐릭 스탯 정보" # 텔레그램알림용-다이아 / 캐릭 스탯 정보
-        server = "엘머5"    # 웰즈5 / 엘머5
-        nickname = "마루이모"   # 멜라닝 / 마루이모
-        comment = "부캐입니다요"  # 본계정입니다 / 부캐입니다요
+    #     title = "스탯 알림" # 다이아 알림 / 스탯 알림
+    #     zone = "캐릭 스탯 정보" # 텔레그램알림용-다이아 / 캐릭 스탯 정보
+    #     server = "엘머5"    # 웰즈5 / 엘머5
+    #     nickname = "마루이모"   # 멜라닝 / 마루이모
+    #     comment = "부캐입니다요"  # 본계정입니다 / 부캐입니다요
         
-        message_teltgram = TelegramNotifier.Make_Message(title, server, nickname, comment)
-        self.telenoti.send_area_screenshot(zone, message_teltgram)
-        self.logframe_addnotice.emit(GetText_NoticeLog("텔레그램", title))
+    #     message_teltgram = TelegramNotifier.Make_Message(title, server, nickname, comment)
+    #     self.telenoti.send_area_screenshot(zone, message_teltgram)
+    #     self.logframe_addnotice.emit(GetText_NoticeLog("텔레그램", title))
         
-        message_discord = DiscordNotifier.Make_Message(title, server, nickname, comment)
-        self.discordnoti.send_area_screenshot(zone, message_discord)
-        self.logframe_addnotice.emit(GetText_NoticeLog("디스코드", title))
+    #     message_discord = DiscordNotifier.Make_Message(title, server, nickname, comment)
+    #     self.discordnoti.send_area_screenshot(zone, message_discord)
+    #     self.logframe_addnotice.emit(GetText_NoticeLog("디스코드", title))
         
-        self.repeat_timer.update_next_time()
+    #     self.repeat_timer.update_next_time()
     
     def Cancel_Noti(self):
         if self.noti_task:
