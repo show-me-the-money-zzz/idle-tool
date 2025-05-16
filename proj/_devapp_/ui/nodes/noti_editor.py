@@ -36,6 +36,8 @@ class NotiEditor(QDialog):
 
       self._setup_ui()
 
+      # print(f"{NotiStore.GetAll_Notis()}")
+      # print(f"{NotiStore.GetAll_Notis().items()}")
       # self.noti_items = NotiStore.GetAll_Notis().items()
       # for key, value in NotiStore.GetAll_Notis().items():
       #     self.noti_items[key] = value
