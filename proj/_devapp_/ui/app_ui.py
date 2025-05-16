@@ -168,7 +168,9 @@ class AppUI(QMainWindow):
                                           )
         self.main_layout.addWidget(self.control_frame)
 
-        self.noti_frame = NotiFrame(self)
+        self.noti_frame = NotiFrame(self,
+                                    self.Open_NotiEdtor
+                                    )
         self.main_layout.addWidget(self.noti_frame)
         
         # if not APP_CONFIG.RELEASE_APP:
@@ -266,6 +268,20 @@ class AppUI(QMainWindow):
                 
         except Exception as e:
             QMessageBox.critical(self, "오류", f"캡처 영역 설정 창을 열 수 없습니다: {str(e)}")
+            import traceback
+            traceback.print_exc()  # 콘솔에 상세 오류 출력
+
+    def Open_NotiEdtor(self):
+        if not WindowUtil.is_window_valid():
+            QMessageBox.critical(self, "오류", "먼저 창에 연결해주세요.")
+            return
+        
+        try:
+            from ui.nodes.noti_editor import NotiEditor
+            editor = NotiEditor(self)
+            editor.show()
+        except Exception as e:
+            QMessageBox.critical(self, "오류", f"알림 에디터를 열 수 없습니다: {str(e)}")
             import traceback
             traceback.print_exc()  # 콘솔에 상세 오류 출력
             

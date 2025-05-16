@@ -2,10 +2,15 @@ from PySide6.QtWidgets import (QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton,
                               QComboBox, QLabel, QSizePolicy)
 from PySide6.QtCore import Qt
 
+import ui.css as CSS
+
 class NotiFrame(QGroupBox):
 
-    def __init__(self, parent):
+    def __init__(self, parent,
+                 open_edtor_callback
+                 ):
         super().__init__("메시지 알림", parent)
+        self.open_edtor_callback = open_edtor_callback
         
         # 토글 상태 변수
         self.notification_enabled = True
@@ -21,7 +26,8 @@ class NotiFrame(QGroupBox):
         
         # 편집 버튼
         edit_btn = QPushButton("편집")
-        # edit_btn.clicked.connect(self.edit_notification)
+        edit_btn.setStyleSheet(CSS.BUTTON_APPLY_BLUESKY)
+        edit_btn.clicked.connect(self.open_edtor_callback)
         edit_btn.setFixedWidth(80)  # 버튼 너비 고정
         controls_layout.addWidget(edit_btn)
         
