@@ -20,9 +20,9 @@ class NotiEditor(QDialog):
 
         # 알림 목록 데이터 (실제 애플리케이션에서는 외부에서 로드할 수 있음)
         self.notification_list = [
-            "작업 완료 알림",
-            "오류 발생 알림",
-            "시스템 상태 알림"
+            # "작업 완료 알림",
+            # "오류 발생 알림",
+            # "시스템 상태 알림"
         ]
         
         # 알림 아이템 저장 딕셔너리
@@ -149,7 +149,7 @@ class NotiEditor(QDialog):
         
         # 알림 유형 선택
         self.type_combo = QComboBox()
-        self.type_combo.addItems(["Telegram", "Discord"])
+        self.type_combo.addItems(["Discord", "Telegram",])
         self.type_combo.currentIndexChanged.connect(self.on_type_changed)
         self.form_layout.addRow("알림 유형:", self.type_combo)
         
@@ -193,7 +193,16 @@ class NotiEditor(QDialog):
         separator.setFrameShadow(QFrame.Sunken)
         self.form_layout.addRow(separator)
         
-        # Telegram 설정 (기본적으로 표시)
+        # Discord 설정 (기본 표시)
+        self.discord_widget = QWidget()
+        discord_layout = QFormLayout(self.discord_widget)
+        
+        self.webhooks_edit = QLineEdit()
+        discord_layout.addRow("Webhook URL:", self.webhooks_edit)
+        
+        self.form_layout.addRow(self.discord_widget)
+
+        # Telegram 설정 (기본 숨김)
         self.telegram_widget = QWidget()
         telegram_layout = QFormLayout(self.telegram_widget)
         
@@ -207,16 +216,7 @@ class NotiEditor(QDialog):
         telegram_layout.addRow("기본 URL:", self.baseurl_edit)
         
         self.form_layout.addRow(self.telegram_widget)
-        
-        # Discord 설정 (기본적으로 숨김)
-        self.discord_widget = QWidget()
-        discord_layout = QFormLayout(self.discord_widget)
-        
-        self.webhooks_edit = QLineEdit()
-        discord_layout.addRow("Webhook URL:", self.webhooks_edit)
-        
-        self.form_layout.addRow(self.discord_widget)
-        self.discord_widget.setVisible(False)
+        self.telegram_widget.setVisible(False)
         
         # 스크롤 영역에 폼 추가
         scroll_area.setWidget(scroll_content)
@@ -234,7 +234,7 @@ class NotiEditor(QDialog):
         """폼 필드 활성화/비활성화"""
         # 기본 필드
         self.name_edit.setEnabled(enabled)
-        self.type_combo.setEnabled(enabled)
+        self.type_combo.setEnabled(False)
         self.title_edit.setEnabled(enabled)
         self.server_edit.setEnabled(enabled)
         self.nickname_edit.setEnabled(enabled)
@@ -287,6 +287,7 @@ class NotiEditor(QDialog):
         # 선택된 항목의 데이터 가져오기
         self.current_noti_key = item_key
         self.current_noti_item = self.noti_items.get(item_key)
+        print(f"on_item_selection_changed(): [{item_key}] {item_text}")
         
         if self.current_noti_item:
             # 기존 데이터 폼에 채우기
@@ -306,7 +307,7 @@ class NotiEditor(QDialog):
         self.name_edit.setText(noti_item.name)
         
         # 유형 설정
-        type_index = 0 if noti_item.type.lower() == "telegram" else 1
+        type_index = 0 if noti_item.type.lower() == "discord" else 1
         self.type_combo.setCurrentIndex(type_index)
         
         self.title_edit.setText(noti_item.message_title)
@@ -348,9 +349,11 @@ class NotiEditor(QDialog):
     
     def add_notification(self):
         """새 알림 설정 추가"""
+        count = self.noti_list.count()
+
         text, ok = QInputDialog.getText(self,
                                        "알림 추가", "알림 설정 이름:",
-                                       QLineEdit.Normal, "새 알림 1")
+                                       QLineEdit.Normal, f"새 알림 {count + 1}")
         if ok and text:
             # 중복 검사
             items = [self.noti_list.item(i).text() for i in range(self.noti_list.count())]
@@ -438,7 +441,7 @@ class NotiEditor(QDialog):
         
         # 폼 데이터 가져오기
         name = self.name_edit.text()
-        type_str = "telegram" if self.type_combo.currentIndex() == 0 else "discord"
+        type_str = "discord" if self.type_combo.currentIndex() == 0 else "telegram"
         message_title = self.title_edit.text()
         acc_server = self.server_edit.text()
         acc_nickname = self.nickname_edit.text()
