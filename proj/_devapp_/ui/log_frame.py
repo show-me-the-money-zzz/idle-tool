@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton, 
-                            QTextEdit, QScrollBar, QWidget, QFrame)
+                            QTextEdit, QScrollBar, QWidget, QFrame, QMessageBox)
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QTextCursor
 
@@ -7,9 +7,12 @@ import os
 from datetime import datetime
 
 from stores.task_base_step import TaskStep_Matching
+import grinder_utils.finder as FINDER
 
 class LogFrame(QGroupBox):
     """로그 프레임 (이전의 인식된 텍스트 영역)"""
+    
+    SAVE_FOLDER_NAME = "logs"
     
     def __init__(self, parent, status_signal):
         super().__init__("로그", parent)
@@ -38,6 +41,10 @@ class LogFrame(QGroupBox):
         self.svae_log_btn.clicked.connect(self.save_log)
         button_layout.addWidget(self.svae_log_btn)
         
+        self.save_log_folder_btn = QPushButton("로그 폴더 열기")
+        self.save_log_folder_btn.clicked.connect(self.open_logs_folder)
+        button_layout.addWidget(self.save_log_folder_btn)
+        
         # 버튼 레이아웃에 빈 공간 추가 (왼쪽)
         button_layout.addStretch(1)
         
@@ -63,7 +70,7 @@ class LogFrame(QGroupBox):
             filename = f"gamelog-{timestamp}.log"
             
             # 로그 폴더 생성 (없는 경우)
-            log_dir = os.path.join(os.getcwd(), "logs")
+            log_dir = os.path.join(os.getcwd(), LogFrame.SAVE_FOLDER_NAME)
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir)
                 
@@ -218,3 +225,12 @@ class LogFrame(QGroupBox):
             # 오류 발생 시 새 로그로 추가
             self.add_error(f"로그 업데이트 오류: {e}")
             self.add_log(text)
+            
+    def open_logs_folder(self):
+        try:
+            path = FINDER.Get_LocalPth() / LogFrame.SAVE_FOLDER_NAME
+            if not os.path.exists(path):
+                os.makedirs(path)
+            os.startfile(path)  # Windows 전용
+        except Exception as e:
+            QMessageBox.critical(self, "폴더 열기 실패", f"폴더를 열 수 없습니다: {str(e)}")
