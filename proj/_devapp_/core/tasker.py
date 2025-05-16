@@ -288,10 +288,32 @@ class Tasker(QObject):
     #         self.logframe_addwarning.emit(f"🛑 다음 단계가 없어 [{task_key} - {step_key}] 에서 종료합니다.")
     #         self.toggle_capture_callback()
         
+    def Make_Noti(self):
+        ret = []
+        import stores.noti_store as NotiStores
+        from grinder_utils.repeat_timer import RepeatTimer
+        from grinder_types.noti_item import TelegramNoti, DiscordNoti
+        
+        notikeys = NotiStores.GetAll_Notis().keys()
+        for k in notikeys:
+            noti = NotiStores.Get_Noti(k)
+            if noti and noti.enable:
+                print(f"noti= {noti}")
+                repeater = RepeatTimer(1 * 60)
+                print(f"repeater= {vars(repeater)}")
+                notifier = None
+                if isinstance(noti, DiscordNoti):
+                    notifier = DiscordNotifier(noti.webhooks)
+                if notifier:
+                    print(f"notifier= {vars(notifier)}")
+                    ret.append((noti, repeater, notifier))
+        return ret
+        
     repeat_timer = None
     telenoti = None
     discordnoti = None
     async def Run_Notice(self):
+        print(f"Make_Noti(): {self.Make_Noti()}")
         return
     
         # print(datetime.now())
