@@ -720,13 +720,13 @@ class TaskEditorPopup(QDialog):
         amount_layout.addWidget(amount_label)
         
         self.mousewheel_amount_spin = QSpinBox()
-        self.mousewheel_amount_spin.setRange(-1000, 1000)  # 음수는 위로, 양수는 아래로 스크롤
-        self.mousewheel_amount_spin.setSingleStep(120)     # 휠 한 단계 단위로 변경 (일반적인 값)
-        self.mousewheel_amount_spin.setValue(120)          # 기본값 (아래로 한 단계)
+        self.mousewheel_amount_spin.setRange(-30, 30)  # 음수는 위로, 양수는 아래로 스크롤
+        self.mousewheel_amount_spin.setSingleStep(3)     # 휠 한 단계 단위로 변경 (일반적인 값)
+        self.mousewheel_amount_spin.setValue(0)          # 기본값 (아래로 한 단계)
         amount_layout.addWidget(self.mousewheel_amount_spin)
         
         # 설명 레이블 추가
-        help_label = QLabel("(양수: 아래로, 음수: 위로 스크롤)")
+        help_label = QLabel("(양수: 위로 / 음수: 아래로 스크롤)")
         help_label.setStyleSheet("color: gray; font-size: 9pt;")
         amount_layout.addWidget(help_label)
         
