@@ -176,9 +176,10 @@ class NotiEditor(QDialog):
         
         # 반복 주기
         self.repeat_spin = QSpinBox()
-        self.repeat_spin.setMinimum(1)
+        self.repeat_spin.setMinimum(10)
         self.repeat_spin.setMaximum(1440)  # 24시간 (분 단위)
-        self.repeat_spin.setValue(30)
+        self.repeat_spin.setValue(60)
+        self.repeat_spin.setSingleStep(10)
         self.repeat_spin.setSuffix(" 분")
         self.form_layout.addRow("반복 주기:", self.repeat_spin)
         
@@ -336,7 +337,7 @@ class NotiEditor(QDialog):
         self.nickname_edit.clear()
         self.comment_edit.clear()
         self.zone_edit.clear()
-        self.repeat_spin.setValue(30)  # 기본값: 30분
+        self.repeat_spin.setValue(60)  # 기본값: 30분
         self.enable_check.setChecked(True)  # 기본값: 사용
         
         # Telegram 필드
