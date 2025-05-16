@@ -53,6 +53,9 @@ def Load_Stores():
     from stores import task_manager
     task_manager.initialize()
 
+    import stores.noti_store as Noti
+    Noti.initialize()
+
 if __name__ == "__main__":
     try:
         main()
