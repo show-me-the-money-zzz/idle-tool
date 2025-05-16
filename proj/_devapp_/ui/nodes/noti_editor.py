@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout,
 from PySide6.QtCore import Qt
 
 import ui.css as CSS
+import grinder_utils.system as SYS_UTIL
 
 class NotiEditor(QDialog):
    def __init__(self, parent):
@@ -56,13 +57,16 @@ class NotiEditor(QDialog):
       self.cancel_btn.clicked.connect(self.Close_Editor)
       buttons_layout.addWidget(self.cancel_btn)
 
+      # 오른쪽 버튼들을 위한 공간 추가
+      buttons_layout.addStretch(1)
+
       # 오른쪽에 저장 버튼 추가
       self.save_btn = QPushButton("저장")
       self.save_btn.setStyleSheet(CSS.BUTTON_APPLY_GREEN)
       self.save_btn.clicked.connect(self.save_notifications)
       buttons_layout.addWidget(self.save_btn)
 
-      buttons_layout.addStretch(1)
+      # buttons_layout.addStretch(1)
 
       main_layout.addLayout(buttons_layout)
 
@@ -190,6 +194,9 @@ class NotiEditor(QDialog):
                                       "알림 추가", "알림 설정 이름:",
                                       QLineEdit.Normal, "새 알림 1")
       if ok and text:
+         key = SYS_UTIL.GetKey({"noti"})
+         # print(key)
+
          # 중복 검사
          items = [self.noti_list.item(i).text() for i in range(self.noti_list.count())]
          if text in items:
@@ -197,7 +204,7 @@ class NotiEditor(QDialog):
                return
                
          # 목록에 추가
-         self.noti_list.addItem(text)
+         self.noti_list.addItem(text, key)
          
          # 새 항목 선택
          for i in range(self.noti_list.count()):
