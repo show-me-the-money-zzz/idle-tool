@@ -53,13 +53,17 @@ def Load_Stores():
     from stores import task_manager
     task_manager.initialize()
 
+    import stores.noti_store as Noti
+    Noti.initialize()
+
 if __name__ == "__main__":
     try:
         main()
     except Exception as e:
         dummy = 0
         
-        # print(f"[예외 발생] {e}")
-        # import traceback
-        # traceback.print_exc()
-        # input("\n[ENTER] 키를 누르면 종료합니다.")
+        if not APP_CONFIG.RELEASE_APP:
+            print(f"[예외 발생] {e}")
+            import traceback
+            traceback.print_exc()
+            input("\n[ENTER] 키를 누르면 종료합니다.")
