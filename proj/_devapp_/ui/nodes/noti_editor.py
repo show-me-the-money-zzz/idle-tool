@@ -19,7 +19,7 @@ class NotiEditor(QDialog):
    def __init__(self, parent):
       super().__init__(parent)
       self.setWindowTitle("알림 에디터")
-      self.resize(720, 640)
+      self.resize(720, 570)
 
       # 알림 목록 데이터 (실제 애플리케이션에서는 외부에서 로드할 수 있음)
       self.notification_list = [

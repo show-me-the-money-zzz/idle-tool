@@ -71,6 +71,8 @@ Add_Noti = NOTIs.add
 Delete_Noti = NOTIs.delete
 Save_Notis = NOTIs.save
 GetAll_Notis = NOTIs.all
+Load_Notis = NOTIs._load
+
 def Get_Noti(key, default=None):
    data = NOTIs.get(key, default)
    if not data: return default

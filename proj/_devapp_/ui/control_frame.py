@@ -12,6 +12,7 @@ import ui.css as CSS
 import zzz.app_config as APP_CONFIG
 import stores.task_manager as TaskMan
 import stores.areas as Areas
+import stores.noti_store as NotiStores
 
 class ControlFrame(QFrame):
     """캡처 제어 프레임"""
@@ -234,6 +235,8 @@ class ControlFrame(QFrame):
             self.update_step_combo(first_key)
         else:
             self.step_combo.clear()
+            
+        NotiStores.Load_Notis()
     
     def update_capture_button_text(self, is_capturing):
         """캡처 버튼 텍스트 업데이트"""
