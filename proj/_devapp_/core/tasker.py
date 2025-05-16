@@ -358,7 +358,7 @@ class Tasker(QObject):
     #         self.telenoti = TelegramNotifier("7734048311:AAHa9GsavYBMAOOpMVXnzF9gsfqWOH7tWKc", "-1002515704043")
             
     #     if not self.discordnoti:            
-    #         self.discordnoti = DiscordNotifier("https://discord.com/api/webhooks/1371429465825218591/cgDpAInWxdAO3FCHBHLPkdH-1Cvyvm_n2RTnKpAaxsOqGR4CJb6C4IEqzqGj2OgqC5Lj")
+    #         self.discordnoti = DiscordNotifier(webhook)
     #     # print(f"send_noti()2: {self.telenoti} / {self.discordnoti}")
       
     #     title = "스탯 알림" # 다이아 알림 / 스탯 알림
