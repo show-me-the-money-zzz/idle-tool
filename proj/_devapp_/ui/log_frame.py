@@ -37,9 +37,19 @@ class LogFrame(QGroupBox):
         button_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.addWidget(button_frame)
 
-        self.svae_log_btn = QPushButton("로그 저장")
+        self.svae_log_btn = QPushButton("로그 저장 (기본)")
         self.svae_log_btn.clicked.connect(self.save_log)
         button_layout.addWidget(self.svae_log_btn)
+
+        self.svae_clog_btn = QPushButton("컬러 로그 저장")
+        self.svae_clog_btn.clicked.connect(self.save_log_with_colors)
+        button_layout.addWidget(self.svae_clog_btn)
+        self.svae_html_btn = QPushButton("로그 저장")
+        self.svae_html_btn.clicked.connect(self.save_log_byHTML)
+        button_layout.addWidget(self.svae_html_btn)
+
+        self.svae_log_btn.setVisible(False)
+        self.svae_clog_btn.setVisible(False)
         
         self.save_log_folder_btn = QPushButton("로그 폴더 열기")
         self.save_log_folder_btn.clicked.connect(self.open_logs_folder)
@@ -87,6 +97,110 @@ class LogFrame(QGroupBox):
             # 성공 메시지
             # self.status_signal.emit(f"로그가 저장되었습니다: {file_path}")
             self.add_notice(f"💾 로그가 저장되었습니다: {filename}")
+            
+            return True
+        except Exception as e:
+            self.add_error(f"로그 저장 오류: {str(e)}")
+            return False
+        
+    def save_log_with_colors(self):
+        """색상 코드가 포함된 텍스트 파일로 로그를 저장합니다."""
+        try:
+            # 현재 시간을 요청한 형식으로 변환 (년도 두자리, 날짜_시간)
+            timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            filename = f"gamelog-{timestamp}.clog"  # .clog 확장자 사용 (colored log)
+            
+            # 로그 폴더 생성 (없는 경우)
+            log_dir = os.path.join(os.getcwd(), LogFrame.SAVE_FOLDER_NAME)
+            if not os.path.exists(log_dir):
+                os.makedirs(log_dir)
+                
+            # 전체 파일 경로
+            file_path = os.path.join(log_dir, filename)
+            
+            # 로그 엔트리 파싱 및 색상 코드 추가
+            document = self.log_text.document()
+            formatted_logs = []
+            
+            for block_num in range(document.blockCount()):
+                block = document.findBlockByNumber(block_num)
+                block_text = block.text()
+                
+                # 블록 내 모든 텍스트 포맷 추출
+                cursor = QTextCursor(block)
+                cursor.select(QTextCursor.BlockUnderCursor)
+                char_format = cursor.charFormat()
+                
+                # 텍스트 색상 가져오기
+                color = char_format.foreground().color().name()
+                
+                # 색상 코드를 텍스트 앞에 추가 (#RRGGBB|텍스트 형식)
+                formatted_logs.append(f"{color}|{block_text}")
+            
+            # 파일에 저장
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(formatted_logs))
+                
+            # 성공 메시지
+            self.add_notice(f"💾 컬러 정보가 포함된 로그가 저장되었습니다: {filename}")
+            
+            return True
+        except Exception as e:
+            self.add_error(f"로그 저장 오류: {str(e)}")
+            return False
+        
+    def save_log_byHTML(self):
+        """현재 로그를 색상이 유지된 HTML 파일로 저장합니다."""
+        try:
+            # 현재 시간을 요청한 형식으로 변환 (년도 두자리, 날짜_시간)
+            timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            filename = f"gamelog-{timestamp}.html"
+            
+            # 로그 폴더 생성 (없는 경우)
+            log_dir = os.path.join(os.getcwd(), LogFrame.SAVE_FOLDER_NAME)
+            if not os.path.exists(log_dir):
+                os.makedirs(log_dir)
+                
+            # 전체 파일 경로
+            file_path = os.path.join(log_dir, filename)
+            
+            # HTML 내용 가져오기 (색상 정보 포함)
+            html_content = self.log_text.toHtml()
+            
+            # 필요 없는 HTML 헤더/푸터 제거 (크기 줄이기)
+            # HTML 내용 사이의 본문만 추출
+            body_start = html_content.find("<body")
+            body_end = html_content.find("</body>")
+            
+            if body_start != -1 and body_end != -1:
+                body_content_start = html_content.find(">", body_start) + 1
+                body_content = html_content[body_content_start:body_end].strip()
+                
+                # 간단한 HTML 파일 생성 (최소한의 헤더만 포함)
+                minimal_html = f"""<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>게임 로그 {timestamp}</title>
+        <style>
+            body {{ font-family: 'Consolas', 'Courier New', monospace; background-color: #1e1e1e; color: white; font-size: 13px; }}
+            .log-entry {{ margin: 2px 0; }}
+        </style>
+    </head>
+    <body style="background-color: #1e1e1e; color: white; font-family: 'Consolas', monospace;">
+    {body_content}
+    </body>
+    </html>"""
+            else:
+                # 본문 추출 실패 시 전체 HTML 사용
+                minimal_html = html_content
+                
+            # 파일에 저장
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(minimal_html)
+                
+            # 성공 메시지
+            self.add_notice(f"💾 컬러 로그가 HTML로 저장되었습니다: {filename}")
             
             return True
         except Exception as e:
