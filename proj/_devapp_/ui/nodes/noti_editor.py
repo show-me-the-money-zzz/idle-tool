@@ -316,7 +316,7 @@ class NotiEditor(QDialog):
       # 선택된 항목의 데이터 가져오기
       self.current_noti_key = item_key
       self.current_noti_item = self.noti_items.get(item_key)
-      print(f"on_item_selection_changed(): [{item_key}] {item_text}")
+      # print(f"on_item_selection_changed(): [{item_key}] {item_text}")
 
       if self.current_noti_item:
          # 기존 데이터 폼에 채우기
@@ -432,6 +432,8 @@ class NotiEditor(QDialog):
          )
 
          if reply == QMessageBox.Yes:
+               NotiStore.Delete_Noti(item_key)
+               
                # 목록에서 제거
                self.noti_list.takeItem(current_row)
 

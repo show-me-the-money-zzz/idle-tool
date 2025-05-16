@@ -68,6 +68,7 @@ class NotiStore:
     
 NOTIs = NotiStore("알림 데이터", "noti.json")
 Add_Noti = NOTIs.add
+Delete_Noti = NOTIs.delete
 Save_Notis = NOTIs.save
 GetAll_Notis = NOTIs.all
 def Get_Noti(key, default=None):
