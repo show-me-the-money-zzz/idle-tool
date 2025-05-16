@@ -12,7 +12,8 @@ import ui.css as CSS
 import grinder_utils.system as SYS_UTIL
 from grinder_types.noti_item import BaseNotiItem, TelegramNoti, DiscordNoti
 import stores.noti_store as NotiStore
-
+import stores.areas as AreasStore
+from ui.component.searchable_comboBox import SearchableComboBox
 
 class NotiEditor(QDialog):
    def __init__(self, parent):
@@ -99,6 +100,13 @@ class NotiEditor(QDialog):
             # if isinstance(v, TelegramNoti):
             #    from typing import cast
             #    tele = cast(TelegramNoti, v)
+            
+      self.zone_combobox.clear()
+      self.zone_combobox.addItem("")
+      for k in AreasStore.GetAll_ZoneAreas().keys():
+         zone = AreasStore.Get_ZoneArea(k)
+         if zone:
+            self.zone_combobox.addItem(zone.name)
    
    def _setup_group_list(self, parent):
       """알림 목록 그룹 설정"""
@@ -199,8 +207,8 @@ class NotiEditor(QDialog):
       self.form_layout.addRow("메시지 내용:", self.comment_edit)
 
       # 영역 선택
-      self.zone_edit = QLineEdit()
-      self.form_layout.addRow("영역:", self.zone_edit)
+      self.zone_combobox = SearchableComboBox(items=[])
+      self.form_layout.addRow("영역:", self.zone_combobox)
 
       # 반복 주기
       self.repeat_spin = QSpinBox()
@@ -268,7 +276,7 @@ class NotiEditor(QDialog):
       self.server_edit.setEnabled(enabled)
       self.nickname_edit.setEnabled(enabled)
       self.comment_edit.setEnabled(enabled)
-      self.zone_edit.setEnabled(enabled)
+      self.zone_combobox.setEnabled(enabled)
       self.repeat_spin.setEnabled(enabled)
       self.enable_check.setEnabled(enabled)
 
@@ -343,7 +351,11 @@ class NotiEditor(QDialog):
       self.server_edit.setText(noti_item.acc_server)
       self.nickname_edit.setText(noti_item.acc_nickname)
       self.comment_edit.setText(noti_item.comment)
-      self.zone_edit.setText(noti_item.zone)
+      zonetext = ""
+      if noti_item.zone:
+         zone = AreasStore.Get_ZoneArea(noti_item.zone)
+         if zone: zonetext = zone.name
+      self.zone_combobox.setCurrentText(zonetext)
       self.repeat_spin.setValue(noti_item.repeat_min)
       self.enable_check.setChecked(noti_item.enable)
 
@@ -364,7 +376,7 @@ class NotiEditor(QDialog):
       self.server_edit.clear()
       self.nickname_edit.clear()
       self.comment_edit.clear()
-      self.zone_edit.clear()
+      self.zone_combobox.setCurrentText("")
       self.repeat_spin.setValue(60)  # 기본값: 30분
       self.enable_check.setChecked(True)  # 기본값: 사용
 
@@ -493,7 +505,11 @@ class NotiEditor(QDialog):
       acc_server = self.server_edit.text()
       acc_nickname = self.nickname_edit.text()
       comment = self.comment_edit.toPlainText()
-      zone = self.zone_edit.text()
+      zonetext = self.zone_combobox.currentText()
+      zonekey = ""
+      if zonetext:
+         key, _ = AreasStore.Get_ZoneArea_byName(zonetext, default=None)
+         zonekey = key
       repeat_min = self.repeat_spin.value()
       enable = self.enable_check.isChecked()
 
@@ -505,7 +521,7 @@ class NotiEditor(QDialog):
          ret["acc_server"] = acc_server
          ret["acc_nickname"] = acc_nickname
          ret["comment"] = comment
-         ret["zone"] = zone
+         ret["zone"] = zonekey
          ret["repeat_min"] = repeat_min
          ret["enable"] = enable
          return ret
