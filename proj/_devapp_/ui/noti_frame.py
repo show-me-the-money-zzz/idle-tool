@@ -26,7 +26,7 @@ class NotiFrame(QGroupBox):
         
         # 편집 버튼
         edit_btn = QPushButton("편집")
-        edit_btn.setStyleSheet(CSS.BUTTON_APPLY_BLUESKY)
+        edit_btn.setStyleSheet(CSS.BUTTON_ORANGE)
         edit_btn.clicked.connect(self.open_edtor_callback)
         edit_btn.setFixedWidth(80)  # 버튼 너비 고정
         controls_layout.addWidget(edit_btn)
