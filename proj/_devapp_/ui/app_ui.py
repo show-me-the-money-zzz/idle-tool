@@ -16,6 +16,7 @@ from zzz.app_config import *
 import zzz.app_config as APP_CONFIG
 from ui.nodes.region_selector import RegionSelector
 from core.settings_manager import AppSetting
+import grinder_utils.system as SYS_UTIL
 
 # 각 UI 컴포넌트 import
 from zzz.menu_bar import MenuBar
@@ -164,7 +165,8 @@ class AppUI(QMainWindow):
                                           self.toggle_capture,
                                           self.apply_interval,
                                           self.open_capture_area_popup,
-                                          self.OpenPopup_TaskEditor
+                                          self.OpenPopup_TaskEditor,
+                                          self.reload_data,
                                           )
         self.main_layout.addWidget(self.control_frame)
 
@@ -270,6 +272,9 @@ class AppUI(QMainWindow):
             QMessageBox.critical(self, "오류", f"캡처 영역 설정 창을 열 수 없습니다: {str(e)}")
             import traceback
             traceback.print_exc()  # 콘솔에 상세 오류 출력
+            
+    def reload_data(self):
+        SYS_UTIL.PrintDEV(f">>>>>>>>>>>>>>> AppUI.reload_data")
 
     def Open_NotiEdtor(self):
         if not WindowUtil.is_window_valid():

@@ -22,7 +22,8 @@ class ControlFrame(QFrame):
     
     def __init__(self, parent, status_signal, toggle_capture_callback, 
                  apply_interval_callback,
-                 open_popup_callback, openpopup_taskeditor
+                 open_popup_callback, openpopup_taskeditor,
+                 reload_data_callback,
                  ):
         super().__init__(parent)
         self.parent = parent
@@ -31,6 +32,7 @@ class ControlFrame(QFrame):
         self.apply_interval_callback = apply_interval_callback
         self.open_popup_callback = open_popup_callback
         self.openpopup_taskeditor = openpopup_taskeditor
+        self.reload_data_callback = reload_data_callback
         
         self.setup_ui()
         self.reload_tasks()
@@ -237,6 +239,8 @@ class ControlFrame(QFrame):
             self.step_combo.clear()
             
         NotiStores.Load_Notis()
+        
+        if self.reload_data_callback: self.reload_data_callback()
     
     def update_capture_button_text(self, is_capturing):
         """캡처 버튼 텍스트 업데이트"""
