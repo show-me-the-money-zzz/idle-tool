@@ -71,7 +71,8 @@ class NotiFrame(QGroupBox):
             item = NotiStores.Get_Noti(key)
             if item and item.enable:
                 items.append({ "name": item.name, "type": item.type })
-        if 0 < len(items): self.update_noti_items(items)
+        # if 0 < len(items): self.update_noti_items(items)
+        self.update_noti_items(items)
         
     def add_test_items(self):
         """테스트용 알림 아이템 추가"""
