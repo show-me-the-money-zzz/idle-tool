@@ -65,11 +65,13 @@ class NotiFrame(QGroupBox):
         self.Reload_Items()
         
     def Reload_Items(self):
+        items = []
         keys = NotiStores.GetAll_Notis().keys()
         for key in keys:
             item = NotiStores.Get_Noti(key)
             if item and item.enable:
-                self.add_noti_item(item.name, item.type)
+                items.append({ "name": item.name, "type": item.type })
+        if 0 < len(items): self.update_noti_items(items)
         
     def add_test_items(self):
         """테스트용 알림 아이템 추가"""

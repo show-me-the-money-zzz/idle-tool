@@ -275,6 +275,8 @@ class AppUI(QMainWindow):
             
     def reload_data(self):
         SYS_UTIL.PrintDEV(f">>>>>>>>>>>>>>> AppUI.reload_data")
+        
+        if hasattr(self, 'noti_frame'): self.noti_frame.Reload_Items()
 
     def Open_NotiEdtor(self):
         if not WindowUtil.is_window_valid():
