@@ -2,6 +2,7 @@ from PySide6.QtWidgets import (QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton,
                               QLabel, QSizePolicy, QScrollArea, QWidget)
 from PySide6.QtCore import Qt
 
+import stores.noti_store as NotiStores
 import ui.css as CSS
 
 class NotiFrame(QGroupBox):
@@ -60,7 +61,15 @@ class NotiFrame(QGroupBox):
         main_layout.addStretch(1)
         
         # 테스트용 아이템 추가
-        self.add_test_items()
+        # self.add_test_items()
+        self.Reload_Items()
+        
+    def Reload_Items(self):
+        keys = NotiStores.GetAll_Notis().keys()
+        for key in keys:
+            item = NotiStores.Get_Noti(key)
+            if item:
+                self.add_noti_item(item.name, item.type)
         
     def add_test_items(self):
         """테스트용 알림 아이템 추가"""
