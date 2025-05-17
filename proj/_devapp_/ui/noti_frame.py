@@ -68,7 +68,7 @@ class NotiFrame(QGroupBox):
         keys = NotiStores.GetAll_Notis().keys()
         for key in keys:
             item = NotiStores.Get_Noti(key)
-            if item:
+            if item and item.enable:
                 self.add_noti_item(item.name, item.type)
         
     def add_test_items(self):
