@@ -18,7 +18,7 @@ from ui.component.searchable_comboBox import SearchableComboBox
 class NotiEditor(QDialog):
    def __init__(self, parent):
       super().__init__(parent)
-      self.setWindowTitle("알림 에디터")
+      self.setWindowTitle("알리미 에디터")
       self.resize(720, 570)
 
       # 알림 목록 데이터 (실제 애플리케이션에서는 외부에서 로드할 수 있음)
@@ -508,8 +508,21 @@ class NotiEditor(QDialog):
       zonetext = self.zone_combobox.currentText()
       zonekey = ""
       if zonetext:
-         key, _ = AreasStore.Get_ZoneArea_byName(zonetext, default=None)
-         zonekey = key
+         zonedata = AreasStore.Get_ZoneArea_byName(zonetext, default=None)
+         if zonedata is not None:
+            key, _ = zonedata
+            zonekey = key
+      # else:
+      #    QMessageBox.warning(
+      #       self,
+      #       "입력 오류",
+      #       "캡처할 영역을 설정해 주세요",
+      #    )
+      #    if not token:
+      #       self.token_edit.setFocus()
+      #    else:
+      #       self.chatid_edit.setFocus()
+      #    return False
       repeat_min = self.repeat_spin.value()
       enable = self.enable_check.isChecked()
 
