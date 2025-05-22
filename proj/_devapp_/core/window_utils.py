@@ -1020,6 +1020,63 @@ class WindowManager:
             print(f"interception-python 클릭 오류: {e}")
             return False
         
+    def click_at_position_interception_byChatGPT(self, rel_x: int, rel_y: int) -> bool:
+        """
+        Interception 드라이버를 사용하여 특정 위치에서 마우스 클릭을 발생시킨다.
+        좌표는 현재 타겟 윈도우 기준 상대 좌표이다.
+        """
+        
+        import time
+        from ctypes import windll
+        from interception import Context, MouseStroke, MouseState
+
+        try:
+            if not self.is_window_valid():
+                print("❌ 창이 유효하지 않습니다.")
+                return False
+
+            # 창을 활성화
+            self.activate_window()
+            time.sleep(0.05)
+
+            # 절대 좌표 계산
+            left, top, _, _ = self.window_rect
+            abs_x = left + rel_x
+            abs_y = top + rel_y
+
+            # 현재 마우스 위치 백업
+            pt = self.Get_CursorPos()
+
+            # 커서 이동
+            windll.user32.SetCursorPos(abs_x, abs_y)
+            time.sleep(0.02)
+
+            # Interception 마우스 클릭
+            ctx = Context()
+            ctx.set_filter(ctx.mouse, MouseState.LEFT_BUTTON_DOWN | MouseState.LEFT_BUTTON_UP)
+
+            stroke = MouseStroke()
+            stroke.state = MouseState.LEFT_BUTTON_DOWN
+            stroke.flags = 0
+            stroke.rolling = 0
+            stroke.x = 0
+            stroke.y = 0
+            stroke.information = 0
+
+            ctx.send(ctx.mouse, stroke)
+            time.sleep(0.03)
+
+            stroke.state = MouseState.LEFT_BUTTON_UP
+            ctx.send(ctx.mouse, stroke)
+
+            # 마우스 위치 복원
+            windll.user32.SetCursorPos(pt.x, pt.y)
+
+            return True
+        except Exception as e:
+            print(f"❌ Interception 클릭 오류: {e}")
+            return False
+        
     def click_at_position_win32(self, rel_x, rel_y):
         """Win32 API를 사용한 클릭 구현 (좌표 범위 확인 추가)"""
         try:

@@ -278,10 +278,11 @@ class InputHandlerFrame(QGroupBox):
                 # elif 2 == index and WindowUtil.click_with_global_hook(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_at_position_pyautogui(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_with_win32_api(rel_x, rel_y):
-                elif 2 == index and WindowUtil.click_with_sendinput(rel_x, rel_y):
+                # elif 2 == index and WindowUtil.click_with_sendinput(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_with_postmessage(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_stealth(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_hybrid_approach(rel_x, rel_y):
+                elif 2 == index and WindowUtil.click_at_position_interception_byChatGPT(rel_x, rel_y):
                     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
 
                 # elif 3 == index and WindowUtil.click_at_position_post_message(rel_x, rel_y):
