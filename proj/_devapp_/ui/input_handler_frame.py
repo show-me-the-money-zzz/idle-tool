@@ -32,6 +32,9 @@ class InputHandlerFrame(QGroupBox):
         elif "Ymir" == APP_CONFIG.DEFAULT_APP_NAME:
             self.click_x_spin.setValue(1486)
             self.click_y_spin.setValue(64)
+        elif "LineageW" == APP_CONFIG.DEFAULT_APP_NAME:
+            self.click_x_spin.setValue(48)
+            self.click_y_spin.setValue(78)
         elif "Lust Goddess" == APP_CONFIG.DEFAULT_APP_NAME:
             self.click_x_spin.setValue(1016)
             self.click_y_spin.setValue(774)
@@ -118,9 +121,9 @@ class InputHandlerFrame(QGroupBox):
         # clickclick_btn = QPushButton("sendmessage")
         # clickclick_btn.clicked.connect(lambda: self.mouse_click2(4))
         # click_layout.addWidget(clickclick_btn)
-        # clickclick_btn = QPushButton("uia")
-        # clickclick_btn.clicked.connect(lambda: self.mouse_click2(5))
-        # click_layout.addWidget(clickclick_btn)
+        clickclick_btn = QPushButton("uia")
+        clickclick_btn.clicked.connect(lambda: self.mouse_click2(5))
+        click_layout.addWidget(clickclick_btn)
         # clickclick_btn = QPushButton("interception")
         # clickclick_btn.clicked.connect(lambda: self.mouse_click2(6))
         # click_layout.addWidget(clickclick_btn)
@@ -276,21 +279,21 @@ class InputHandlerFrame(QGroupBox):
                 # elif 2 == index and WindowUtil.click_hardware_injection(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_raw_input(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_with_global_hook(rel_x, rel_y):
-                # elif 2 == index and WindowUtil.click_at_position_pyautogui(rel_x, rel_y):
+                elif 2 == index and WindowUtil.click_at_position_pyautogui(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_with_win32_api(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_with_sendinput(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_with_postmessage(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_stealth(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_hybrid_approach(rel_x, rel_y):
-                elif 2 == index and WindowUtil.click_at_position_interception_byChatGPT(rel_x, rel_y):
+                # elif 2 == index and WindowUtil.click_at_position_interception_byChatGPT(rel_x, rel_y):
                     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
 
                 # elif 3 == index and WindowUtil.click_at_position_post_message(rel_x, rel_y):
                 #     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
                 # elif 4 == index and WindowUtil.click_at_position_send_message(rel_x, rel_y):
                 #     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
-                # elif 5 == index and WindowUtil.click_at_position_uia(rel_x, rel_y):
-                #     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+                elif 5 == index and WindowUtil.click_at_position_uia(rel_x, rel_y):
+                    self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
                 # elif 6 == index and WindowUtil.click_at_position_interception(rel_x, rel_y):
                 #     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
                 # elif 7 == index and WindowUtil.click_at_position_win32(rel_x, rel_y):
