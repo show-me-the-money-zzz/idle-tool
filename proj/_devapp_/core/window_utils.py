@@ -496,12 +496,11 @@ class WindowManager:
             if not self.is_window_valid():
                 print("창이 유효하지 않습니다.")
                 return False
+            print("run")
             
-            print(pyautogui.size())
-                        
             # # 창 활성화
             # self.activate_window()
-            # time.sleep(1.0)
+            # time.sleep(0.2)
             
             # 상대 좌표 계산
             left, top, _, _ = self.window_rect
@@ -509,27 +508,22 @@ class WindowManager:
             abs_y = top + rel_y
             
             # 현재 마우스 위치 저장
-            # current_x, current_y = pyautogui.position()
+            current_x, current_y = pyautogui.position()
             # pyautogui.moveTo(abs_x, abs_y)
             # print(f"click_at_position_pyautogui00({pyautogui.position()}): {abs_x}, {abs_y}")
 
             # 창 활성화
             # self.activate_window()
-            # time.sleep(0.01)
+            # time.sleep(1)
             
             # 마우스 이동 및 클릭
-            pyautogui.moveTo(abs_x, abs_y, 1)
-            self.activate_window()
-            time.sleep(1.0)
-            # windll.user32.SetCursorPos(abs_x, abs_y)
-            # time.sleep(0.01)
-            # print(f"click_at_position_pyautogui11({pyautogui.position()})")
+            pyautogui.moveTo(abs_x, abs_y, 0.5)
+            print(f"click_at_position_pyautogui11({pyautogui.position()})")
             # pt = self.Get_CursorPos()
             # windll.user32.SetCursorPos(abs_x, abs_y)
-            # print(f"click_at_position_pyautogui22({abs_x}, {abs_y})")
-            # time.sleep(0.1)
-
-            pyautogui.click()
+            print(f"click_at_position_pyautogui22({abs_x}, {abs_y})")
+            # time.sleep(0.01)
+            # pyautogui.click()
             
             # 원래 위치로 돌아가기 (선택 사항)
             # pyautogui.moveTo(current_x, current_y)
@@ -649,7 +643,7 @@ class WindowManager:
                 0, 0, 0, MOUSEEVENTF_LEFTUP, 0, None
             ))
             
-            # 연속으로 빠르게 실행
+            # # 연속으로 빠르게 실행
             user32.SendInput(1, ctypes.byref(move_input), ctypes.sizeof(INPUT))
             time.sleep(0.01)
             user32.SendInput(1, ctypes.byref(down_input), ctypes.sizeof(INPUT))
