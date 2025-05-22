@@ -17,6 +17,24 @@ class InputHandlerFrame(QGroupBox):
         self.status_signal = status_signal
         
         self._setup_ui()
+        
+        ### DEV TEST
+        self.DEVTest_Setup()
+
+    def DEVTest_Setup(self):
+        import zzz.app_config as APP_CONFIG
+        if "RF 온라인 넥스트" == APP_CONFIG.DEFAULT_APP_NAME:
+            self.click_x_spin.setValue(1480)
+            self.click_y_spin.setValue(60)
+        elif "LORDNINE" == APP_CONFIG.DEFAULT_APP_NAME:
+            self.click_x_spin.setValue(1473)
+            self.click_y_spin.setValue(70)
+        elif "Ymir" == APP_CONFIG.DEFAULT_APP_NAME:
+            self.click_x_spin.setValue(1486)
+            self.click_y_spin.setValue(64)
+        elif "Lust Goddess" == APP_CONFIG.DEFAULT_APP_NAME:
+            self.click_x_spin.setValue(1016)
+            self.click_y_spin.setValue(774)
     
     def _setup_ui(self):
         """UI 구성요소 초기화"""
@@ -86,12 +104,37 @@ class InputHandlerFrame(QGroupBox):
         # 마우스 클릭 버튼
         self.click_btn = QPushButton("왼쪽 버튼")
         self.click_btn.clicked.connect(self.mouse_click)
-        click_layout.addWidget(self.click_btn)
+        # click_layout.addWidget(self.click_btn)
+
+        clickclick_btn = QPushButton("클릭")
+        clickclick_btn.clicked.connect(lambda: self.mouse_click2(1))
+        click_layout.addWidget(clickclick_btn)
+        clickclick_btn = QPushButton("pyautogui")
+        clickclick_btn.clicked.connect(lambda: self.mouse_click2(2))
+        click_layout.addWidget(clickclick_btn)
+        # clickclick_btn = QPushButton("postmessage")
+        # clickclick_btn.clicked.connect(lambda: self.mouse_click2(3))
+        # click_layout.addWidget(clickclick_btn)
+        # clickclick_btn = QPushButton("sendmessage")
+        # clickclick_btn.clicked.connect(lambda: self.mouse_click2(4))
+        # click_layout.addWidget(clickclick_btn)
+        # clickclick_btn = QPushButton("uia")
+        # clickclick_btn.clicked.connect(lambda: self.mouse_click2(5))
+        # click_layout.addWidget(clickclick_btn)
+        # clickclick_btn = QPushButton("interception")
+        # clickclick_btn.clicked.connect(lambda: self.mouse_click2(6))
+        # click_layout.addWidget(clickclick_btn)
+        # clickclick_btn = QPushButton("win32")
+        # clickclick_btn.clicked.connect(lambda: self.mouse_click2(7))
+        # click_layout.addWidget(clickclick_btn)
+        # clickclick_btn = QPushButton("pynput")
+        # clickclick_btn.clicked.connect(lambda: self.mouse_click2(8))
+        # click_layout.addWidget(clickclick_btn)
 
         # 현재 위치 복사 버튼
         copy_pos_btn = QPushButton("현재 위치 복사")
         copy_pos_btn.clicked.connect(self.copy_current_mouse_position)
-        click_layout.addWidget(copy_pos_btn)
+        # click_layout.addWidget(copy_pos_btn)
 
         click_layout.addStretch(1)  # 우측 여백
         
@@ -210,6 +253,61 @@ class InputHandlerFrame(QGroupBox):
                 
         except Exception as e:
             QMessageBox.critical(self, "마우스 클릭 오류", f"마우스 클릭 중 오류가 발생했습니다: {str(e)}")
+
+    @Slot()
+    def mouse_click2(self, index):
+        try:
+            if not WindowUtil.is_window_valid():
+                QMessageBox.critical(self, "오류", ERROR_NO_WINDOW)
+                return
+            
+            # 클릭 좌표 계산
+            rel_x = self.click_x_spin.value()
+            rel_y = self.click_y_spin.value()
+            
+            if rel_x > 0 and rel_y > 0:
+                # 상태 표시 업데이트
+                self.status_signal.emit(f"클릭 중({index})... (X={rel_x}, Y={rel_y})")
+
+                if 1 == index and WindowUtil.click_at_position_original(rel_x, rel_y):
+                    self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+
+                # elif 2 == index and WindowUtil.click_hardware_injection(rel_x, rel_y):
+                # elif 2 == index and WindowUtil.click_raw_input(rel_x, rel_y):
+                # elif 2 == index and WindowUtil.click_with_global_hook(rel_x, rel_y):
+                elif 2 == index and WindowUtil.click_at_position_pyautogui(rel_x, rel_y):
+                # elif 2 == index and WindowUtil.click_with_win32_api(rel_x, rel_y):
+                # elif 2 == index and WindowUtil.click_with_sendinput(rel_x, rel_y):
+                # elif 2 == index and WindowUtil.click_with_postmessage(rel_x, rel_y):
+                # elif 2 == index and WindowUtil.click_stealth(rel_x, rel_y):
+                # elif 2 == index and WindowUtil.click_hybrid_approach(rel_x, rel_y):
+                    self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+                    
+                # elif 3 == index and WindowUtil.click_at_position_post_message(rel_x, rel_y):
+                #     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+                # elif 4 == index and WindowUtil.click_at_position_send_message(rel_x, rel_y):
+                #     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+                # elif 5 == index and WindowUtil.click_at_position_uia(rel_x, rel_y):
+                #     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+                # elif 6 == index and WindowUtil.click_at_position_interception(rel_x, rel_y):
+                #     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+                # elif 7 == index and WindowUtil.click_at_position_win32(rel_x, rel_y):
+                #     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+                # elif 8 == index and WindowUtil.click_at_position_pynput(rel_x, rel_y):
+                #     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+                else:
+                    QMessageBox.critical(self, "오류", "클릭 작업에 실패했습니다.")
+                
+                # # 상대 좌표 위치 클릭
+                # if WindowUtil.click_at_position(rel_x, rel_y):
+                #     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
+                # else:
+                #     QMessageBox.critical(self, "오류", "클릭 작업에 실패했습니다.")
+            else:
+                QMessageBox.information(self, "알림", "클릭할 좌표를 설정해주세요.")
+                
+        except Exception as e:
+            QMessageBox.critical(self, "마우스 클릭 오류", f"마우스 클릭 중 오류가 발생했습니다: {str(e)}")        
             
     @Slot()
     def mouse_scroll(self):

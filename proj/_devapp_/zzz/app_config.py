@@ -10,6 +10,10 @@ APP_TITLE = f"쌀먹툴 - [ZZXX]" # 연결하려는 앱의 타이틀이 포함�
 def AppTitle_nVer(): return f"{APP_TITLE} (ver. {APP_VERSION})"
 
 DEFAULT_APP_NAME = "RF 온라인 넥스트"  # 기본 검색할 앱 이름
+# DEFAULT_APP_NAME = "LORDNINE"  # 기본 검색할 앱 이름
+# DEFAULT_APP_NAME = "Ymir"  # 기본 검색할 앱 이름
+# DEFAULT_APP_NAME = "Lust Goddess"  # 기본 검색할 앱 이름
+
 DEFAULT_PID = ""    # 기본 PID (비워두기)
 
 # APP_THEME_TkInter = 'classic'
