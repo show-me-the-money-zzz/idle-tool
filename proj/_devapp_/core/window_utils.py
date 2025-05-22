@@ -219,6 +219,58 @@ class WindowManager:
             print(f"클릭 오류 (SendInput): {e}")
             return False
         
+    def click_background_only(self, rel_x, rel_y):
+        """창 활성화 없이 백그라운드에서만 클릭"""
+        try:
+            import win32gui
+            import win32con
+            import time
+            
+            if not self.is_window_valid():
+                print("창이 유효하지 않습니다.")
+                return False
+            
+            print(f"백그라운드 클릭: ({rel_x}, {rel_y}) - 창 활성화 없음")
+            
+            # 창 활성화 절대 하지 말 것!
+            # self.activate_window()  # 이것을 하면 안 됨!
+            
+            def MAKELPARAM(low, high):
+                return ((high << 16) | (low & 0xFFFF))
+            
+            # 백그라운드 상태에서 메시지만 전송
+            print("WM_MOUSEMOVE 전송...")
+            win32gui.PostMessage(
+                self.target_hwnd, 
+                win32con.WM_MOUSEMOVE, 
+                0, 
+                MAKELPARAM(rel_x, rel_y)
+            )
+            time.sleep(0.05)
+            
+            print("WM_LBUTTONDOWN 전송...")
+            win32gui.PostMessage(
+                self.target_hwnd, 
+                win32con.WM_LBUTTONDOWN, 
+                win32con.MK_LBUTTON, 
+                MAKELPARAM(rel_x, rel_y)
+            )
+            time.sleep(0.05)
+            
+            print("WM_LBUTTONUP 전송...")
+            win32gui.PostMessage(
+                self.target_hwnd, 
+                win32con.WM_LBUTTONUP, 
+                0, 
+                MAKELPARAM(rel_x, rel_y)
+            )
+            
+            print("백그라운드 클릭 완료")
+            return True
+        except Exception as e:
+            print(f"백그라운드 클릭 오류: {e}")
+            return False
+        
     def click_hardware_injection(self, rel_x, rel_y):
         """하드웨어 수준 마우스 입력 시뮬레이션"""
         try:

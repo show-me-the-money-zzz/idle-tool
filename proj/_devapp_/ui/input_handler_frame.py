@@ -272,6 +272,7 @@ class InputHandlerFrame(QGroupBox):
                 if 1 == index and WindowUtil.click_at_position_original(rel_x, rel_y):
                     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
 
+                # elif 2 == index and WindowUtil.click_background_only(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_hardware_injection(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_raw_input(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_with_global_hook(rel_x, rel_y):
