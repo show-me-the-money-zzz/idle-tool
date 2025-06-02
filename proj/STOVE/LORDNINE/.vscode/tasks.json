@@ -1,0 +1,14 @@
+{
+    "version": "0.5.0",
+    "tasks": [
+        {
+            "label": "Run as Admin",
+            "type": "shell",
+            "command": "${workspaceFolder}/run_as_admin.bat",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
+}
