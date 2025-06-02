@@ -1313,8 +1313,12 @@ class TaskEditorPopup(QDialog):
                 return
                 
             # 선택된 zone과 image 가져오기
-            zone_key = self.zone_combo.currentText()
-            image_key = self.image_select_combo.currentText()
+            zone_name = self.zone_combo.currentText()
+            image_name = self.image_select_combo.currentText()
+
+            zone_key, _ = Areas.Get_ZoneArea_byName(zone_name)
+            image_key, _ = Areas.Get_ImageArea_byName(image_name)
+            # print(f"[{image_key}] {zone_key} in [{zone_key}] {zone_name}")
             
             # 유효성 검사
             if not zone_key or not image_key:
