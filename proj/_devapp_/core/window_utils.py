@@ -20,6 +20,7 @@ class WindowManager:
         self.window_rect = (0, 0, 0, 0)  # (left, top, right, bottom)
         
         self.force_resolution = True
+        self.ahk_controller = None
 
     def find_window_by_pid(self, pid):
         process = psutil.Process(pid)
@@ -174,6 +175,64 @@ class WindowManager:
         pt = POINT()
         windll.user32.GetCursorPos(byref(pt))
         return pt
+    
+    def _get_ahk_controller(self):
+        """AutoHotkey 컨트롤러 지연 초기화"""
+        if self.ahk_controller is None:
+            try:
+                from grinder_utils.autohotkey_controller import AutoHotkeyMouseController
+                import grinder_utils.finder as Finder
+                path = Finder.Get_LocalPth() / "scripts" / "mouse_controller.ahk"
+                print(path)
+                self.ahk_controller = AutoHotkeyMouseController(path)
+                if self.ahk_controller.is_running:
+                    print("✅ AutoHotkey 마우스 컨트롤러 초기화 완료")
+                else:
+                    print("❌ AutoHotkey 초기화 실패, 대체 방법 사용")
+                    self.ahk_controller = None
+            except Exception as e:
+                print(f"❌ AutoHotkey 초기화 오류: {e}")
+                self.ahk_controller = None
+        
+        return self.ahk_controller
+    
+    def click_at_position_autohotkey(self, rel_x, rel_y):
+        """AutoHotkey를 사용한 클릭 구현"""
+        try:
+            # AutoHotkey 컨트롤러 가져오기 (지연 초기화)
+            ahk = self._get_ahk_controller()
+            
+            if not ahk or not ahk.is_running:
+                print("❌ AutoHotkey가 실행되지 않았습니다.")
+                return False
+            
+            print(f"🎯 AutoHotkey 클릭: ({rel_x}, {rel_y})")
+            
+            if not self.is_window_valid():
+                print("❌ 창이 유효하지 않습니다.")
+                return False
+            
+            # 상대 좌표를 절대 좌표로 변환
+            left, top, _, _ = self.window_rect
+            abs_x = left + rel_x
+            abs_y = top + rel_y
+            
+            print(f"   절대 좌표: ({abs_x}, {abs_y}), 창 핸들: {self.target_hwnd}")
+            
+            # AutoHotkey로 클릭 실행 (창 핸들도 전달하여 모든 방법 시도)
+            result = ahk.click_at_position(abs_x, abs_y, self.target_hwnd)
+            
+            if result:
+                print("✅ AutoHotkey 클릭 성공")
+            else:
+                print("❌ AutoHotkey 클릭 실패")
+            
+            return result
+        except Exception as e:
+            print(f"❌ AutoHotkey 클릭 오류: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
 
     def click_at_position_original(self, rel_x, rel_y):
         print(f"click_at_position_original({rel_x}, {rel_y})")

@@ -7,6 +7,7 @@ from core.config import *
 from core.window_utils import WindowUtil
 from ui.component.searchable_comboBox import SearchableComboBox
 from zzz.hotkey import HOTKEYs
+import zzz.app_config as APP_CONFIG
 
 class InputHandlerFrame(QGroupBox):
     """입력 처리 프레임 (이전의 자동화 영역)"""
@@ -22,7 +23,6 @@ class InputHandlerFrame(QGroupBox):
         self.DEVTest_Setup()
 
     def DEVTest_Setup(self):
-        import zzz.app_config as APP_CONFIG
         if "RF 온라인 넥스트" == APP_CONFIG.DEFAULT_APP_NAME:
             self.click_x_spin.setValue(1480)
             self.click_y_spin.setValue(60)
@@ -109,12 +109,13 @@ class InputHandlerFrame(QGroupBox):
         self.click_btn.clicked.connect(self.mouse_click)
         # click_layout.addWidget(self.click_btn)
 
-        clickclick_btn = QPushButton("클릭")
+        clickclick_btn = QPushButton("L 클릭")
         clickclick_btn.clicked.connect(lambda: self.mouse_click2(1))
         click_layout.addWidget(clickclick_btn)
         clickclick_btn = QPushButton("pyautogui")
         clickclick_btn.clicked.connect(lambda: self.mouse_click2(2))
-        click_layout.addWidget(clickclick_btn)
+        if not APP_CONFIG.RELEASE_APP:
+            click_layout.addWidget(clickclick_btn)
         # clickclick_btn = QPushButton("postmessage")
         # clickclick_btn.clicked.connect(lambda: self.mouse_click2(3))
         # click_layout.addWidget(clickclick_btn)
@@ -123,7 +124,8 @@ class InputHandlerFrame(QGroupBox):
         # click_layout.addWidget(clickclick_btn)
         clickclick_btn = QPushButton("uia")
         clickclick_btn.clicked.connect(lambda: self.mouse_click2(5))
-        click_layout.addWidget(clickclick_btn)
+        if not APP_CONFIG.RELEASE_APP:
+            click_layout.addWidget(clickclick_btn)
         # clickclick_btn = QPushButton("interception")
         # clickclick_btn.clicked.connect(lambda: self.mouse_click2(6))
         # click_layout.addWidget(clickclick_btn)
@@ -279,13 +281,14 @@ class InputHandlerFrame(QGroupBox):
                 # elif 2 == index and WindowUtil.click_hardware_injection(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_raw_input(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_with_global_hook(rel_x, rel_y):
-                elif 2 == index and WindowUtil.click_at_position_pyautogui(rel_x, rel_y):
+                # elif 2 == index and WindowUtil.click_at_position_pyautogui(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_with_win32_api(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_with_sendinput(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_with_postmessage(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_stealth(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_hybrid_approach(rel_x, rel_y):
                 # elif 2 == index and WindowUtil.click_at_position_interception_byChatGPT(rel_x, rel_y):
+                elif 2 == index and WindowUtil.click_at_position_autohotkey(rel_x, rel_y):
                     self.status_signal.emit(f"마우스 클릭 완료 (창 내부 좌표: X={rel_x}, Y={rel_y})")
 
                 # elif 3 == index and WindowUtil.click_at_position_post_message(rel_x, rel_y):
